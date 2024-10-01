@@ -1,0 +1,52 @@
+$white: #ffffff;
+//$enable-rounded: false;
+
+$card-border-radius: 0em;
+$border-radius: .1em;
+
+$card-cap-padding-y: 0;
+$card-cap-padding-x: 0;
+.card-body {
+  padding: 0 !important;
+}
+
+//$theme-colors: (
+//        "primary": #3e4c5d,
+//        "secondary": #dcdcdd,
+//        "success": #5c9d1b,
+//        "info": #ab9db4,
+        //"warning": #febd65,
+//        "danger": #da420d,
+//        "light": #f4f3ee,
+//        "dark": #34283b,
+//);
+
+//$form-check-input-checked-bg-color: #4b4e6d;
+//$form-check-input-checked-border-color: grey;
+
+$primary: #493a8d;
+$secondary: #dcdcdd;
+//$success: #54c7ba;
+$info: #a49cd7;
+//$warning: #e9c46a;
+$danger: #cc2255;
+//$light: #f4f3ee;
+//$dark: #180f1d;
+
+$grid-columns: 24 !default;
+$grid-gutter-width: 1.0rem !default;
+
+$nav-tabs-link-active-color: $white;
+$nav-tabs-link-active-bg: $primary;
+$nav-tabs-link-active-border-color: $primary;
+
+@import "bootstrap/scss/bootstrap";
+
+.bg-info-light {
+  background: tint-color($primary, 90%);
+}
+
+.bg-info-light-2 {
+  background: tint-color($primary, 98%);
+}
+

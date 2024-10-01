@@ -1,0 +1,108 @@
+@import "./custom-bootstrap";
+@import "bootstrap-icons/font/bootstrap-icons.css";
+
+input:invalid {
+  border: 2px solid red;
+}
+
+input:invalid:required {
+  background-color: pink;
+}
+
+input:valid {
+  border: 1px solid limegreen;
+}
+
+.navbar {
+  background: #4b4e6d;
+}
+
+html {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0 !important;
+}
+
+body {
+  overflow-y: scroll;
+}
+
+body, #app {
+  height: 100%;
+}
+
+html {
+  padding-bottom: 2.7rem;
+}
+
+main[data-logged-in="true"] {
+  padding-top: 4rem;
+}
+
+#stripe {
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+
+#stripe img {
+}
+
+.blink {
+  animation: blinker 2s linear infinite;
+}
+
+@keyframes blinker {
+  50% {
+    opacity: 0;
+  }
+}
+
+.w-80 {
+  width: 80%;
+}
+
+.w-20 {
+  width: 20%;
+}
+
+.w-10 {
+  width: 10%;
+}
+
+.w-90 {
+  width: 90%;
+}
+
+.loader {
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid #db346e; /* Blue */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.zoom {
+  transition: transform .2s;
+}
+
+.zoom:hover {
+  transform: scale(1.01);
+}
+
+.text-cut {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
