@@ -1,9 +1,10 @@
-import type { RequestsChannelRequest as ChannelRequest } from '~/services/api/v1/StreamSinkClient.js';
-import type { ServicesChannelInfo as ChannelInfo } from '~/services/api/v1/StreamSinkClient.js';
+import type { RequestsChannelRequest as ChannelRequest } from '@/services/api/v1/StreamSinkClient';
+import type { ServicesChannelInfo as ChannelInfo } from '@/services/api/v1/StreamSinkClient';
 
-import { createClient } from '~/services/api/v1/ClientFactory.js';
+import { createClient } from '@/services/api/v1/ClientFactory';
 import { defineStore } from 'pinia';
-import {  } from '@/stores/job'
+import { useCookie } from '#imports';
+import { TOKEN_NAME } from "~/services/auth.service";
 
 export interface ChannelState {
   channels: ChannelInfo[];
@@ -17,7 +18,7 @@ export const useChannelStore = defineStore('channel', {
   actions: {
     save(channel: ChannelRequest) {
       return new Promise((resolve, reject) => {
-        const api = createClient();
+        const api = createClient(useCookie(TOKEN_NAME));
         api.channels.channelsCreate(channel)
           .then(res => {
             this.add(res.data);

@@ -64,12 +64,13 @@ import { createSocket, MessageType } from '../../utils/socket';
 import { useChannelStore } from "~/stores/channel";
 import { useAuthStore } from "~/stores/auth";
 import { useJobStore } from "~/stores/job";
-import { useState, computed, onMounted, reactive, watch, useRoute, useRouter } from "#imports";
+import { useState, computed, onMounted, reactive, watch, useRoute, useRouter, useCookie } from "#imports";
 
 import DiskStatus from '../DiskStatus.vue';
 import RecordingControls from '../RecordingControls.vue';
 import AppBrand from '../AppBrand.vue';
 import ModalConfirmDialog from '../modals/ModalConfirmDialog.vue';
+import { TOKEN_NAME } from "~/services/auth.service";
 
 // --------------------------------------------------------------------------------------
 // Props
@@ -124,7 +125,8 @@ const loggedIn = computed(() => authStore.isLoggedIn);
 // --------------------------------------------------------------------------------------
 
 const query = async () => {
-  const api = createClient();
+  const tokenCookie = useCookie(TOKEN_NAME);
+  const api = createClient(tokenCookie);
   const res = await Promise.all([ api.isRecording(), api.info.diskList() ]);
 
   isRecording.value = res[0];
@@ -137,7 +139,8 @@ const query = async () => {
 
 const record = async () => {
   try {
-    const api = createClient();
+    const tokenCookie = useCookie(TOKEN_NAME);
+    const api = createClient(tokenCookie);
     if (isRecording.value) {
       await api.recorder.pauseCreate();
       channelStore.stop();

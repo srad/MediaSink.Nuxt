@@ -126,7 +126,8 @@ import ChannelModal, { ChannelUpdate } from '../components/modals/ChannelModal.v
 import { useChannelStore } from "~/stores/channel";
 import { useAuthStore } from "~/stores/auth";
 import LoadIndicator from "../components/LoadIndicator.vue";
-import { useState, useRoute, useRouter, watch, computed, onMounted} from '#imports'
+import { useState, useRoute, useRouter, watch, computed, onMounted, useCookie } from '#imports'
+import { TOKEN_NAME } from "~/services/auth.service";
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -204,7 +205,9 @@ const sort = (a: ChannelResponse, b: ChannelResponse) => a.channelName!.localeCo
 
 const save = async (data: ChannelUpdate) => {
   try {
-    const api = createClient();
+    const tokenCookie = useCookie(TOKEN_NAME);
+    const api = createClient(tokenCookie);
+
     const res = await api.channels.channelsPartialUpdate(data.channelId, data);
     channelStore.update(res.data);
     showModal.value = false;
@@ -228,7 +231,9 @@ const tab = (tab: string) => router.push({ name: 'Stream', params: { tag: tagFil
 
 const loginHandler = async (isLoggedIn: boolean) => {
   if (isLoggedIn) {
-    const api = createClient();
+    const tokenCookie = useCookie(TOKEN_NAME);
+    const api = createClient(tokenCookie);
+
     const res = await api.channels.channelsList();
     res.data.forEach(channel => channelStore.add(channel));
     busy.value = false;

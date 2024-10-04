@@ -49,7 +49,8 @@
 import { createClient } from '../services/api/v1/ClientFactory';
 import { DatabaseRecording as RecordingResponse } from '../services/api/v1/StreamSinkClient';
 import RecordingItem from '../components/RecordingItem.vue';
-import { useI18n, useState, useRoute, useRouter, onMounted, watch} from '#imports'
+import { useI18n, useState, useRoute, useRouter, onMounted, watch, useCookie } from '#imports'
+import { TOKEN_NAME } from "~/services/auth.service";
 
 const { t } = useI18n();
 
@@ -97,7 +98,9 @@ const resetFilters = () => {
 };
 
 const fetch = async () => {
-  const api = createClient();
+  const tokenCookie = useCookie(TOKEN_NAME);
+  const api = createClient(tokenCookie);
+
   const res = await api.recordings.filterDetail(route.query.column as string || 'created_at', route.query.order as string || 'desc', route.query.limit as string || '25');
   recordings.value = res.data;
 };

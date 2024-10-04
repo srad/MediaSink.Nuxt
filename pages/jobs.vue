@@ -133,7 +133,8 @@ import { fromNow } from '../utils/datetime.ts';
 //import { Tab } from 'bootstrap';
 import { useJobStore } from "~/stores/job";
 import ModalConfirmDialog from '../components/modals/ModalConfirmDialog.vue';
-import { useI18n, useState, useRoute, useRouter, computed, onMounted, watch } from '#imports'
+import { useI18n, useState, useRoute, useRouter, computed, onMounted, watch, useCookie } from '#imports'
+import { TOKEN_NAME } from "~/services/auth.service";
 
 const { t } = useI18n();
 
@@ -169,7 +170,8 @@ const jobsCompleted = useState<ResponsesJobsResponse | null>('jobsCompleted', ()
 const jobsOther = useState<ResponsesJobsResponse | null>('jobsOther', () => null);
 
 const getData = async () => {
-  const api = createClient();
+  const tokenCookie = useCookie(TOKEN_NAME);
+  const api = createClient(tokenCookie);
 
   const promise = Promise.all([
     api.jobs.listCreate({
@@ -246,7 +248,9 @@ const itemsOtherCount = computed(() => jobsOther.value?.totalCount || 0);
 
 const destroy = (id: number) => {
   if (window.confirm('Delete?')) {
-    const api = createClient();
+    const tokenCookie = useCookie(TOKEN_NAME);
+    const api = createClient(tokenCookie);
+
     api.jobs.jobsDelete(id)
         .then(() => jobStore.destroy(id))
         .catch(res => alert(res));
@@ -268,7 +272,9 @@ const selectTab = () => {
 };
 
 const toggleWorker = () => {
-  const api = createClient();
+  const tokenCookie = useCookie(TOKEN_NAME);
+  const api = createClient(tokenCookie);
+
   const fn = processingJobs.value ? api.jobs.pauseCreate : api.jobs.resumeCreate;
 
   fn().then(() => {

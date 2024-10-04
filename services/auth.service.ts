@@ -1,6 +1,6 @@
-import { createClient } from "./api/v1/ClientFactory";
+import type { MyClient } from "./api/v1/ClientFactory";
 import type { RequestsAuthenticationRequest } from "./api/v1/StreamSinkClient";
-import { getCookie, removeCookie, setCookie } from "~/utils/cookies";
+import type { CookieRef } from "#imports";
 
 export interface AuthInfo {
   token: string;
@@ -10,19 +10,22 @@ export interface AuthHeader {
   Authorization: string;
 }
 
-const TOKEN_NAME = "jwt";
+export const TOKEN_NAME = "jwt";
 
 export default class AuthService {
-  static login(user: RequestsAuthenticationRequest) {
-    return new Promise<string>((resolve, reject) => {
-      const token = getCookie<string>(TOKEN_NAME);
+  private readonly tokenCookie: CookieRef<string>
 
-      const client = createClient();
+  constructor(tokenCookie: CookieRef<string>) {
+    this.tokenCookie = tokenCookie;
+  }
+
+  login(user: RequestsAuthenticationRequest, client: MyClient) {
+    return new Promise<string>((resolve, reject) => {
       client.auth.loginCreate(user).then(response => {
         const r = response.data as unknown as AuthInfo;
         if (r.token) {
-          setCookie(TOKEN_NAME, r.token);
-          return resolve(token);
+          this.tokenCookie.value = r.token;
+          return resolve(r.token);
         } else {
           return reject("token not found");
         }
@@ -30,31 +33,27 @@ export default class AuthService {
     });
   }
 
-  static logout() {
-    const token = removeCookie(TOKEN_NAME);
+  logout() {
+    this.tokenCookie.value = null;
   }
 
-  static getToken() {
-    const token = getCookie<string>(TOKEN_NAME);
-    return token;
+  getToken(): string {
+    return this.tokenCookie.value;
   }
 
-  static isLoggedIn() {
-    const token = getCookie<string>(TOKEN_NAME);
-    return token !== null;
+  isLoggedIn(): boolean {
+    return this.tokenCookie.value !== null && this.tokenCookie.value !== undefined;
   }
 
-  static signup(user: RequestsAuthenticationRequest) {
-    const client = createClient();
+  signup(user: RequestsAuthenticationRequest, client: MyClient) {
     return client.auth.signupCreate(user);
   }
 
-  static getAuthHeader(): AuthHeader | null {
-    const token = getCookie<string>(TOKEN_NAME);
-    if (!token) {
+  getAuthHeader(): AuthHeader | null {
+    if (!this.tokenCookie.value) {
       return null;
     }
 
-    return { Authorization: 'Bearer ' + token };
+    return { Authorization: 'Bearer ' + this.tokenCookie.value };
   }
 }

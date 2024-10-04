@@ -15,7 +15,8 @@
 import { createClient } from '../services/api/v1/ClientFactory';
 import { DatabaseRecording } from '../services/api/v1/StreamSinkClient';
 import RecordingItem from '../components/RecordingItem.vue';
-import { useI18n, useState, onMounted } from '#imports'
+import { useI18n, useState, onMounted, useCookie } from '#imports'
+import { TOKEN_NAME } from "~/services/auth.service";
 
 const { t } = useI18n();
 const recordings = useState<DatabaseRecording[]>('recordings', () => []);
@@ -43,7 +44,9 @@ const destroyRecording = async (recording: DatabaseRecording) => {
   }
 
   try {
-    const api = createClient();
+    const tokenCookie = useCookie(TOKEN_NAME);
+    const api = createClient(tokenCookie);
+
     await api.recordings.recordingsDelete(recording.recordingId);
     removeItem(recording);
   } catch (ex) {
@@ -56,7 +59,9 @@ const destroyRecording = async (recording: DatabaseRecording) => {
 // --------------------------------------------------------------------------------------
 
 onMounted(async () => {
-  const api = createClient();
+  const tokenCookie = useCookie(TOKEN_NAME);
+  const api = createClient(tokenCookie);
+
   const res = await api.recordings.bookmarksList();
   recordings.value = res.data;
 });

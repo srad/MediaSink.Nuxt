@@ -44,7 +44,7 @@ await generateApi({
     apiClassName: "StreamSinkClient",
     // set to `false` to prevent the tool from writing to disk
     output: path.join(process.cwd(), "services", "api", "v1"),
-    url: "http://localhost:4000/swagger/doc.json",
+    url: "http://localhost:3000/swagger/doc.json",
     //templates: path.resolve(path.join(process.cwd(), ".", "services", "api", "v1", "templates")),
     httpClientType: "fetch", // or "axios"
     defaultResponseAsSuccess: false,

@@ -87,13 +87,13 @@ export default {
     pause: 'Pause Recording\n',
     infoDisplay: 'Displayed as stream name. Can be changed at any time.',
     infoChannel: 'This field is the file system folder name and cannot be changed.',
-    infoSkipStart: 'Some broadcasters have certain number of seconds ads at the video start. Define how many seconds at start should be skipped when recording, i.e. for Twitch 15s.',
+    infoSkipStart: 'Some broadcasters have certain number of seconds ads at the recordings start. Define how many seconds at start should be skipped when recording, i.e. for Twitch 15s.',
     infoPause: 'Do not record as long as paused.'
   },
   recordings: {
     destroy: 'Delete recording "{filename}"?',
     generatePreview: 'Generate a new preview?',
-    convert: 'Convert "{filename}" video to type "{mediaType}"?'
+    convert: 'Convert "{filename}" recordings to type "{mediaType}"?'
   },
   recorder: {
     start: 'Start recording?',
@@ -110,7 +110,7 @@ export default {
       destroy: 'Delete',
       cut: 'Cut',
     },
-    destroy: 'Delete video "{0}"?',
+    destroy: 'Delete recordings "{0}"?',
     exportSegments: 'Export selected segments?',
     updateInfo: 'Check all durations and update in database?',
     segment: {

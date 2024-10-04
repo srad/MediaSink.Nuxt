@@ -61,13 +61,14 @@
 
 <script setup lang="ts">
 import { createClient } from '~/services/api/v1/ClientFactory.js';
-import { useRuntimeConfig, computed, onMounted, useState, downloadObjectAsJson } from "#imports";
+import { useRuntimeConfig, computed, onMounted, useState, downloadObjectAsJson, useCookie } from "#imports";
 import ChannelFavButton from '~/components/controls/ChannelFavButton.vue';
 import type { DatabaseChannel, ServicesChannelInfo } from '~/services/api/v1/StreamSinkClient';
+import { TOKEN_NAME } from "~/services/auth.service";
 
 const config = useRuntimeConfig();
 const isImporting = useState('isImporting', () => false);
-const fileUrl = config.fileUrl;
+const fileUrl = config.public.fileUrl;
 const channelsFile = useState<HTMLInputElement | null>('channelsFile', () => null);
 
 const channels = useState<ServicesChannelInfo[]>('channels', () => []);
@@ -80,7 +81,9 @@ const totalCount = computed(() => channels.value.map(x => x.recordingsCount).red
  * @param client
  */
 const downloadChannelsAsJson = () => {
-  const client = createClient();
+  const tokenCookie = useCookie(TOKEN_NAME);
+  const api = createClient(tokenCookie);
+
   client.channels.channelsList()
       .then(res => {
         downloadObjectAsJson(res.data, 'channels', document.body);
@@ -118,7 +121,8 @@ const inputFileChanged = (event: Event) => {
 const importChannels = (channelsResponse: DatabaseChannel[]) => {
   isImporting.value = true;
 
-  const client = createClient();
+  const tokenCookie = useCookie(TOKEN_NAME);
+  const client = createClient(tokenCookie);
 
   channelsResponse.forEach(async channel => {
     try {
@@ -140,9 +144,14 @@ const importChannels = (channelsResponse: DatabaseChannel[]) => {
   isImporting.value = false;
 };
 
-onMounted(async () => {
-  const api = createClient();
-  const response = await api.channels.channelsList();
-  channels.value = response.data.sort((a, b) => a.channelName.localeCompare(b.channelName));
-});
+if (import.meta.server) {
+  try {
+    const tokenCookie = useCookie(TOKEN_NAME);
+    const api = createClient(tokenCookie);
+    const response = await api.channels.channelsList();
+    channels.value = response.data.sort((a, b) => a.channelName.localeCompare(b.channelName));
+  } catch (res: any) {
+    alert(res.error);
+  }
+}
 </script>

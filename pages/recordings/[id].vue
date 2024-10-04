@@ -151,6 +151,8 @@ import ModalConfirmDialog from "~/components/modals/ModalConfirmDialog.vue";
 import MarkingsTable from "~/components/MarkingsTable.vue";
 import { useToastStore } from "~/stores/toast";
 import { useJobStore } from "~/stores/job";
+import { TOKEN_NAME } from "~/services/auth.service";
+import { useRuntimeConfig } from "nuxt/app";
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -170,7 +172,7 @@ const stripeContainer = useState('stripeContainer', () => null);
 const video = useState<HTMLVideoElement | null>('video', () => null);
 
 const config = useRuntimeConfig();
-const fileUrl = config.fileUrl;
+const fileUrl = config.public.fileUrl;
 
 const stripeUrl = computed<string>(() => fileUrl + '/' + recording.value?.previewStripe + '?' + Date.now());
 const videoUrl = computed<string>(() => fileUrl + '/' + recording.value?.pathRelative + '?' + Date.now());
@@ -187,8 +189,8 @@ const duration = useState<number>('dureation', () => 0);
 const recording = useState<DatabaseRecording>('recording', () => null);
 const id = useState<number>('id', () => null);
 const busy = useState('busy', () => false);
-const showConfirmDialog = useState(false);
-const deleteFileAfterCut = useState(false);
+const showConfirmDialog = useState('confirm', () => false);
+const deleteFileAfterCut = useState('deleteFile', () => false);
 
 let cutInterval: NodeJS.Timeout | number | undefined;
 
@@ -212,7 +214,9 @@ onUnmounted(() => {
 
 onMounted(async () => {
   try {
-    const api = createClient();
+    const tokenCookie = useCookie(TOKEN_NAME);
+    const api = createClient(tokenCookie);
+
     id.value = Number(route.params.id);
     const rec = await api.recordings.recordingsDetail(id.value);
     recording.value = rec.data;
@@ -345,7 +349,9 @@ const destroy = () => {
 
   unloadVideo();
 
-  const api = createClient();
+  const tokenCookie = useCookie(TOKEN_NAME);
+  const api = createClient(tokenCookie);
+
   api.recordings.recordingsDelete(recording.value.recordingId)
       .then(() => {
         // Remove from Job list if existent.
@@ -359,7 +365,9 @@ const destroy = () => {
 };
 
 const cutVideo = () => {
-  const api = createClient();
+  const tokenCookie = useCookie(TOKEN_NAME);
+  const api = createClient(tokenCookie);
+
   const starts = markings.value.map(m => String(m.timestart.toFixed(4)));
   const ends = markings.value.map(m => String(m.timeend.toFixed(4)));
 

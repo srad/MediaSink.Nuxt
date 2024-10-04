@@ -34,7 +34,9 @@
 
 <script setup lang="ts">
 import { useAuthStore } from "~/stores/auth";
-import { useState, useRouter } from "#imports";
+import { useState, useRouter, useCookie } from "#imports";
+import { TOKEN_NAME } from "~/services/auth.service";
+import { createClient } from "~/services/api/v1/ClientFactory";
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -58,7 +60,10 @@ const register = () => {
   successful.value = false;
   loading.value = true;
 
-  authStore.register({ username: email.value, password: password.value }).then(data => {
+  const tokenCookie = useCookie(TOKEN_NAME);
+  const client = createClient(tokenCookie);
+
+  authStore.register({ user: { username: email.value, password: password.value }, client }).then(data => {
     message.value = data.message;
     successful.value = true;
     loading.value = false;

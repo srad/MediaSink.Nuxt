@@ -27,8 +27,9 @@ import StreamInfo from './StreamInfo.vue';
 import Preview from './Preview.vue';
 import { ServicesChannelInfo as ChannelInfo } from '../services/api/v1/StreamSinkClient';
 import { createClient } from '../services/api/v1/ClientFactory';
-import { useI18n, useState, computed, useRouter } from '#imports'
+import { useI18n, useState, computed, useRouter, useCookie } from '#imports'
 import { useChannelStore } from "~/stores/channel";
+import { TOKEN_NAME } from "~/services/auth.service";
 
 // --------------------------------------------------------------------------------------
 // Emits
@@ -65,13 +66,15 @@ const previewVideo = computed(() => fileUrl + '/' + props.channel.preview + '?' 
 // --------------------------------------------------------------------------------------
 
 const fav = async (channel: ChannelInfo) => {
-  const api = createClient();
+  const tokenCookie = useCookie(TOKEN_NAME);
+  const api = createClient(tokenCookie);
   await api.channels.favPartialUpdate(channel.channelId!);
   channelStore.fav(channel.channelId);
 };
 
 const unfav = async (channel: ChannelInfo) => {
-  const api = createClient();
+  const tokenCookie = useCookie(TOKEN_NAME);
+  const api = createClient(tokenCookie);
   await api.channels.unfavPartialUpdate(channel.channelId!);
   channelStore.unfav(channel.channelId);
 };
@@ -79,7 +82,8 @@ const unfav = async (channel: ChannelInfo) => {
 const destroyChannel = async (channel: ChannelInfo) => {
   if (window.confirm(t('crud.destroy', [ channel.channelName ]))) {
     try {
-      const api = createClient();
+      const tokenCookie = useCookie(TOKEN_NAME);
+      const api = createClient(tokenCookie);
       busy.value = true;
       await api.channels.channelsDelete(channel.channelId!);
       destroyed.value = true;
@@ -96,7 +100,8 @@ const destroyChannel = async (channel: ChannelInfo) => {
 
 const pause = async (channel: ChannelInfo) => {
   try {
-    const api = createClient();
+    const tokenCookie = useCookie(TOKEN_NAME);
+    const api = createClient(tokenCookie);
     busy.value = true;
     const method = channel.isPaused ? api.channels.resumeCreate : api.channels.pauseCreate;
     await method(channel.channelId!);

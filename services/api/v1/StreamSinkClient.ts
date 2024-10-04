@@ -35,15 +35,17 @@ export interface DatabaseJob {
     /** Unique entry, this is the actual primary key */
     channelName: string;
     command?: string;
+    completedAt: string;
     createdAt: string;
     filename: string;
+    filepath: string;
     info?: string;
     jobId: number;
-    pathRelative: string;
     /** Additional information */
     pid?: number;
     progress?: string;
     recordingId: number;
+    startedAt: string;
     status: DatabaseJobStatus;
     /** Default values only not to break migrations. */
     task: DatabaseJobTask;
@@ -63,25 +65,29 @@ export enum DatabaseJobStatus {
 
 export enum DatabaseJobTask {
     TaskConvert = "convert",
-    TaskPreview = "preview",
+    TaskPreviewCover = "preview-cover",
+    TaskPreviewStrip = "preview-stripe",
+    TaskPreviewVideo = "preview-video",
     TaskCut = "cut",
 }
 
 export interface DatabaseRecording {
     bitRate: number;
     bookmark: boolean;
+    /** @min 0 */
     channelId: number;
     channelName: string;
     createdAt: string;
     duration: number;
     filename: string;
     height: number;
-    /** Total number of video packets/frames. */
+    /** Total number of recordings packets/frames. */
     packets: number;
-    pathRelative?: string;
+    pathRelative: string;
     previewCover?: string;
     previewStripe?: string;
     previewVideo?: string;
+    /** @min 0 */
     recordingId: number;
     size: number;
     videoType: string;
@@ -89,33 +95,33 @@ export interface DatabaseRecording {
 }
 
 export interface HelpersCPUInfo {
-    loadCpu?: HelpersCPULoad[];
+    loadCpu: HelpersCPULoad[];
 }
 
 export interface HelpersCPULoad {
-    cpu?: string;
-    createdAt?: string;
-    load?: number;
+    cpu: string;
+    createdAt: string;
+    load: number;
 }
 
 export interface HelpersDiskInfo {
-    availFormattedGb?: string;
-    pcent?: string;
-    sizeFormattedGb?: string;
-    usedFormattedGb?: string;
+    availFormattedGb: string;
+    pcent: string;
+    sizeFormattedGb: string;
+    usedFormattedGb: string;
 }
 
 export interface HelpersNetInfo {
-    createdAt?: string;
-    dev?: string;
-    receiveBytes?: number;
-    transmitBytes?: number;
+    createdAt: string;
+    dev: string;
+    receiveBytes: number;
+    transmitBytes: number;
 }
 
 export interface HelpersSysInfo {
-    cpuInfo?: HelpersCPUInfo;
-    diskInfo?: HelpersDiskInfo;
-    netInfo?: HelpersNetInfo;
+    cpuInfo: HelpersCPUInfo;
+    diskInfo: HelpersDiskInfo;
+    netInfo: HelpersNetInfo;
 }
 
 export interface RequestsAuthenticationRequest {
@@ -156,6 +162,10 @@ export interface ResponsesImportInfoResponse {
     isImporting?: boolean;
     progress?: number;
     size?: number;
+}
+
+export interface ResponsesJobWorkerStatus {
+    isProcessing: boolean;
 }
 
 export interface ResponsesJobsResponse {
@@ -568,7 +578,8 @@ export namespace Jobs {
      * @summary Jobs pagination
      * @request POST:/jobs/list
      * @response `200` `ResponsesJobsResponse` OK
-     * @response `500` `any` Internal Server Error
+     * @response `400` `any` Error message
+     * @response `500` `any` Error message
      */
     export namespace ListCreate {
         export type RequestParams = {};
@@ -579,14 +590,46 @@ export namespace Jobs {
     }
 
     /**
+     * @description Stops the job processing
+     * @tags jobs
+     * @name PauseCreate
+     * @summary Stops the job processing
+     * @request POST:/jobs/pause
+     * @response `200` `any` OK
+     */
+    export namespace PauseCreate {
+        export type RequestParams = {};
+        export type RequestQuery = {};
+        export type RequestBody = never;
+        export type RequestHeaders = {};
+        export type ResponseBody = any;
+    }
+
+    /**
+     * @description Start the job processing
+     * @tags jobs
+     * @name ResumeCreate
+     * @summary Start the job processing
+     * @request POST:/jobs/resume
+     * @response `200` `any` OK
+     */
+    export namespace ResumeCreate {
+        export type RequestParams = {};
+        export type RequestQuery = {};
+        export type RequestBody = never;
+        export type RequestHeaders = {};
+        export type ResponseBody = any;
+    }
+
+    /**
      * @description Interrupt job gracefully
      * @tags jobs
      * @name StopCreate
      * @summary Interrupt job gracefully
      * @request POST:/jobs/stop/{pid}
      * @response `200` `void` OK
-     * @response `400` `string` Bad Request
-     * @response `500` `string` Internal Server Error
+     * @response `400` `any` Error message
+     * @response `500` `any` Error message
      */
     export namespace StopCreate {
         export type RequestParams = {
@@ -600,14 +643,30 @@ export namespace Jobs {
     }
 
     /**
-     * @description Enqueue a preview job for a video in a channel. For now only preview jobs allowed via REST
+     * @description Job worker status
+     * @tags jobs
+     * @name WorkerList
+     * @summary Job worker status
+     * @request GET:/jobs/worker
+     * @response `200` `ResponsesJobWorkerStatus` OK
+     */
+    export namespace WorkerList {
+        export type RequestParams = {};
+        export type RequestQuery = {};
+        export type RequestBody = never;
+        export type RequestHeaders = {};
+        export type ResponseBody = ResponsesJobWorkerStatus;
+    }
+
+    /**
+     * @description Enqueue a preview job for a recordings in a channel. For now only preview jobs allowed via REST
      * @tags jobs
      * @name JobsCreate
      * @summary Enqueue a preview job
      * @request POST:/jobs/{id}
-     * @response `200` `DatabaseJob` OK
-     * @response `400` `any` Bad Request
-     * @response `500` `any` Internal Server Error
+     * @response `200` `(DatabaseJob)[]` OK
+     * @response `400` `any` Error message
+     * @response `500` `any` Error message
      */
     export namespace JobsCreate {
         export type RequestParams = {
@@ -617,7 +676,7 @@ export namespace Jobs {
         export type RequestQuery = {};
         export type RequestBody = never;
         export type RequestHeaders = {};
-        export type ResponseBody = DatabaseJob;
+        export type ResponseBody = DatabaseJob[];
     }
 
     /**
@@ -627,8 +686,8 @@ export namespace Jobs {
      * @summary Interrupt and delete job gracefully
      * @request DELETE:/jobs/{id}
      * @response `200` `any` OK
-     * @response `400` `string` Bad Request
-     * @response `500` `string` Internal Server Error
+     * @response `400` `any` Error message
+     * @response `500` `any` Error message
      */
     export namespace JobsDelete {
         export type RequestParams = {
@@ -908,10 +967,10 @@ export namespace Recordings {
     }
 
     /**
-     * @description Cut a video and merge all defined segments
+     * @description Cut a recordings and merge all defined segments
      * @tags recordings
      * @name CutCreate
-     * @summary Cut a video and merge all defined segments
+     * @summary Cut a recordings and merge all defined segments
      * @request POST:/recordings/{id}/cut
      * @response `200` `DatabaseJob` OK
      * @response `400` `any` Error message
@@ -929,10 +988,10 @@ export namespace Recordings {
     }
 
     /**
-     * @description Bookmark a certain video in a channel.
+     * @description Bookmark a certain recordings in a channel.
      * @tags recordings
      * @name FavPartialUpdate
-     * @summary Bookmark a certain video in a channel
+     * @summary Bookmark a certain recordings in a channel
      * @request PATCH:/recordings/{id}/fav
      * @response `200` `void` OK
      * @response `400` `any` Error message
@@ -950,12 +1009,12 @@ export namespace Recordings {
     }
 
     /**
-     * @description Generate preview for a certain video in a channel.
+     * @description Generate preview for a certain recordings in a channel.
      * @tags recordings
      * @name PreviewCreate
-     * @summary Generate preview for a certain video in a channel
+     * @summary Generate preview for a certain recordings in a channel
      * @request POST:/recordings/{id}/preview
-     * @response `200` `DatabaseJob` OK
+     * @response `200` `(DatabaseJob)[]` OK
      * @response `400` `any` Error message
      * @response `500` `any` Error message
      */
@@ -967,14 +1026,14 @@ export namespace Recordings {
         export type RequestQuery = {};
         export type RequestBody = never;
         export type RequestHeaders = {};
-        export type ResponseBody = DatabaseJob;
+        export type ResponseBody = DatabaseJob[];
     }
 
     /**
-     * @description Bookmark a certain video in a channel.
+     * @description Bookmark a certain recordings in a channel.
      * @tags recordings
      * @name UnfavPartialUpdate
-     * @summary Bookmark a certain video in a channel
+     * @summary Bookmark a certain recordings in a channel
      * @request PATCH:/recordings/{id}/unfav
      * @response `200` `void` OK
      * @response `400` `any` Error message
@@ -992,10 +1051,10 @@ export namespace Recordings {
     }
 
     /**
-     * @description Cut a video and merge all defined segments
+     * @description Cut a recordings and merge all defined segments
      * @tags recordings
      * @name ConvertCreate
-     * @summary Cut a video and merge all defined segments
+     * @summary Cut a recordings and merge all defined segments
      * @request POST:/recordings/{id}/{mediaType}/convert
      * @response `200` `DatabaseJob` OK
      * @response `400` `any` Error message
@@ -1603,7 +1662,8 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
          * @summary Jobs pagination
          * @request POST:/jobs/list
          * @response `200` `ResponsesJobsResponse` OK
-         * @response `500` `any` Internal Server Error
+         * @response `400` `any` Error message
+         * @response `500` `any` Error message
          */
         listCreate: (JobsRequest: RequestsJobsRequest, params: RequestParams = {}) =>
             this.http.request<ResponsesJobsResponse, any>({
@@ -1616,6 +1676,38 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
             }),
 
         /**
+         * @description Stops the job processing
+         *
+         * @tags jobs
+         * @name PauseCreate
+         * @summary Stops the job processing
+         * @request POST:/jobs/pause
+         * @response `200` `any` OK
+         */
+        pauseCreate: (params: RequestParams = {}) =>
+            this.http.request<any, any>({
+                path: `/jobs/pause`,
+                method: "POST",
+                ...params,
+            }),
+
+        /**
+         * @description Start the job processing
+         *
+         * @tags jobs
+         * @name ResumeCreate
+         * @summary Start the job processing
+         * @request POST:/jobs/resume
+         * @response `200` `any` OK
+         */
+        resumeCreate: (params: RequestParams = {}) =>
+            this.http.request<any, any>({
+                path: `/jobs/resume`,
+                method: "POST",
+                ...params,
+            }),
+
+        /**
          * @description Interrupt job gracefully
          *
          * @tags jobs
@@ -1623,11 +1715,11 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
          * @summary Interrupt job gracefully
          * @request POST:/jobs/stop/{pid}
          * @response `200` `void` OK
-         * @response `400` `string` Bad Request
-         * @response `500` `string` Internal Server Error
+         * @response `400` `any` Error message
+         * @response `500` `any` Error message
          */
         stopCreate: (pid: number, params: RequestParams = {}) =>
-            this.http.request<void, string>({
+            this.http.request<void, any>({
                 path: `/jobs/stop/${pid}`,
                 method: "POST",
                 type: ContentType.Json,
@@ -1635,18 +1727,35 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Enqueue a preview job for a video in a channel. For now only preview jobs allowed via REST
+         * @description Job worker status
+         *
+         * @tags jobs
+         * @name WorkerList
+         * @summary Job worker status
+         * @request GET:/jobs/worker
+         * @response `200` `ResponsesJobWorkerStatus` OK
+         */
+        workerList: (params: RequestParams = {}) =>
+            this.http.request<ResponsesJobWorkerStatus, any>({
+                path: `/jobs/worker`,
+                method: "GET",
+                format: "json",
+                ...params,
+            }),
+
+        /**
+         * @description Enqueue a preview job for a recordings in a channel. For now only preview jobs allowed via REST
          *
          * @tags jobs
          * @name JobsCreate
          * @summary Enqueue a preview job
          * @request POST:/jobs/{id}
-         * @response `200` `DatabaseJob` OK
-         * @response `400` `any` Bad Request
-         * @response `500` `any` Internal Server Error
+         * @response `200` `(DatabaseJob)[]` OK
+         * @response `400` `any` Error message
+         * @response `500` `any` Error message
          */
         jobsCreate: (id: string, params: RequestParams = {}) =>
-            this.http.request<DatabaseJob, any>({
+            this.http.request<DatabaseJob[], any>({
                 path: `/jobs/${id}`,
                 method: "POST",
                 type: ContentType.Json,
@@ -1662,11 +1771,11 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
          * @summary Interrupt and delete job gracefully
          * @request DELETE:/jobs/{id}
          * @response `200` `any` OK
-         * @response `400` `string` Bad Request
-         * @response `500` `string` Internal Server Error
+         * @response `400` `any` Error message
+         * @response `500` `any` Error message
          */
         jobsDelete: (id: number, params: RequestParams = {}) =>
-            this.http.request<any, string>({
+            this.http.request<any, any>({
                 path: `/jobs/${id}`,
                 method: "DELETE",
                 type: ContentType.Json,
@@ -1709,6 +1818,7 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
             this.http.request<ResponsesRecordingStatusResponse, void>({
                 path: `/recorder`,
                 method: "GET",
+                format: "json",
                 ...params,
             }),
 
@@ -1936,11 +2046,11 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Cut a video and merge all defined segments
+         * @description Cut a recordings and merge all defined segments
          *
          * @tags recordings
          * @name CutCreate
-         * @summary Cut a video and merge all defined segments
+         * @summary Cut a recordings and merge all defined segments
          * @request POST:/recordings/{id}/cut
          * @response `200` `DatabaseJob` OK
          * @response `400` `any` Error message
@@ -1957,11 +2067,11 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Bookmark a certain video in a channel.
+         * @description Bookmark a certain recordings in a channel.
          *
          * @tags recordings
          * @name FavPartialUpdate
-         * @summary Bookmark a certain video in a channel
+         * @summary Bookmark a certain recordings in a channel
          * @request PATCH:/recordings/{id}/fav
          * @response `200` `void` OK
          * @response `400` `any` Error message
@@ -1976,18 +2086,18 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Generate preview for a certain video in a channel.
+         * @description Generate preview for a certain recordings in a channel.
          *
          * @tags recordings
          * @name PreviewCreate
-         * @summary Generate preview for a certain video in a channel
+         * @summary Generate preview for a certain recordings in a channel
          * @request POST:/recordings/{id}/preview
-         * @response `200` `DatabaseJob` OK
+         * @response `200` `(DatabaseJob)[]` OK
          * @response `400` `any` Error message
          * @response `500` `any` Error message
          */
         previewCreate: (id: number, params: RequestParams = {}) =>
-            this.http.request<DatabaseJob, any>({
+            this.http.request<DatabaseJob[], any>({
                 path: `/recordings/${id}/preview`,
                 method: "POST",
                 type: ContentType.Json,
@@ -1996,11 +2106,11 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Bookmark a certain video in a channel.
+         * @description Bookmark a certain recordings in a channel.
          *
          * @tags recordings
          * @name UnfavPartialUpdate
-         * @summary Bookmark a certain video in a channel
+         * @summary Bookmark a certain recordings in a channel
          * @request PATCH:/recordings/{id}/unfav
          * @response `200` `void` OK
          * @response `400` `any` Error message
@@ -2015,11 +2125,11 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Cut a video and merge all defined segments
+         * @description Cut a recordings and merge all defined segments
          *
          * @tags recordings
          * @name ConvertCreate
-         * @summary Cut a video and merge all defined segments
+         * @summary Cut a recordings and merge all defined segments
          * @request POST:/recordings/{id}/{mediaType}/convert
          * @response `200` `DatabaseJob` OK
          * @response `400` `any` Error message

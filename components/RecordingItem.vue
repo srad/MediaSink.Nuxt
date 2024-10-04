@@ -52,8 +52,9 @@ import RecordInfo from './RecordInfo.vue';
 import Preview from './Preview.vue';
 import { DatabaseRecording as RecordingResponse } from '../services/api/v1/StreamSinkClient';
 import { createClient } from '../services/api/v1/ClientFactory';
-import { useI18n, useState, watch, useRouter } from '#imports'
-
+import { useI18n, useState, watch, useRouter, useCookie } from '#imports'
+import { TOKEN_NAME } from "~/services/auth.service";
+import { useRuntimeConfig } from "nuxt/app";
 
 // --------------------------------------------------------------------------------------
 // Emits
@@ -85,8 +86,8 @@ const busy = useState('busy', () => false);
 const destroyed = useState('destroyed', () => false);
 
 const config = useRuntimeConfig();
-const apiUrl = config.apiUrl;
-const fileUrl = config.fileUrl;
+const apiUrl = config.public.apiUrl;
+const fileUrl = config.public.fileUrl;
 
 const previewVideoUrl = `${fileUrl}/${props.recording.previewVideo}`;
 // TODO: Pass a default image from the server, if the preview image is missing.
@@ -119,7 +120,8 @@ watch(() => props.select, val => {
 const bookmark = async (recording: RecordingResponse, yesNo: boolean) => {
   try {
     busy.value = true;
-    const api = createClient();
+    const tokenCookie = useCookie(TOKEN_NAME);
+    const api = createClient(tokenCookie);
     const method = yesNo ? api.recordings.favPartialUpdate : api.recordings.unfavPartialUpdate;
     await method(recording.recordingId);
     recording.bookmark = yesNo;
@@ -135,7 +137,8 @@ const generatePreview = async (recording: RecordingResponse) => {
   if (window.confirm('Generate new preview?')) {
     try {
       busy.value = true;
-      const api = createClient();
+      const tokenCookie = useCookie(TOKEN_NAME);
+      const api = createClient(tokenCookie);
       await api.recordings.previewCreate(recording.recordingId);
     } catch (ex) {
       alert(ex);
@@ -152,7 +155,8 @@ const convert = async ({ recording, mediaType }: { recording: RecordingResponse,
 
   try {
     busy.value = true;
-    const api = createClient();
+    const tokenCookie = useCookie(TOKEN_NAME);
+    const api = createClient(tokenCookie);
     await api.recordings.convertCreate(recording.recordingId, mediaType);
   } catch (ex) {
     alert(ex);
@@ -168,7 +172,8 @@ const destroyRecording = async (recording: RecordingResponse) => {
 
   try {
     busy.value = true;
-    const api = createClient();
+    const tokenCookie = useCookie(TOKEN_NAME);
+    const api = createClient(tokenCookie);
     await api.recordings.recordingsDelete(recording.recordingId);
     destroyed.value = true;
     setTimeout(() => emit('destroyed', recording), 1000);

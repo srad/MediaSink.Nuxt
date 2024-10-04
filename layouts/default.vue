@@ -3,11 +3,7 @@
     <NavTop v-if="loggedIn" :routes="routes" :title="title" @add="showModal=true" :show-logout="loggedIn" @logout="logout"/>
 
     <main class="container-fluid" :data-logged-in="loggedIn">
-      <RouterView v-slot="{ Component }">
-        <KeepAlive include="SteamView,ChannelsView,JobView">
-          <component :is="Component"></component>
-        </KeepAlive>
-      </RouterView>
+      <NuxtPage :keepalive="{include: 'SteamView,ChannelsView,JobView'}"/>
 
       <ChannelModal
           v-if="loggedIn"
@@ -24,17 +20,20 @@
 </template>
 
 <script setup lang="ts">
-import type { DatabaseJob, RequestsChannelRequest as ChannelRequest } from '~/services/api/v1/StreamSinkClient';
-import { createSocket, MessageType } from '~/utils/socket';
-import ChannelModal from '../components/modals/ChannelModal';
-import NavTop from '../components/navs/NavTop.vue';
-import Toaster from '../components/Toaster.vue';
-import { useChannelStore } from '~/stores/channel';
-import { useJobStore } from '~/stores/job';
-import type { TaskInfo } from '~/stores/job';
-import { useToastStore } from '~/stores/toast';
-import { useAuthStore } from '~/stores/auth';
-import { useRuntimeConfig, computed, onMounted, watch, useI18n, useState } from "#imports";
+import type { DatabaseJob, RequestsChannelRequest as ChannelRequest } from '@/services/api/v1/StreamSinkClient';
+import { createSocket, MessageType } from '@/utils/socket';
+import ChannelModal from '@/components/modals/ChannelModal';
+import NavTop from '@/components/navs/NavTop.vue';
+import Toaster from '@/components/Toaster.vue';
+import { useChannelStore } from '@/stores/channel';
+import { useJobStore } from '@/stores/job';
+import type { TaskInfo } from '@/stores/job';
+import { useToastStore } from '@/stores/toast';
+import { useAuthStore } from '@/stores/auth';
+import AuthService, { TOKEN_NAME } from "@/services/auth.service";
+import { useRuntimeConfig, useState, useCookie } from "nuxt/app";
+import { computed, onMounted, watch, useI18n } from "#imports";
+
 // --------------------------------------------------------------------------------------
 // Declarations
 // --------------------------------------------------------------------------------------
@@ -50,7 +49,7 @@ const { t } = useI18n();
 
 const socket = createSocket();
 
-const title = config.appName;
+const title = config.public.appName;
 const showModal = useState('showModal', () => false);
 
 const toasts = computed(() => toastStore.getToast);
@@ -73,7 +72,9 @@ const save = (data: ChannelRequest) => channelStore.save(data)
     .finally(() => showModal.value = false);
 
 const logout = () => {
-  auths
+  const tokenCookie = useCookie(TOKEN_NAME);
+  const auth = new AuthService(tokenCookie);
+  auth.logout();
   router.push('/login');
 };
 

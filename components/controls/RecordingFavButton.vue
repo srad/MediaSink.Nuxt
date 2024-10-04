@@ -6,9 +6,11 @@
 <script setup lang="ts">
 import { createClient } from '../../services/api/v1/ClientFactory';
 import FavButton from './FavButton.vue';
-import { useState } from '#imports'
+import { useCookie, useState } from '#imports'
+import { TOKEN_NAME } from "~/services/auth.service";
 
-const api = createClient();
+const tokenCookie = useCookie(TOKEN_NAME);
+const api = createClient(tokenCookie);
 
 const props = defineProps<{
   bookmarked: boolean

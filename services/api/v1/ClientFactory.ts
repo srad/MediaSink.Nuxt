@@ -1,24 +1,21 @@
-import type { DatabaseRecording as RecordingResponse, ResponsesRecordingStatusResponse } from './StreamSinkClient';
-import type { CancelTokenSource, AxiosResponse } from 'axios';
-import type { AuthHeader } from '../../auth.service';
+import { ContentType, type DatabaseRecording, type DatabaseRecording as RecordingResponse, type HttpResponse, type ResponsesRecordingStatusResponse } from './StreamSinkClient';
+import type { AuthHeader } from '@/services/auth.service';
 import { StreamSinkClient, HttpClient } from './StreamSinkClient';
-import { useNuxtApp, useFetch } from "#imports";
-import AuthService from '../../auth.service';
+import AuthService from '@/services/auth.service';
+import { useNuxtApp } from "#imports";
 
 export class MyClient extends StreamSinkClient<any> {
   constructor(header: AuthHeader | null) {
-    const config = useRuntimeConfig();
-    const apiUrl = config.apiUrl as string;
-
+    const { $config } = useNuxtApp();
     const client = new HttpClient({
-      baseURL: apiUrl,
-      headers: { ...header },
+      baseUrl: $config.public.apiUrl,
+      baseApiParams: {
+        headers: { ...header }
+      },
       customFetch: (input, init) => {
-        const nuxtApp = useNuxtApp();
-        return nuxtApp.runWithContext(async () => await useFetch(input, init));
+        return fetch(input, init);
       },
     });
-    //client.instance.interceptors.response.use(value => value, unauthorizedInterceptor);
     super(client);
   }
 
@@ -28,17 +25,21 @@ export class MyClient extends StreamSinkClient<any> {
    * @param file File object to upload
    * @param progress Returns the progress as number in range [0.0 ... 1.0]
    */
-  channelUpload(channelId: number, file: File, progress: (pcent: number) => void): [ Promise<AxiosResponse<RecordingResponse>>, CancelTokenSource ] {
-    const header = AuthService.getAuthHeader();
-    const source = axios.CancelToken.source();
+  channelUpload(channelId: number, file: File, progress: (pcent: number) => void, tokenCookie: CookieRef<string>): [ Promise<HttpResponse<RecordingResponse, any>>, AbortSignal ] {
+    const controller = new AbortController();
+    const signal = controller.signal;
     const formData = new FormData();
     formData.append('file', file);
 
-    return [ this.http.instance.post(`${apiUrl}/channels/${channelId}/upload`, formData, {
-      cancelToken: source.token,
-      headers: { 'Content-Type': 'multipart/form-data', ...header },
-      onUploadProgress: progressEvent => progressEvent.total ? progress(progressEvent.loaded / progressEvent.total) : 0
-    }), source ];
+    const req = this.http.request<DatabaseRecording, any>({
+      path: `/channels/${channelId}/upload`,
+      method: "POST",
+      body: formData,
+      type: ContentType.FormData,
+      signal,
+    });
+
+    return [ req, signal ];
   }
 
   /**
@@ -46,12 +47,12 @@ export class MyClient extends StreamSinkClient<any> {
    * although the returned data look fine in the browser.
    */
   async isRecording(): Promise<boolean> {
-    const res = await this.http.instance.get<ResponsesRecordingStatusResponse>(`${apiUrl}/recorder`);
-    return res.data.isRecording;
+    const res = await this.http.request<ResponsesRecordingStatusResponse, any>({ path: `/recorder`, method: "GET" });
+    return res.isRecording;
   }
 }
 
-export const createClient = (): MyClient => {
-  const header = AuthService.getAuthHeader();
-  return new MyClient(header);
+export const createClient = (tokenCookie: CookieRef<string>): MyClient => {
+  const auth = new AuthService(tokenCookie);
+  return new MyClient(auth.getAuthHeader());
 };

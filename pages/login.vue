@@ -19,7 +19,7 @@
           </div>
 
           <div class="d-flex justify-content-between">
-            <RouterLink to="/register">Register</RouterLink>
+            <NuxtPage to="/register">Register</NuxtPage>
             <button type="submit" class="btn btn-primary" :disabled="loading">
               <span v-if="loading" class="spinner-border spinner-border-sm" aria-hidden="true"></span>
               Login
@@ -33,7 +33,8 @@
 
 <script setup lang="ts">
 import { useAuthStore } from "~/stores/auth";
-import { useState, useRouter, computed} from "#imports";
+import { useState, useRouter, computed, useCookie } from "#imports";
+import { TOKEN_NAME } from "~/services/auth.service";
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -43,7 +44,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 
 const message = useState<string | null>('message', () => null);
-const loading = useState(false);
+const loading = useState('loading', () => false);
 
 const email = useState('email', () => '');
 const password = useState('password', () => '');
@@ -63,8 +64,8 @@ const login = async () => {
     loading.value = true;
     await authStore.login({ username: email.value, password: password.value });
     await router.replace('/');
-  } catch (error: any) {
-    message.value = error.response.data;
+  } catch (res: any) {
+    message.value = res.error;
   } finally {
     loading.value = false;
   }

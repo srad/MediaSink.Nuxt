@@ -270,7 +270,7 @@ const mouseUp = (event: MouseEvent) => {
 
 /**
  * Checks if a selection has an overlap.
- * Right now overlaps are allowed for creative purposes, this allows to make join repeated video segments.
+ * Right now overlaps are allowed for creative purposes, this allows to make join repeated recordings segments.
  * However, in case overlaps shall be forbidden, this function can check the marking for overlaps.
  * @param selectionStart
  * @param selectionEnd

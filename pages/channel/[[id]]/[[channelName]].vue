@@ -1,5 +1,5 @@
 <template>
-  <LoadIndicator :busy="busy">
+  <div>
     <BusyOverlay :visible="busyOverlay"/>
     <div ref="upload" style="display: none" class="modal modal-dialog modal-dialog-centered" tabindex="-1">
       <div class="modal-dialog">
@@ -96,7 +96,7 @@
             :show-title="false"/>
       </div>
     </div>
-  </LoadIndicator>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -109,14 +109,14 @@ import {
   DatabaseRecording as RecordingResponse
 } from '~/services/api/v1/StreamSinkClient';
 
-import { onBeforeRouteLeave, useRoute, useRouter, onMounted, computed, useState } from '#imports';
+import { onBeforeRouteLeave, useRoute, useRouter, onMounted, computed, useState, useCookie } from '#imports';
 import { createSocket, MessageType, SocketManager } from '~/utils/socket.ts';
 import BusyOverlay from '~/components/BusyOverlay.vue';
-import LoadIndicator from '~/components/LoadIndicator.vue';
 
 import { useToastStore } from "~/stores/toast";
 import { useChannelStore } from "~/stores/channel";
 import { useJobStore } from "~/stores/job";
+import { TOKEN_NAME } from "~/services/auth.service";
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -136,7 +136,6 @@ const upload = useState<HTMLDivElement | null>('upload', () => null);
 const selectedRecordings = useState<RecordingResponse[]>('selectedRecordings', () => []);
 const uploadProgress = useState('uploadProgress', () => 0);
 const busyOverlay = useState('busyOverlay', () => false);
-const busy = useState('busy', () => true);
 const channel = useState<ChannelResponse | null>('channel', () => null);
 const channelId = (+route.params.id) as unknown as number;
 let cancellationToken: CancelTokenSource | null = null;
@@ -153,7 +152,8 @@ const areItemsSelected = computed(() => selectedRecordings.value.length > 0);
 // --------------------------------------------------------------------------------------
 
 const pauseChannel = (element: HTMLInputElement): void => {
-  const client = createClient();
+  const tokenCookie = useCookie(TOKEN_NAME);
+  const api = createClient(tokenCookie);
   const fn = element.checked ? client.channels.resumeCreate : client.channels.pauseCreate;
   fn(channel.value!.channelId).then(() => {
     if (element.checked) {
@@ -176,7 +176,10 @@ const destroySelection = async () => {
   if (!window.confirm('Delete selection?')) {
     return;
   }
-  const api = createClient();
+
+  const tokenCookie = useCookie(TOKEN_NAME);
+  const api = createClient(tokenCookie);
+
   for (let i = 0; i < selectedRecordings.value.length; i++) {
     const rec = selectedRecordings.value[i];
     await api.recordings.recordingsDelete(rec.recordingId);
@@ -199,7 +202,10 @@ const selectRecording = (data: { checked: boolean, recording: RecordingResponse 
 const deleteChannel = () => {
   if (window.confirm(`Delete channel "${channelId}"?`)) {
     busyOverlay.value = true;
-    const api = createClient();
+
+    const tokenCookie = useCookie(TOKEN_NAME);
+    const api = createClient(tokenCookie);
+
     api.channels.channelsDelete(channelId)
         .then(() => channelStore.destroy(channelId))
         .catch(err => alert(err))
@@ -226,7 +232,10 @@ const submit = () => {
   if (el.files && el.files!.length > 0) {
     uploadProgress.value = 0;
     showModal.value = true;
-    const api = createClient();
+
+    const tokenCookie = useCookie(TOKEN_NAME);
+    const api = createClient(tokenCookie);
+
     const [ req, cancelToken ] = api.channelUpload(channelId, el.files![0], pcent => uploadProgress.value = pcent);
     req.then(res => {
       uploadProgress.value = 0;
@@ -256,7 +265,9 @@ const destroyRecording = (recording: RecordingResponse) => {
 };
 
 const bookmark = () => {
-  const api = createClient();
+  const tokenCookie = useCookie(TOKEN_NAME);
+  const api = createClient(tokenCookie);
+
   const fn = channel.value!.fav ? api.channels.unfavPartialUpdate : api.channels.favPartialUpdate;
 
   fn(channel.value!.channelId)
@@ -274,6 +285,12 @@ onBeforeRouteLeave((to, from) => {
   socket?.close();
 });
 
+const tokenCookie = useCookie(TOKEN_NAME);
+const api = createClient(tokenCookie);
+
+const res = await api.channels.channelsDetail(channelId);
+channel.value = res.data;
+
 onMounted(async () => {
   try {
     socket = createSocket();
@@ -285,11 +302,6 @@ onMounted(async () => {
     });
 
     window.scrollTo(0, 0);
-
-    const api = createClient();
-    const res = await api.channels.channelsDetail(channelId);
-    channel.value = res.data;
-    busy.value = false;
   } catch (error: any) {
     alert(err);
     router.back();

@@ -103,7 +103,8 @@ import type {
 import TrafficChart from '~/components/charts/TrafficChart.vue';
 import CPUChart from '~/components/charts/CPUChart.vue';
 import { useRuntimeConfig } from "nuxt/app";
-import { useState, onBeforeRouteLeave, computed, onMounted } from '#imports'
+import { useState, onBeforeRouteLeave, computed, onMounted, useCookie } from '#imports'
+import { TOKEN_NAME } from "~/services/auth.service";
 
 const config = useRuntimeConfig();
 const build = config.build;
@@ -141,7 +142,8 @@ const mainCpuLoad = computed(() => cpuInfo.value && cpuInfo.value.loadCpu!.lengt
 
 const startImport = async () => {
   if (window.confirm('Start Import?')) {
-    const api = createClient();
+    const tokenCookie = useCookie(TOKEN_NAME);
+    const api = createClient(tokenCookie);
     await api.admin.importCreate();
     importing.value = true;
   }
@@ -149,14 +151,16 @@ const startImport = async () => {
 
 const posters = async () => {
   if (window.confirm('Regenerate all posters?')) {
-    const api = createClient();
+    const tokenCookie = useCookie(TOKEN_NAME);
+    const api = createClient(tokenCookie);
     await api.recordings.generatePostersCreate();
   }
 };
 
 const updateInfo = () => {
   if (window.confirm('Check all durations and update in database?')) {
-    const api = createClient();
+    const tokenCookie = useCookie(TOKEN_NAME);
+    const api = createClient(tokenCookie);
     api.recordings.updateinfoCreate()
         .then(() => isUpdating.value = true)
         .catch(res => console.error(res.error));
@@ -165,7 +169,8 @@ const updateInfo = () => {
 
 const fetch = async () => {
   try {
-    const api = createClient();
+    const tokenCookie = useCookie(TOKEN_NAME);
+    const api = createClient(tokenCookie);
     const result = await Promise.all([ api.info.infoDetail(1), api.admin.importList() ]);
 
     netInfo.value = result[0].data.netInfo;
@@ -195,7 +200,8 @@ onBeforeRouteLeave(() => {
 });
 
 onMounted(async () => {
-  const api = createClient();
+  const tokenCookie = useCookie(TOKEN_NAME);
+  const api = createClient(tokenCookie);
   //fillData();
   await fetch();
   const res = await api.admin.versionList();

@@ -1,4 +1,6 @@
-import AuthService from '../services/auth.service.ts';
+import AuthService, { TOKEN_NAME } from '@/services/auth.service';
+import { useCookie } from "#imports";
+import { useNuxtApp } from "#imports";
 
 export class SocketManager {
   private connection: WebSocket | null = null;
@@ -6,17 +8,23 @@ export class SocketManager {
   private static readonly socketUrl: string = import.meta.env.SSR ? import.meta.env.VITE_VUE_APP_SOCKETURL : window.VUE_APP_SOCKETURL;
 
   connect() {
+    if (!import.meta.browser) {
+      return;
+    }
     if (this.connection !== null) {
       return;
     }
 
-    const header = AuthService.getAuthHeader();
+    const tokenCookie = useCookie(TOKEN_NAME);
+    const auth = new AuthService(tokenCookie);
+    const header = auth.getAuthHeader();
     const token = header?.Authorization;
     if (!header || !token) {
       throw { error: "WebSocket missing authorization token" };
     }
 
-    this.connection = new WebSocket(SocketManager.socketUrl + '?Authorization=' + token);
+    const { $config } = useNuxtApp();
+    this.connection = new WebSocket($config.public.socketUrl + '?Authorization=' + token);
 
     this.connection.addEventListener('message', (msg: any) => {
       const json = JSON.parse(msg.data) as { name: string, data: Object };

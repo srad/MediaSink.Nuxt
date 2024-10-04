@@ -58,11 +58,12 @@
 </template>
 
 <script setup lang="ts">
-import { watch, computed, onMounted, onUnmounted, useState, useRouter } from '#imports';
+import { watch, computed, onMounted, onUnmounted, useState, useRouter, useCookie } from '#imports';
 import { ServicesChannelInfo as ChannelResponse } from '../services/api/v1/StreamSinkClient';
 import { createClient } from '../services/api/v1/ClientFactory';
 import { validTag } from '../utils/parser';
 import FavButton from "./controls/FavButton.vue";
+import { TOKEN_NAME } from "~/services/auth.service";
 
 // --------------------------------------------------------------------------------------
 // Props
@@ -120,7 +121,8 @@ const seconds = computed(() => {
 
 const destroyTag = async (tag: string) => {
   const removeTag = tagArray.value?.filter(t => t !== tag);
-  const api = createClient();
+  const tokenCookie = useCookie(TOKEN_NAME);
+  const api = createClient(tokenCookie);
   await api.channels.tagsPartialUpdate(props.channel.channelId!, { tags: removeTag });
   tagArray.value = removeTag;
 };
@@ -141,7 +143,9 @@ const addTag = () => {
   // Optimistic add.
   tagArray.value.push(tag);
 
-  const api = createClient();
+  const tokenCookie = useCookie(TOKEN_NAME);
+  const api = createClient(tokenCookie);
+
   api.channels.tagsPartialUpdate(props.channel.channelId!, { tags: tagArray.value })
       .then(() => {
         showTagInput.value = false;
