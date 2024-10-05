@@ -1,61 +1,60 @@
 <template>
-  <div class="table-responsive">
-    <table class="table table-bordered table-hover table-sm">
-      <thead>
-      <tr v-if="isImporting">
-        <th colspan="6" class="bg-light border border-primary">
-          <h6>Importing ...</h6>
-          <div class="progress" role="progressbar" aria-label="Animated striped example" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
-            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 75%"></div>
-          </div>
-        </th>
-      </tr>
-      <tr>
-        <th colspan="6" class="bg-light border border-primary bg-primary-subtle">
-          <button @click="() => downloadChannelsAsJson()" type="button" class="btn btn-primary btn-sm me-2">
-            Export channels
-          </button>
-          <button @click="inputFileClick" type="button" class="btn btn-primary btn-sm">Import channels</button>
-          <input ref="channelsFile" accept="application/json" type="file" name="importChannels" hidden @change="inputFileChanged"/>
-        </th>
-      </tr>
-      <tr>
-        <th rowspan="2" style="width: 1%" class="bg-light">Preview</th>
-        <th rowspan="2" style="width: 30%" class="bg-light">Name</th>
-        <th rowspan="2" style="width: 5%" class="bg-light">Favourite?</th>
-        <th rowspan="2" style="width: 4%" class="bg-light">Recording?</th>
-        <th style="width: 5%" class="bg-light; text-center">Count</th>
-        <th style="width: 5%" class="bg-light; text-center">Size</th>
-      </tr>
-      <tr>
-        <th class="text-center">{{ totalCount }}</th>
-        <th class="text-center">{{ totalSize.toFixed(1) }}GB</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr v-for="channel in channels" class="align-middle">
-        <td class="text-center p-0">
-          <img alt="preview" :src="fileUrl + '/' + channel.preview" class="rounded" style="height: 50px; width: auto"/>
-        </td>
-        <td class="px-2">
-          <RouterLink class="text-decoration-none" :to="`/channel/${channel.channelId}/${channel.channelName}`">
-            <h6 class="m-0">{{ channel.channelName }}</h6>
-          </RouterLink>
-          <a :href="channel.url" target="_blank">{{ channel.url }}</a>
-        </td>
-        <td class="px-2">
-          <ChannelFavButton :bookmarked="channel.fav" :channel-id="channel.channelId"/>
-        </td>
-        <td class="px-2">
-          <button class="btn w-100 btn-danger" v-if="channel.isRecording">
-            <i class="bi bi-record-fill pulse"></i> Recording
-          </button>
-        </td>
-        <td class="px-2 text-center">{{ channel.recordingsCount }}</td>
-        <td class="px-2 text-end">{{ (channel.recordingsSize / 1024 / 1024 / 1024).toFixed(2) }} GB</td>
-      </tr>
-      </tbody>
-    </table>
+  <div>
+    <div class="d-flex mb-2">
+      <button @click="() => downloadChannelsAsJson()" type="button" class="btn btn-primary me-2">
+        Export channels
+      </button>
+      <button @click="inputFileClick" type="button" class="btn btn-primary">Import channels</button>
+      <input ref="channelsFile" accept="application/json" type="file" name="importChannels" hidden @change="inputFileChanged"/>
+    </div>
+    <div v-if="isImporting">
+      <h6>Importing ...</h6>
+      <div class="progress" role="progressbar" aria-label="Animated striped example" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 75%"></div>
+      </div>
+      <hr/>
+    </div>
+    <div class="table-responsive border p-0">
+      <table class="table table-bordered table-hover table-sm m-0">
+        <thead>
+        <tr class="align-middle text-center">
+          <th rowspan="2" style="width: 1%" class="bg-light">Preview</th>
+          <th rowspan="2" style="width: 30%" class="bg-light">Name</th>
+          <th rowspan="2" style="width: 5%" class="bg-light">Favourite?</th>
+          <th rowspan="2" style="width: 4%" class="bg-light">Recording?</th>
+          <th style="width: 5%" class="bg-light text-center">Count</th>
+          <th style="width: 5%" class="bg-light text-center">Size</th>
+        </tr>
+        <tr>
+          <th class="text-center bg-light">{{ totalCount }}</th>
+          <th class="text-center bg-light">{{ totalSize.toFixed(1) }}GB</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="channel in channels" class="align-middle">
+          <td class="text-center p-0">
+            <img alt="preview" :src="fileUrl + '/' + channel.preview" class="rounded" style="height: 50px; width: auto"/>
+          </td>
+          <td class="px-2">
+            <RouterLink class="text-decoration-none" :to="`/channel/${channel.channelId}/${channel.channelName}`">
+              <h6 class="m-0">{{ channel.channelName }}</h6>
+            </RouterLink>
+            <a :href="channel.url" target="_blank">{{ channel.url }}</a>
+          </td>
+          <td class="px-2 text-center">
+            <ChannelFavButton :bookmarked="channel.fav" :channel-id="channel.channelId"/>
+          </td>
+          <td class="px-2">
+            <button class="btn w-100 btn-danger" v-if="channel.isRecording">
+              <i class="bi bi-record-fill pulse"></i> Recording
+            </button>
+          </td>
+          <td class="px-2 text-center">{{ channel.recordingsCount }}</td>
+          <td class="px-2 text-center">{{ (channel.recordingsSize / 1024 / 1024 / 1024).toFixed(2) }} GB</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 

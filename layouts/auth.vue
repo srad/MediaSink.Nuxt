@@ -2,7 +2,7 @@
   <div>
     <main class="container-fluid">
       <nuxt-loading-indicator/>
-      <NuxtPage :keepalive="{include: 'SteamView,ChannelsView,JobView'}"/>
+      <NuxtPage/>
     </main>
   </div>
 </template>
