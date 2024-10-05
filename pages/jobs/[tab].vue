@@ -48,41 +48,49 @@
 
     <ul class="nav nav-tabs my-2" id="pills-tab" role="tablist">
       <li class="nav-item" role="presentation">
-        <button data-tab="general" class="nav-link" id="pills-open-tab" data-bs-toggle="pill" data-bs-target="#pills-open" type="button" role="tab" aria-controls="pills-open" aria-selected="true">
-          {{ t('general.open') }} <i class="bi bi-arrow-clockwise"/>
-        </button>
+        <NuxtLink class="text-decoration-none" to="/jobs/general">
+          <button data-tab="general" class="nav-link" :class="{active: route.params.tab === 'general'}" id="pills-open-tab" data-bs-toggle="pill" data-bs-target="#pills-open" type="button" role="tab" aria-controls="pills-open" aria-selected="true">
+            {{ t('general.open') }} <i class="bi bi-arrow-clockwise"/>
+          </button>
+        </NuxtLink>
       </li>
       <li class="nav-item" role="presentation">
-        <button data-tab="completed" class="nav-link" id="pills-completed-tab" data-bs-toggle="pill" data-bs-target="#pills-completed" type="button" role="tab" aria-controls="pills-completed" aria-selected="false">
-          {{ t('general.completed') }} <i class="bi bi-check2-all"/>
-        </button>
+        <NuxtLink to="/jobs/completed" class="text-decoration-none">
+          <button data-tab="completed" class="nav-link" :class="{active: route.params.tab === 'completed'}" id="pills-completed-tab" data-bs-toggle="pill" data-bs-target="#pills-completed" type="button" role="tab" aria-controls="pills-completed" aria-selected="false">
+            {{ t('general.completed') }} <i class="bi bi-check2-all"/>
+          </button>
+        </NuxtLink>
       </li>
       <li class="nav-item" role="presentation">
-        <button data-tab="other" class="nav-link" id="pills-other-tab" data-bs-toggle="pill" data-bs-target="#pills-other" type="button" role="tab" aria-controls="pills-other" aria-selected="false">
-          {{ t('general.other') }}
-          <i class="bi bi-question"/>
-        </button>
+        <NuxtLink to="/jobs/other" class="text-decoration-none">
+          <button data-tab="other" class="nav-link" :class="{active: route.params.tab === 'other'}" id="pills-other-tab" data-bs-toggle="pill" data-bs-target="#pills-other" type="button" role="tab" aria-controls="pills-other" aria-selected="false">
+            {{ t('general.other') }}
+            <i class="bi bi-question"/>
+          </button>
+        </NuxtLink>
       </li>
       <li class="nav-item" role="presentation">
-        <button data-tab="streams" class="nav-link" id="pills-processes-tab" data-bs-toggle="pill" data-bs-target="#pills-processes" type="button" role="tab" aria-controls="pills-processes" aria-selected="false">
-          {{ t('general.streams') }} <i class="bi bi-camera-video"/>
-        </button>
+        <NuxtLink to="/jobs/processes" class="text-decoration-none">
+          <button data-tab="streams" class="nav-link" :class="{active: route.params.tab === 'processes'}" id="pills-processes-tab" data-bs-toggle="pill" data-bs-target="#pills-processes" type="button" role="tab" aria-controls="pills-processes" aria-selected="false">
+            {{ t('general.streams') }} <i class="bi bi-camera-video"/>
+          </button>
+        </NuxtLink>
       </li>
     </ul>
     <div class="tab-content" id="pills-tabContent">
-      <div data-tab="general" class="tab-pane fade" id="pills-open" role="tabpanel" aria-labelledby="pills-open-tab">
+      <div data-tab="general" class="tab-pane fade" :class="{'show active':  route.params.tab === 'general'}" id="pills-open" role="tabpanel" aria-labelledby="pills-open-tab">
         <JobTable :jobs="itemsOpen" @destroy="destroy" :total-count="itemsCount" :show-progress="true"/>
       </div>
 
-      <div data-tab="completed" class="tab-pane fade" id="pills-completed" role="tabpanel" aria-labelledby="pills-completed-tab">
+      <div data-tab="completed" class="tab-pane fade" :class="{'show active':  route.params.tab === 'completed'}" id="pills-completed" role="tabpanel" aria-labelledby="pills-completed-tab">
         <JobTable :jobs="itemsCompleted" @destroy="destroy" :total-count="itemsCompletedCount" :show-progress="false"/>
       </div>
 
-      <div data-tab="other" class="tab-pane fade" id="pills-other" role="tabpanel" aria-labelledby="pills-other-tab">
+      <div data-tab="other" class="tab-pane fade" :class="{'show active':  route.params.tab === 'other'}" id="pills-other" role="tabpanel" aria-labelledby="pills-other-tab">
         <JobTable :jobs="itemsOther" @destroy="destroy" :total-count="itemsCompletedCount" :show-progress="false"/>
       </div>
 
-      <div data-tab="streams" class="tab-pane fade" id="pills-processes" role="tabpanel" aria-labelledby="pills-processes-tab">
+      <div data-tab="streams" class="tab-pane fade" :class="{'show active':  route.params.tab === 'processes'}" id="pills-processes" role="tabpanel" aria-labelledby="pills-processes-tab">
         <div class="table-responsive">
           <table class="table table-bordered">
             <thead>
@@ -120,21 +128,19 @@
 </template>
 
 <script setup lang="ts">
-import JobTable from '../../components/JobTable.vue';
-import type { DatabaseJob, ResponsesJobsResponse, ServicesProcessInfo as ProcessInfo } from '../../services/api/v1/StreamSinkClient';
-import { DatabaseJobOrder, DatabaseJobStatus } from '../../services/api/v1/StreamSinkClient';
+import JobTable from '~/components/JobTable.vue';
+import type { DatabaseJob, ResponsesJobsResponse, ServicesProcessInfo as ProcessInfo } from '~/services/api/v1/StreamSinkClient';
+import { DatabaseJobOrder, DatabaseJobStatus } from '~/services/api/v1/StreamSinkClient';
 import { fromNow } from '~/utils/datetime';
-//import { Tab } from 'bootstrap';
 import { useJobStore } from '~/stores/job';
-import ModalConfirmDialog from '../../components/modals/ModalConfirmDialog.vue';
-import { useI18n, useRoute, useRouter, computed, onMounted, watch, ref } from '#imports';
+import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.vue';
+import { useI18n, useRoute, computed, ref } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
 
 const { t } = useI18n();
 
 const jobStore = useJobStore();
 const route = useRoute();
-const router = useRouter();
 const processes = ref<ProcessInfo[]>([]);
 const processingJobs = ref(true);
 const showConfirmToggleWorkerDialog = ref(false);
@@ -166,7 +172,7 @@ const jobsOther = ref<ResponsesJobsResponse | null>(null);
 const getData = async () => {
   const { $client } = useNuxtApp();
 
-  const promise = Promise.all([
+  const res = await Promise.all([
     $client.jobs.listCreate({
       skip: skip.value,
       take: take.value,
@@ -189,28 +195,26 @@ const getData = async () => {
     $client.jobs.workerList(),
   ]);
 
-  promise.then(res => {
-    const open = res[0];
-    const completed = res[1];
-    const others = res[2];
-    const process = res[3];
-    const jobWorker = res[4];
+  const open = res[0];
+  const completed = res[1];
+  const others = res[2];
+  const process = res[3];
+  const jobWorker = res[4];
 
-    if (open.data.jobs) {
-      jobStore.refresh({ jobs: open.data.jobs, totalCount: open.data.totalCount });
-    }
+  if (open.data.jobs) {
+    jobStore.refresh({ jobs: open.data.jobs, totalCount: open.data.totalCount });
+  }
 
-    if (completed.data.jobs) {
-      jobsCompleted.value = completed.data;
-    }
+  if (completed.data.jobs) {
+    jobsCompleted.value = completed.data;
+  }
 
-    if (others.data.jobs) {
-      jobsOther.value = others.data;
-    }
+  if (others.data.jobs) {
+    jobsOther.value = others.data;
+  }
 
-    processes.value = process.data || [];
-    processingJobs.value = jobWorker.data.isProcessing;
-  });
+  processes.value = process.data || [];
+  processingJobs.value = jobWorker.data.isProcessing;
 };
 
 const addFromNowToJob = (job: DatabaseJob): JobTableItem => {
@@ -248,20 +252,6 @@ const destroy = (id: number) => {
   }
 };
 
-const selectTab = () => {
-  const tab = route.params.tab === '' ? 'general' : route.params.tab;
-  document.querySelectorAll(`#pills-tab button[data-tab]`)?.forEach(x => x.classList.remove('active'));
-  const button = document.querySelector(`#pills-tab button[data-tab="${tab}"]`);
-  if (button) {
-    button.classList.add('active');
-  }
-  const tabItem = document.querySelector(`#pills-tabContent div[data-tab="${tab}"]`);
-  if (tabItem) {
-    tabItem.classList.add('show');
-    tabItem.classList.add('active');
-  }
-};
-
 const toggleWorker = () => {
   const { $client } = useNuxtApp();
   const fn = processingJobs.value ? $client.jobs.pauseCreate : $client.jobs.resumeCreate;
@@ -272,25 +262,5 @@ const toggleWorker = () => {
       .finally(() => showConfirmToggleWorkerDialog.value = false);
 };
 
-watch(route, selectTab);
-
-onMounted(() => {
-  if (window) {
-    selectTab();
-    // Bootstrap tab events
-    const triggerTabList = document.querySelectorAll('#pills-tab button');
-    triggerTabList.forEach(triggerEl => {
-      //const tabTrigger = new Tab(triggerEl);
-
-      triggerEl.addEventListener('click', event => {
-        event.preventDefault();
-        //tabTrigger.show();
-        const dataTab = (event.target as HTMLElement).dataset.tab;
-        router.push('/jobs' + (dataTab ? '/' + dataTab : ''));
-      });
-    });
-  } else {
-    getData();
-  }
-});
+await getData();
 </script>

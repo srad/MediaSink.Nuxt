@@ -1,53 +1,54 @@
 <template>
   <div>
-    <div class="d-flex mb-2">
-      <button @click="() => downloadChannelsAsJson()" type="button" class="btn btn-primary me-2">
-        Export channels
-      </button>
-      <button @click="inputFileClick" type="button" class="btn btn-primary">Import channels</button>
-      <input ref="channelsFile" accept="application/json" type="file" name="importChannels" hidden @change="inputFileChanged"/>
-    </div>
-    <div v-if="isImporting">
-      <h6>Importing ...</h6>
-      <div class="progress" role="progressbar" aria-label="Animated striped example" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
-        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 75%"></div>
+    <div class="mb-2">
+      <div class="d-flex justify-content-end">
+        <button @click="() => downloadChannelsAsJson()" type="button" class="btn btn-primary me-2">
+          Export channels
+        </button>
+        <button @click="inputFileClick" type="button" class="btn btn-primary">Import channels</button>
+        <input ref="channelsFile" accept="application/json" type="file" name="importChannels" hidden @change="inputFileChanged"/>
       </div>
-      <hr/>
+      <div v-if="isImporting">
+        <h6>Importing ...</h6>
+        <div class="progress" role="progressbar" aria-label="Animated striped example" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100">
+          <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 75%"></div>
+        </div>
+        <hr/>
+      </div>
     </div>
-    <div class="table-responsive border p-0">
+    <div class="table-responsive border p-0 mb-2">
       <table class="table table-bordered table-hover table-sm m-0">
         <thead>
         <tr class="align-middle text-center">
-          <th rowspan="2" style="width: 1%" class="bg-light">Preview</th>
-          <th rowspan="2" style="width: 30%" class="bg-light">Name</th>
-          <th rowspan="2" style="width: 5%" class="bg-light">Favourite?</th>
-          <th rowspan="2" style="width: 4%" class="bg-light">Recording?</th>
-          <th style="width: 5%" class="bg-light text-center">Count</th>
-          <th style="width: 5%" class="bg-light text-center">Size</th>
-        </tr>
-        <tr>
-          <th class="text-center bg-light">{{ totalCount }}</th>
-          <th class="text-center bg-light">{{ totalSize.toFixed(1) }}GB</th>
+          <th rowspan="2" style="width: 0" class="bg-light p-2">Preview</th>
+          <th rowspan="2" style="width: 10%" class="bg-light p-2">Name</th>
+          <th rowspan="2" style="width: 20%" class="bg-light p-2">Link</th>
+          <th rowspan="2" style="width: 5%" class="bg-light p-2">Favourite?</th>
+          <th rowspan="2" style="width: 5%" class="bg-light p-2">Recording?</th>
+          <th style="width: 5%" class="bg-light text-center p-2">Count ({{ totalCount }})</th>
+          <th style="width: 5%" class="bg-light text-center p-2">Size ({{ totalSize.toFixed(1) }}GB)</th>
         </tr>
         </thead>
         <tbody>
         <tr v-for="channel in channels" class="align-middle">
           <td class="text-center p-0">
-            <img alt="preview" :src="fileUrl + '/' + channel.preview" class="rounded" style="height: 50px; width: auto"/>
+            <img alt="preview" :src="`${fileUrl}/${channel.preview}`" class="rounded" style="height: 50px; width: auto"/>
           </td>
           <td class="px-2">
-            <RouterLink class="text-decoration-none" :to="`/channel/${channel.channelId}/${channel.channelName}`">
+            <NuxtLink class="text-decoration-none" :to="`/channel/${channel.channelId}/${channel.channelName}`">
               <h6 class="m-0">{{ channel.channelName }}</h6>
-            </RouterLink>
+            </NuxtLink>
+          </td>
+          <td>
             <a :href="channel.url" target="_blank">{{ channel.url }}</a>
           </td>
           <td class="px-2 text-center">
             <ChannelFavButton :bookmarked="channel.fav" :channel-id="channel.channelId"/>
           </td>
-          <td class="px-2">
-            <button class="btn w-100 btn-danger" v-if="channel.isRecording">
-              <i class="bi bi-record-fill pulse"></i> Recording
-            </button>
+          <td class="px-2 text-center">
+            <div v-if="channel.isRecording">
+              <i class="bi text-danger bi-record-fill pulse"></i> Recording
+            </div>
           </td>
           <td class="px-2 text-center">{{ channel.recordingsCount }}</td>
           <td class="px-2 text-center">{{ (channel.recordingsSize / 1024 / 1024 / 1024).toFixed(2) }} GB</td>
@@ -75,10 +76,6 @@ const channels = ref<ServicesChannelInfo[]>([]);
 const totalSize = computed(() => channels.value.map(x => x.recordingsSize).reduce((a, b) => a + b, 0) / 1024 / 1024 / 1024);
 const totalCount = computed(() => channels.value.map(x => x.recordingsCount).reduce((a, b) => a + b, 0));
 
-/**
- * All client side, creates a JSON file of all channel data.
- * @param client
- */
 const downloadChannelsAsJson = () => {
   const { $client } = useNuxtApp();
   $client.channels.channelsList()
@@ -110,11 +107,6 @@ const inputFileChanged = (event: Event) => {
       .then(channels => importChannels(channels));
 };
 
-/**
- * Creates for all channels a client side POST create request.
- * @param client
- * @param channelsResponse
- */
 const importChannels = (channelsResponse: DatabaseChannel[]) => {
   isImporting.value = true;
   const { $client } = useNuxtApp();
