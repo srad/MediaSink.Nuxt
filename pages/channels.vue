@@ -60,18 +60,18 @@
 </template>
 
 <script setup lang="ts">
-import { useRuntimeConfig, computed, onMounted, useState, downloadObjectAsJson, useCookie } from '#imports';
+import { useRuntimeConfig, computed, ref, downloadObjectAsJson } from '#imports';
 import ChannelFavButton from '~/components/controls/ChannelFavButton.vue';
 import type { DatabaseChannel, ServicesChannelInfo } from '~/services/api/v1/StreamSinkClient';
 import { useNuxtApp } from '#app/nuxt';
 import { useAsyncData } from '#app';
 
 const config = useRuntimeConfig();
-const isImporting = useState('isImporting', () => false);
+const isImporting = ref(false);
 const fileUrl = config.public.fileUrl;
-const channelsFile = useState<HTMLInputElement | null>('channelsFile', () => null);
+const channelsFile = ref<HTMLInputElement | null>(null);
 
-const channels = useState<ServicesChannelInfo[]>('channels', () => []);
+const channels = ref<ServicesChannelInfo[]>([]);
 
 const totalSize = computed(() => channels.value.map(x => x.recordingsSize).reduce((a, b) => a + b, 0) / 1024 / 1024 / 1024);
 const totalCount = computed(() => channels.value.map(x => x.recordingsCount).reduce((a, b) => a + b, 0));

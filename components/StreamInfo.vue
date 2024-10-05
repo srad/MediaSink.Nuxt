@@ -58,7 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch, computed, onMounted, onUnmounted, useState, useRouter } from '#imports';
+import { watch, computed, onMounted, onUnmounted, ref, useRouter } from '#imports';
 import type { ServicesChannelInfo as ChannelResponse } from '../services/api/v1/StreamSinkClient';
 import { validTag } from '../utils/parser';
 import FavButton from "./controls/FavButton.vue";
@@ -89,12 +89,12 @@ const emit = defineEmits<{
 // Declarations
 // --------------------------------------------------------------------------------------
 
-const tagArray = useState<string[]>('tagArray', () => props.channel.tags || []);
-const tagVal = useState('tagVal', () => '');
-const showTagInput = useState('showTagInput', () => false);
-const thread = useState<NodeJS.Timeout | number | null>('thread', () => null);
-const secRecording = useState('secRecording', () => props.channel.minRecording * 60);
-const tagInput = useState<HTMLInputElement | null>('tagInput', () => null);
+const tagArray = ref<string[]>(props.channel.tags || []);
+const tagVal = ref('');
+const showTagInput = ref(false);
+const thread = ref<NodeJS.Timeout | number | null>(null);
+const secRecording = ref(props.channel.minRecording * 60);
+const tagInput = ref<HTMLInputElement | null>(null);
 
 const router = useRouter();
 

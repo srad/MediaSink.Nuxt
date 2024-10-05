@@ -26,7 +26,7 @@
 import StreamInfo from './StreamInfo.vue';
 import Preview from './Preview.vue';
 import type { ServicesChannelInfo as ChannelInfo } from '../services/api/v1/StreamSinkClient';
-import { useI18n, useState, computed, useRouter, useCookie } from '#imports';
+import { useI18n, computed, useRouter, ref, onMounted } from '#imports';
 import { useChannelStore } from '~/stores/channel';
 import { useNuxtApp } from '#app/nuxt';
 import { useRuntimeConfig } from 'nuxt/app';
@@ -55,11 +55,10 @@ const router = useRouter();
 const config = useRuntimeConfig();
 const fileUrl = config.public.fileUrl;
 
-const destroyed = useState('destroyed', () => false);
-const busy = useState('busy', () => false);
+const destroyed = ref(false);
+const busy = ref(false);
 
 const previewImage = computed(() => fileUrl + '/' + props.channel.preview + '?' + Date.now());
-const previewVideo = computed(() => fileUrl + '/' + props.channel.preview + '?' + Date.now()); //TODO: fix url
 
 // --------------------------------------------------------------------------------------
 // Methods

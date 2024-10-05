@@ -33,6 +33,11 @@ const silenceSomeSassDeprecationWarnings = {
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  build: {
+    analyze: {
+
+    }
+  },
   experimental: {
     renderJsonPayloads: false
   },

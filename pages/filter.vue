@@ -48,7 +48,7 @@
 <script setup lang="ts">
 import type { DatabaseRecording as RecordingResponse } from '../services/api/v1/StreamSinkClient';
 import RecordingItem from '../components/RecordingItem.vue';
-import { useI18n, useState, useRoute, useRouter, watch } from '#imports';
+import { useI18n, ref, useRoute, useRouter, watch } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
 import { useAsyncData } from '#app';
 
@@ -59,24 +59,25 @@ const router = useRouter();
 
 watch(() => route.query, () => fetch());
 
-const sortOrderSelect = useState<HTMLSelectElement | null>('sortOrderSelect', () => null);
-const filterColumnSelect = useState<HTMLSelectElement | null>('filterColumnSelect', () => null);
-const filterLimitSelect = useState<HTMLSelectElement | null>('filterLimitSelect', () => null);
+const sortOrderSelect = ref<HTMLSelectElement | null>(null);
+const filterColumnSelect = ref<HTMLSelectElement | null>(null);
+const filterLimitSelect = ref<HTMLSelectElement | null>(null);
 let filterOrder = route.query.order as string || 'desc';
 let filterColumn = route.query.column as string || 'created_at';
 let filterLimit = route.query.limit as string || '25';
-const limits = useState('limits', () => [
+
+const limits = [
   25,
   50,
   100,
   200,
-]);
+];
 
 const columns = [['Created at', 'created_at'], ['Filesize', 'size'], ['Video duration', 'duration']];
 
 const order = ['asc', 'desc'];
 
-const recordings = useState<RecordingResponse[]>('recordings', () => []);
+const recordings = ref<RecordingResponse[]>([]);
 
 const routeFilter = () => {
   router.replace({

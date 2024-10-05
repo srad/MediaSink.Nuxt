@@ -50,40 +50,43 @@
       <div v-else class="col">
         <ul class="nav nav-tabs border-primary" id="myTab" role="tablist">
           <li class="nav-item" role="presentation">
-            <button class="nav-link d-flex justify-content-between" :class="{'active': route.params.tab === 'live'}" @click="tab('live')" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">
-              <span class="d-none d-lg-inline">Recording</span>
-              <span class="d-flex justify-content-between">
-              <span class="d-lg-none">Rec</span>
-              <span class="recording-number">{{ recordingStreams.length }}</span>
-            </span>
-            </button>
+            <NuxtLink class="text-decoration-none" to="/streams/live">
+              <button class="nav-link d-flex justify-content-between" :class="{'active': route.params.tab === 'live'}" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">
+                <div class="d-none d-lg-inline">Recording</div>
+                <div class="d-flex justify-content-between">
+                  <span class="d-lg-none">Rec</span>
+                  <span class="recording-number">{{ recordingStreams.length }}</span>
+                </div>
+              </button>
+            </NuxtLink>
           </li>
           <li class="nav-item" role="presentation">
-            <button class="nav-link d-flex justify-content-between" :class="{'active': route.params.tab === 'offline'}"
-                    @click="tab('offline')" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile"
-                    type="button" role="tab" aria-controls="profile" aria-selected="false">
-              <span class="d-none d-lg-inline">Offline</span>
-              <span class="d-flex justify-content-between">
+            <NuxtLink class="text-decoration-none" to="/streams/offline">
+              <button class="nav-link d-flex justify-content-between" :class="{'active': route.params.tab === 'offline'}" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">
+                <span class="d-none d-lg-inline">Offline</span>
+                <span class="d-flex justify-content-between">
               <span class="d-lg-none">Off</span><span class="recording-number">{{ notRecordingStreams.length }}</span>
             </span>
-            </button>
+              </button>
+            </NuxtLink>
           </li>
           <li class="nav-item" role="presentation">
-            <button class="nav-link d-flex justify-content-between"
-                    :class="{'active': route.params.tab === 'disabled'}"
-                    @click="tab('disabled')"
-                    id="disabled-tab"
-                    data-bs-toggle="tab"
-                    data-bs-target="#disabled"
-                    type="button"
-                    role="tab"
-                    aria-controls="disabled"
-                    aria-selected="false">
-              <span class="d-none d-lg-inline">Disabled</span>
-              <span class="d-flex justify-content-between">
+            <NuxtLink class="text-decoration-none" to="/streams/disabled">
+              <button class="nav-link d-flex justify-content-between"
+                      :class="{'active': route.params.tab === 'disabled'}"
+                      id="disabled-tab"
+                      data-bs-toggle="tab"
+                      data-bs-target="#disabled"
+                      type="button"
+                      role="tab"
+                      aria-controls="disabled"
+                      aria-selected="false">
+                <span class="d-none d-lg-inline">Disabled</span>
+                <span class="d-flex justify-content-between">
               <span class="d-lg-none">Disabled</span><span class="recording-number">{{ disabledStreams.length }}</span>
             </span>
-            </button>
+              </button>
+            </NuxtLink>
           </li>
         </ul>
 
@@ -92,6 +95,9 @@
             <div class="row">
               <div v-for="channel in recordingStreams" :key="channel.channelId" :class="channelItemClass">
                 <ChannelItem :channel="channel" @edit="editChannel"/>
+              </div>
+              <div class="w-100 d-flex justify-content-center align-items-center" style="height: 50vh" v-if="recordingStreams.length === 0">
+                <h3>No Streams</h3>
               </div>
             </div>
           </div>
@@ -120,13 +126,13 @@
 </template>
 
 <script setup lang="ts">
-import type { ChannelUpdate } from '@/components/modals/ChannelModal.vue';
+import type { ChannelUpdate } from '~/components/modals/ChannelModal.vue';
 import type { DatabaseChannel as ChannelResponse } from '~/services/api/v1/StreamSinkClient';
-import ChannelItem from '../components/ChannelItem.vue';
-import ChannelModal from '../components/modals/ChannelModal.vue';
+import ChannelItem from '../../components/ChannelItem.vue';
+import ChannelModal from '../../components/modals/ChannelModal.vue';
 import { useChannelStore } from '~/stores/channel';
 import { useAuthStore } from '~/stores/auth';
-import LoadIndicator from '../components/LoadIndicator.vue';
+import LoadIndicator from '../../components/LoadIndicator.vue';
 import { computed, ref, useAsyncData, useRoute, useRouter, watch } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
 import { navigateTo } from '#app/composables/router';
@@ -225,8 +231,6 @@ const editChannel = (channel: ChannelResponse) => {
   showModal.value = true;
 };
 
-const tab = async (tabName: string) => await navigateTo({ path: '/streams', query: { tag: tagFilter.value ?? null, tab: tabName } });
-
 const loginHandler = async (isLoggedIn: boolean) => {
   if (isLoggedIn) {
     const { $client } = useNuxtApp();
@@ -255,10 +259,6 @@ watch(() => route.query, params => {
 watch(tagFilter, val => {
   router.replace({ params: { tag: val } });
 });
-
-if (!route.params.tab) {
-  route.params.tab = 'live';
-}
 
 await loginHandler(loggedIn.value);
 </script>

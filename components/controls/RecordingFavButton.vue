@@ -5,7 +5,7 @@
 
 <script setup lang="ts">
 import FavButton from './FavButton.vue';
-import { useState } from '#imports'
+import { ref } from '#imports'
 import { useNuxtApp } from '#app/nuxt';
 
 const { $client } = useNuxtApp();
@@ -15,8 +15,8 @@ const props = defineProps<{
   recordingId: number
 }>();
 
-const busy = useState('busy', () => false);
-const fav = useState('fav', () => props.bookmarked);
+const busy = ref(false);
+const fav = ref(props.bookmarked);
 
 const bookmark = () => {
   busy.value = true;

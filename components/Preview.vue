@@ -21,13 +21,13 @@
 </template>
 
 <script setup lang="ts">
-import { useState } from "#imports";
+import { ref } from "#imports";
 
 const emit = defineEmits<{ (e: 'selected', value: string | number): void }>();
 
-const video = useState<HTMLVideoElement | null>('video', () => null);
+const video = ref<HTMLVideoElement | null>(null);
 
-const errorLoad = useState('errorLoad', () => false);
+const errorLoad = ref(false);
 
 const props = defineProps<{
   data: string | number

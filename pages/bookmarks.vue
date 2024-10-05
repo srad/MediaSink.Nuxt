@@ -14,12 +14,12 @@
 <script setup lang="ts">
 import type { DatabaseRecording } from '@/services/api/v1/StreamSinkClient';
 import RecordingItem from '../components/RecordingItem.vue';
-import { useI18n, useState, onMounted } from '#imports';
+import { useI18n, ref } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
 import { useAsyncData } from '#app';
 
 const { t } = useI18n();
-const recordings = useState<DatabaseRecording[]>('recordings', () => []);
+const recordings = ref<DatabaseRecording[]>([]);
 
 // --------------------------------------------------------------------------------------
 // Methods

@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { useState, watch, computed } from "#imports";
+import { watch, computed, ref } from '#imports';
 
 // --------------------------------------------------------------------------------------
 // Emits
@@ -88,10 +88,10 @@ interface Timestamp {
   end: number;
 }
 
-const counter = useState('counter', () => 0);
-const start = useState('start', () => 0);
-const end = useState('end', () => 0);
-const timestamps = useState<Timestamp[]>('timestamps', () => []);
+const counter = ref(0);
+const start = ref(0);
+const end = ref(0);
+const timestamps = ref<Timestamp[]>([]);
 
 // --------------------------------------------------------------------------------------
 // Watchers

@@ -120,30 +120,24 @@
 </template>
 
 <script setup lang="ts">
-import { createClient } from '../../services/api/v1/ClientFactory';
 import JobTable from '../../components/JobTable.vue';
-import {
-  DatabaseJob,
-  DatabaseJobOrder,
-  DatabaseJobStatus,
-  ResponsesJobsResponse,
-  ServicesProcessInfo as ProcessInfo
-} from '../../services/api/v1/StreamSinkClient';
-import { fromNow } from '../../utils/datetime.ts';
+import type { DatabaseJob, ResponsesJobsResponse, ServicesProcessInfo as ProcessInfo } from '../../services/api/v1/StreamSinkClient';
+import { DatabaseJobOrder, DatabaseJobStatus } from '../../services/api/v1/StreamSinkClient';
+import { fromNow } from '~/utils/datetime';
 //import { Tab } from 'bootstrap';
-import { useJobStore } from "~/stores/job";
+import { useJobStore } from '~/stores/job';
 import ModalConfirmDialog from '../../components/modals/ModalConfirmDialog.vue';
-import { useI18n, useState, useRoute, useRouter, computed, onMounted, watch, useCookie } from '#imports'
-import { TOKEN_NAME } from "~/services/auth.service";
+import { useI18n, useRoute, useRouter, computed, onMounted, watch, ref } from '#imports';
+import { useNuxtApp } from '#app/nuxt';
 
 const { t } = useI18n();
 
 const jobStore = useJobStore();
 const route = useRoute();
 const router = useRouter();
-const processes = useState<ProcessInfo[]>('processes', () => []);
-const processingJobs = useState('processingJobs', () => true);
-const showConfirmToggleWorkerDialog = useState('showConfirmToggleWorkerDialog', () => false);
+const processes = ref<ProcessInfo[]>([]);
+const processingJobs = ref(true);
+const showConfirmToggleWorkerDialog = ref(false);
 
 export interface JobTableItem extends DatabaseJob {
   createdAtFromNow: string;
@@ -152,48 +146,47 @@ export interface JobTableItem extends DatabaseJob {
   jobDuration?: string;
 }
 
-const skip = useState('skip', () => 0);
-const take = useState('take', () => 50);
-const limits = useState('limits', () => [
+const skip = ref(0);
+const take = ref(50);
+const limits = [
   25,
   50,
   100,
   200,
-]);
+];
 
 const resetFilters = () => {
   skip.value = 0;
   take.value = 50;
 };
 
-const jobsCompleted = useState<ResponsesJobsResponse | null>('jobsCompleted', () => null);
-const jobsOther = useState<ResponsesJobsResponse | null>('jobsOther', () => null);
+const jobsCompleted = ref<ResponsesJobsResponse | null>(null);
+const jobsOther = ref<ResponsesJobsResponse | null>(null);
 
 const getData = async () => {
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const api = createClient(tokenCookie);
+  const { $client } = useNuxtApp();
 
   const promise = Promise.all([
-    api.jobs.listCreate({
+    $client.jobs.listCreate({
       skip: skip.value,
       take: take.value,
-      states: [ DatabaseJobStatus.StatusJobOpen ],
+      states: [DatabaseJobStatus.StatusJobOpen],
       sortOrder: DatabaseJobOrder.JobOrderASC
     }),
-    api.jobs.listCreate({
+    $client.jobs.listCreate({
       skip: skip.value,
       take: take.value,
-      states: [ DatabaseJobStatus.StatusJobCompleted ],
+      states: [DatabaseJobStatus.StatusJobCompleted],
       sortOrder: DatabaseJobOrder.JobOrderDESC
     }),
-    api.jobs.listCreate({
+    $client.jobs.listCreate({
       skip: skip.value,
       take: take.value,
-      states: [ DatabaseJobStatus.StatusJobCanceled, DatabaseJobStatus.StatusJobCanceled, DatabaseJobStatus.StatusJobError ],
+      states: [DatabaseJobStatus.StatusJobCanceled, DatabaseJobStatus.StatusJobCanceled, DatabaseJobStatus.StatusJobError],
       sortOrder: DatabaseJobOrder.JobOrderDESC
     }),
-    api.processes.processesList(),
-    api.jobs.workerList(),
+    $client.processes.processesList(),
+    $client.jobs.workerList(),
   ]);
 
   promise.then(res => {
@@ -248,10 +241,8 @@ const itemsOtherCount = computed(() => jobsOther.value?.totalCount || 0);
 
 const destroy = (id: number) => {
   if (window.confirm('Delete?')) {
-    const tokenCookie = useCookie(TOKEN_NAME);
-    const api = createClient(tokenCookie);
-
-    api.jobs.jobsDelete(id)
+    const { $client } = useNuxtApp();
+    $client.jobs.jobsDelete(id)
         .then(() => jobStore.destroy(id))
         .catch(res => alert(res));
   }
@@ -272,10 +263,8 @@ const selectTab = () => {
 };
 
 const toggleWorker = () => {
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const api = createClient(tokenCookie);
-
-  const fn = processingJobs.value ? api.jobs.pauseCreate : api.jobs.resumeCreate;
+  const { $client } = useNuxtApp();
+  const fn = processingJobs.value ? $client.jobs.pauseCreate : $client.jobs.resumeCreate;
 
   fn().then(() => {
     processingJobs.value = !processingJobs.value;

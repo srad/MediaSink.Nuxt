@@ -2,7 +2,7 @@
   <ul class="list-group list-group-flush">
     <li class="list-group-item d-flex justify-content-center">
       <span>
-        {{ t('recording.durationMinutes', [ durationFormatted ]) }}
+        {{ t('recording.durationMinutes', [durationFormatted]) }}
       </span>
       <span class="text-secondary px-2">/</span>
       <span>
@@ -63,9 +63,9 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n, useState, computed } from '#imports'
-import { DatabaseRecording as RecordingResponse } from "../services/api/v1/StreamSinkClient.ts";
-import { fromNow } from "../utils/datetime.ts";
+import { useI18n, computed, ref } from '#imports';
+import type { DatabaseRecording as RecordingResponse } from '../services/api/v1/StreamSinkClient.ts';
+import { fromNow } from '~/utils/datetime';
 import FavButton from './controls/FavButton.vue';
 
 const { t } = useI18n();
@@ -97,9 +97,9 @@ const createdAtFormatted = computed(() => new Date(props.createdAt).toLocaleDate
   minute: 'numeric'
 }));
 
-const ago = useState('ago', () => fromNow(Date.parse(props.createdAt)));
+const ago = ref(fromNow(Date.parse(props.createdAt)));
 
-const expand = useState('expand', () => false);
+const expand = ref(false);
 </script>
 
 <style lang="scss" scoped>

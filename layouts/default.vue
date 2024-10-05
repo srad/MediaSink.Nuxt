@@ -1,13 +1,12 @@
 <template>
   <div>
-    <NavTop v-if="loggedIn" :routes="routes" :title="title" @add="showModal=true" :show-logout="loggedIn" @logout="logout"/>
+    <NavTop :routes="routes" :title="title" @add="showModal=true" :show-logout="true" @logout="logout"/>
 
-    <main class="container-fluid" :data-logged-in="loggedIn">
+    <main class="container-fluid" style="margin-top: 4rem">
       <nuxt-loading-indicator/>
       <NuxtPage :keepalive="{include: 'SteamView,ChannelsView,JobView'}"/>
 
       <ChannelModal
-          v-if="loggedIn"
           :clear="showModal"
           :show="showModal"
           :is-paused="false"
@@ -15,7 +14,7 @@
           @save="save"
           @close="showModal=false"/>
 
-      <Toaster v-if="loggedIn" :toasts="toasts"/>
+      <Toaster :toasts="toasts"/>
     </main>
   </div>
 </template>
@@ -31,7 +30,7 @@ import { type TaskProgress, useJobStore } from '@/stores/job';
 import type { TaskInfo } from '@/stores/job';
 import { useToastStore } from '@/stores/toast';
 import { useAuthStore } from '@/stores/auth';
-import { useRuntimeConfig, useState, useRouter } from 'nuxt/app';
+import { useRuntimeConfig, useRouter } from 'nuxt/app';
 import { computed, onMounted, watch, useI18n, ref } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
 
@@ -58,7 +57,7 @@ const showModal = ref(false);
 const toasts = computed(() => toastStore.getToast);
 
 const routes = [
-  { icon: 'bi-water', url: '/streams', title: t('menu.streams') },
+  { icon: 'bi-water', url: '/streams/live', title: t('menu.streams') },
   { icon: 'bi-list', url: '/channels', title: t('menu.channels') },
   { icon: 'bi-stopwatch', url: '/filter', title: t('menu.latest') },
   { icon: 'bi-hypnotize', url: '/random', title: t('menu.random') },

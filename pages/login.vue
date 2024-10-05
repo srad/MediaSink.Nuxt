@@ -32,9 +32,12 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from "~/stores/auth";
-import { useState, useRouter, computed, useCookie } from "#imports";
-import { TOKEN_NAME } from "~/services/auth.service";
+import { useAuthStore } from '~/stores/auth';
+import { ref, useRouter, computed, definePageMeta } from '#imports';
+
+definePageMeta({
+  layout: 'auth'
+});
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -43,11 +46,11 @@ import { TOKEN_NAME } from "~/services/auth.service";
 const authStore = useAuthStore();
 const router = useRouter();
 
-const message = useState<string | null>('message', () => null);
-const loading = useState('loading', () => false);
+const message = ref<string | null>(null);
+const loading = ref(false);
 
-const email = useState('email', () => '');
-const password = useState('password', () => '');
+const email = ref('');
+const password = ref('');
 
 // --------------------------------------------------------------------------------------
 // Computes
@@ -63,7 +66,7 @@ const login = async () => {
   try {
     loading.value = true;
     await authStore.login({ username: email.value, password: password.value });
-    await router.replace('/streams');
+    await router.replace('/streams/live');
   } catch (res: any) {
     message.value = res.error;
   } finally {

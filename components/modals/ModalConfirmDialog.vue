@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
 import Modal from './Modal.vue';
-import { ref, useState, watch } from '#imports';
+import { ref, watch } from '#imports';
 // --------------------------------------------------------------------------------------
 // Props
 // --------------------------------------------------------------------------------------

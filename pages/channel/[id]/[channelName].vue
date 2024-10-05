@@ -101,11 +101,8 @@
 
 <script setup lang="ts">
 import RecordingItem from '~/components/RecordingItem.vue';
-import type {
-  DatabaseChannel as ChannelResponse,
-  DatabaseRecording as RecordingResponse
-} from '~/services/api/v1/StreamSinkClient';
-import { onBeforeRouteLeave, useRoute, useRouter, onMounted, computed, useState } from '#imports';
+import type { DatabaseChannel as ChannelResponse, DatabaseRecording as RecordingResponse } from '~/services/api/v1/StreamSinkClient';
+import { onBeforeRouteLeave, useRoute, useRouter, onMounted, computed, ref } from '#imports';
 import { createSocket, MessageType, SocketManager } from '~/utils/socket';
 import BusyOverlay from '~/components/BusyOverlay.vue';
 import { useToastStore } from '~/stores/toast';
@@ -125,16 +122,16 @@ const toastSTore = useToastStore();
 const channelStore = useChannelStore();
 
 // Elements
-const file = useState<HTMLInputElement | null>('file', () => null);
-const upload = useState<HTMLDivElement | null>('upload', () => null);
+const file = ref<HTMLInputElement | null>(null);
+const upload = ref<HTMLDivElement | null>(null);
 
-const selectedRecordings = useState<RecordingResponse[]>('selectedRecordings', () => []);
-const uploadProgress = useState('uploadProgress', () => 0);
-const busyOverlay = useState('busyOverlay', () => false);
-const channel = useState<ChannelResponse | null>('channel', () => null);
+const selectedRecordings = ref<RecordingResponse[]>([]);
+const uploadProgress = ref(0);
+const busyOverlay = ref(false);
+const channel = ref<ChannelResponse | null>(null);
 const channelId = (+route.params.id) as unknown as number;
 let uploadAbortController: AbortController | null = null;
-const showModal = useState('showModal', () => false);
+const showModal = ref(false);
 
 // --------------------------------------------------------------------------------------
 // Computes

@@ -4,7 +4,7 @@
 </template>
 
 <script setup lang="ts">
-import { useState, watch } from '#imports'
+import { ref, watch } from '#imports';
 import FavButton from './FavButton.vue';
 import { useNuxtApp } from '#app/nuxt';
 
@@ -21,8 +21,8 @@ const props = defineProps<{
 // Declarations
 // --------------------------------------------------------------------------------------
 
-const busy = useState('busy', () => false);
-const fav = useState('fav', () => props.bookmarked);
+const busy = ref(false);
+const fav = ref(props.bookmarked);
 
 // --------------------------------------------------------------------------------------
 // Watchers

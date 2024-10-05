@@ -51,7 +51,7 @@
 import RecordInfo from './RecordInfo.vue';
 import Preview from './Preview.vue';
 import type { DatabaseRecording as RecordingResponse } from '../services/api/v1/StreamSinkClient';
-import { useI18n, useState, watch, useRouter, useCookie } from '#imports'
+import { useI18n, watch, useRouter, ref } from '#imports';
 import { useRuntimeConfig } from "nuxt/app";
 import { useNuxtApp } from '#app/nuxt';
 
@@ -80,9 +80,9 @@ const props = defineProps<{
 // Declarations
 // --------------------------------------------------------------------------------------
 
-const checked = useState('checked', () => props.select || false);
-const busy = useState('busy', () => false);
-const destroyed = useState('destroyed', () => false);
+const checked = ref(false);
+const busy = ref(false);
+const destroyed = ref(false);
 
 const config = useRuntimeConfig();
 const apiUrl = config.public.apiUrl;

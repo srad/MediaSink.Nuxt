@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, useState } from '#imports';
+import { computed, onMounted, onUnmounted, ref } from '#imports';
 
 // --------------------------------------------------------------------------------------
 // Props
@@ -71,10 +71,10 @@ export interface Marking {
   timeend: number;
 }
 
-const markings = useState<Marking[]>('marking', () => []);
-const showBar = useState('showBar', () => true);
-const stripeImage = useState<HTMLImageElement | null>('stripeImage', () => null);
-const stripe = useState<HTMLElement | null>('stripe', () => null);
+const markings = ref<Marking[]>([]);
+const showBar = ref(true);
+const stripeImage = ref<HTMLImageElement | null>(null);
+const stripe = ref<HTMLElement | null>(null);
 
 let markerPos = '';
 let markerDownIndex = 0;

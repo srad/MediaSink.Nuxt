@@ -75,7 +75,7 @@
 
 <script setup lang="ts">
 import Modal from './Modal.vue';
-import { watch, useState } from '#imports';
+import { watch, ref } from '#imports';
 import { randomString } from '../../utils/math';
 
 // --------------------------------------------------------------------------------------
@@ -103,17 +103,17 @@ const props = defineProps<{
 const id = randomString();
 const channelParser = /^[a-z_0-9]+$/i;
 
-const myIsPaused = useState('formIsPaused', () => props.isPaused);
-const myTitle = useState('formTitle', () => props.title);
-const myUrl = useState('formUrl', () => props.url || '');
-const myDisplayName = useState('formDisplayName', () => props.displayName || '');
-const myChannelName = useState('formChannelName', () => props.channelName || '');
-const mySkipStart = useState('formSkipStart', () => props.skipStart || 0);
-const myMinDuration = useState('formMinDuration', () => props.minDuration || 0);
-const saving = useState('saving', () => false);
+const myIsPaused = ref(props.isPaused);
+const myTitle = ref(props.title);
+const myUrl = ref(props.url || '');
+const myDisplayName = ref(props.displayName || '');
+const myChannelName = ref(props.channelName || '');
+const mySkipStart = ref(props.skipStart || 0);
+const myMinDuration = ref(props.minDuration || 0);
+const saving = ref(false);
 
-const url = useState<HTMLInputElement | null>('url', () => null);
-const showModal = useState('showModal', () => false);
+const url = ref<HTMLInputElement | null>(null);
+const showModal = ref(false);
 
 // --------------------------------------------------------------------------------------
 // Emits

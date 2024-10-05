@@ -6,9 +6,9 @@
 //import socket from "@/socket";
 //import event from "@/services/event";
 
-import { useState } from "#imports";
+import { ref } from '#imports';
 
-const log = useState('log', () => '');
+const log = ref('');
 
 //socket.on("log", (text) => {
 //  this.log += text + "\n";

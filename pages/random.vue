@@ -34,7 +34,7 @@
 <script setup lang="ts">
 import RecordingItem from '@/components/RecordingItem.vue';
 import type { DatabaseRecording as RecordingResponse } from '@/services/api/v1/StreamSinkClient';
-import { useState, useRoute, watch } from '#imports';
+import { useRoute, watch, ref } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
 import { useAsyncData } from '#app';
 
@@ -45,7 +45,7 @@ watch(route, () => {
 });
 
 const filterLimit = route.params.limit as string || '25';
-const limits = useState('limits', () => [
+const limits = ref([
   25,
   50,
   100,
@@ -54,7 +54,7 @@ const limits = useState('limits', () => [
   1000
 ]);
 
-const recordings = useState<RecordingResponse[]>('recordings', () => []);
+const recordings = ref<RecordingResponse[]>([]);
 
 const fetch = async () => {
   const { $client } = useNuxtApp();

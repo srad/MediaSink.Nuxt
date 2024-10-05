@@ -5,14 +5,14 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, watch } from '#imports';
 import type { IChartApi, ISeriesApi } from 'lightweight-charts';
-import { useState } from '#imports';
+import { ref } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
 
 const props = defineProps<{
   series: { load: number, time: number }[]
 }>();
 
-const container = useState<HTMLDivElement | null>('container', () => null);
+const container = ref<HTMLDivElement | null>(null);
 let chart: IChartApi | null = null;
 let cpuSeries: ISeriesApi<any> | null = null;
 

@@ -63,7 +63,7 @@ import { createSocket, MessageType } from '~/utils/socket';
 import { useChannelStore } from '~/stores/channel';
 import { useAuthStore } from '~/stores/auth';
 import { useJobStore } from '~/stores/job';
-import { useState, computed, onMounted, reactive, watch, useRoute, useRouter, ref } from '#imports';
+import { computed, onMounted, reactive, watch, useRoute, useRouter, ref } from '#imports';
 
 import DiskStatus from '../DiskStatus.vue';
 import RecordingControls from '../RecordingControls.vue';

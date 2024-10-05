@@ -137,13 +137,13 @@ import BusyOverlay from '~/components/BusyOverlay.vue';
 import {
   useI18n,
   useCookie,
-  useState,
+  ref,
   useRouter,
   onBeforeRouteLeave,
   useRoute,
   computed,
   watch,
-  onUnmounted
+  onUnmounted, onMounted
 } from '#imports';
 import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.vue';
 import MarkingsTable from '~/components/MarkingsTable.vue';
@@ -165,30 +165,27 @@ const toastStore = useToastStore();
 const volume = useCookie<number>('volume');
 const muted = useCookie<boolean>('muted');
 
-const stripeContainer = useState('stripeContainer', () => null);
+const stripeContainer = ref(null);
 
-const video = useState<HTMLVideoElement | null>('video', () => null);
+const video = ref<HTMLVideoElement | null>(null);
 
 const config = useRuntimeConfig();
 const fileUrl = config.public.fileUrl;
 
-const stripeUrl = computed<string>(() => fileUrl + '/' + recording.value?.previewStripe + '?' + Date.now());
-const videoUrl = computed<string>(() => fileUrl + '/' + recording.value?.pathRelative + '?' + Date.now());
-
-const isMuted = useState('isMuted', () => false);
-const isMounted = useState('isMounted', () => false);
-const isPaused = useState('isPaused', () => false);
-const isLoaded = useState('isLoaded', () => false);
-const isShown = useState('isShown', () => false);
-const playbackSpeed = useState('playbackSpeed', () => 1.0);
-const markings = useState<Marking[]>('markings', () => []);
-const timeCode = useState<number>('timeCode', () => 0);
-const duration = useState<number>('dureation', () => 0);
-const recording = useState<DatabaseRecording | undefined>('recording', () => undefined);
-const id = useState<number | null>('id', () => null);
-const busy = useState('busy', () => false);
-const showConfirmDialog = useState('confirm', () => false);
-const deleteFileAfterCut = useState('deleteFile', () => false);
+const isMuted = ref(false);
+const isMounted = ref(false);
+const isPaused = ref(false);
+const isLoaded = ref(false);
+const isShown = ref(false);
+const playbackSpeed = ref(1.0);
+const markings = ref<Marking[]>([]);
+const timeCode = ref<number>(0);
+const duration = ref<number>(0);
+const recording = ref<DatabaseRecording | undefined>(undefined);
+const id = ref<number | null>(null);
+const busy = ref(false);
+const showConfirmDialog = ref(false);
+const deleteFileAfterCut = ref(false);
 
 let cutInterval: NodeJS.Timeout | number | undefined;
 
@@ -391,16 +388,16 @@ const unloadVideo = () => {
   }
 };
 
-try {
-  const { $client } = useNuxtApp();
-  id.value = Number(route.params.id);
-  const rec = await useAsyncData('rec', () => $client.recordings.recordingsDetail(id.value!));
-  recording.value = rec.data.value?.data;
-} finally {
-  if (import.meta.browser) {
-    window.addEventListener('orientationchange', rotate);
-  }
+const { $client } = useNuxtApp();
+id.value = Number(route.params.id);
+const rec = await useAsyncData('rec', () => $client.recordings.recordingsDetail(id.value!));
+recording.value = rec.data.value?.data;
+const stripeUrl = fileUrl + '/' + recording.value?.previewStripe;
+const videoUrl = fileUrl + '/' + recording.value?.pathRelative;
+
+onMounted(() => {
+  window.addEventListener('orientationchange', rotate);
   isMounted.value = true;
   isShown.value = true;
-}
+});
 </script>

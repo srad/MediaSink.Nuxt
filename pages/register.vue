@@ -34,8 +34,12 @@
 
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth';
-import { useState, useRouter, useCookie } from '#imports';
+import { definePageMeta, ref, useRouter } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
+
+definePageMeta({
+  layout: 'auth'
+});
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -44,11 +48,11 @@ import { useNuxtApp } from '#app/nuxt';
 const authStore = useAuthStore();
 const router = useRouter();
 
-const message = useState<string | null>('message', () => null);
-const successful = useState('successful', () => false);
-const loading = useState('loading', () => false);
-const email = useState('email', () => '');
-const password = useState('password', () => '');
+const message = ref<string | null>(null);
+const successful = ref(false);
+const loading = ref(false);
+const email = ref('');
+const password = ref('');
 
 // --------------------------------------------------------------------------------------
 // Methods

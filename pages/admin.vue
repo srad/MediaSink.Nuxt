@@ -102,7 +102,7 @@ import type {
 import TrafficChart from '~/components/charts/TrafficChart.vue';
 import CPUChart from '~/components/charts/CPUChart.vue';
 import { useRuntimeConfig } from 'nuxt/app';
-import { useState, onBeforeRouteLeave, computed, onMounted } from '#imports';
+import { ref, onBeforeRouteLeave, computed, onMounted } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
 import { useAsyncData } from '#app';
 
@@ -117,22 +117,22 @@ const versions = computed(() => [
   ['Server-Revision', serverInfo.value?.commit],
 ]);
 
-const importing = useState('importing', () => false);
-const importProgress = useState('importProgress', () => 0);
-const importSize = useState('importSize', () => 0);
+const importing = ref(false);
+const importProgress = ref(0);
+const importSize = ref(0);
 
-const trafficSeries = useState<{ in: number, out: number, time: number }[]>('trafficSeries', () => []);
-const cpuLoadSeries = useState<{ load: number, time: number }[]>('cpuLoadSeries', () => []);
+const trafficSeries = ref<{ in: number, out: number, time: number }[]>([]);
+const cpuLoadSeries = ref<{ load: number, time: number }[]>([]);
 
-const isUpdating = useState('isUpdating', () => false);
+const isUpdating = ref(false);
 
-const serverInfo = useState<ResponsesServerInfoResponse | null>('serverInfo', () => null);
+const serverInfo = ref<ResponsesServerInfoResponse | null>(null);
 
-const cpuInfo = useState<HelpersCPUInfo | undefined>('cpuInfo', () => undefined);
-const diskInfo = useState<HelpersDiskInfo | undefined>('diskInfo', () => undefined);
-const netInfo = useState<HelpersNetInfo | undefined>('netInfo', () => undefined);
+const cpuInfo = ref<HelpersCPUInfo | undefined>(undefined);
+const diskInfo = ref<HelpersDiskInfo | undefined>(undefined);
+const netInfo = ref<HelpersNetInfo | undefined>(undefined);
 
-const id = useState<number | NodeJS.Timeout>('id', () => 0);
+const id = ref<number | NodeJS.Timeout>(0);
 
 //const receivedMb = computed(() => ((netInfo.value?.receiveBytes || 0) / 1024 / 1024).toFixed(2));
 //const transmittedMb = computed(() => ((netInfo.value?.transmitBytes || 0) / 1024 / 1024).toFixed(2));
