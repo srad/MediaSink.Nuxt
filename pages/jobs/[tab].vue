@@ -87,7 +87,7 @@
       </div>
 
       <div data-tab="other" class="tab-pane fade" :class="{'show active':  route.params.tab === 'other'}" id="pills-other" role="tabpanel" aria-labelledby="pills-other-tab">
-        <JobTable :jobs="itemsOther" @destroy="destroy" :total-count="itemsCompletedCount" :show-progress="false"/>
+        <JobTable :jobs="itemsOther" @destroy="destroy" :total-count="itemsCompletedCount" :show-progress="false" :show-info="true"/>
       </div>
 
       <div data-tab="streams" class="tab-pane fade" :class="{'show active':  route.params.tab === 'processes'}" id="pills-processes" role="tabpanel" aria-labelledby="pills-processes-tab">

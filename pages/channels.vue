@@ -2,10 +2,10 @@
   <div>
     <div class="mb-2">
       <div class="d-flex justify-content-end">
-        <button @click="() => downloadChannelsAsJson()" type="button" class="btn btn-primary me-2">
+        <button @click="() => downloadChannelsAsJson()" type="button" class="btn btn-sm btn-primary me-2">
           Export channels
         </button>
-        <button @click="inputFileClick" type="button" class="btn btn-primary">Import channels</button>
+        <button @click="inputFileClick" type="button" class="btn btn-sm btn-primary">Import channels</button>
         <input ref="channelsFile" accept="application/json" type="file" name="importChannels" hidden @change="inputFileChanged"/>
       </div>
       <div v-if="isImporting">
@@ -20,7 +20,7 @@
       <table class="table table-bordered table-hover table-sm m-0">
         <thead>
         <tr class="align-middle text-center">
-          <th rowspan="2" style="width: 0" class="bg-light p-2">Preview</th>
+          <th rowspan="2" style="width: 0%" class="bg-light p-2">Preview</th>
           <th rowspan="2" style="width: 10%" class="bg-light p-2">Name</th>
           <th rowspan="2" style="width: 20%" class="bg-light p-2">Link</th>
           <th rowspan="2" style="width: 5%" class="bg-light p-2">Favourite?</th>
@@ -47,7 +47,7 @@
           </td>
           <td class="px-2 text-center">
             <div v-if="channel.isRecording">
-              <i class="bi text-danger bi-record-fill pulse"></i> Recording
+              <i class="bi text-danger blink bi-record-fill pulse"></i> Recording
             </div>
           </td>
           <td class="px-2 text-center">{{ channel.recordingsCount }}</td>
@@ -132,8 +132,8 @@ const importChannels = (channelsResponse: DatabaseChannel[]) => {
 };
 
 const { $client } = useNuxtApp();
-const response = await useAsyncData('channels', () => $client.channels.channelsList());
-if (response.data.value) {
-  channels.value = response.data.value.data.sort((a, b) => a.channelName.localeCompare(b.channelName));
+const { data } = await useAsyncData('channels', () => $client.channels.channelsList());
+if (data.value) {
+  channels.value = data.value.data.sort((a, b) => a.channelName.localeCompare(b.channelName));
 }
 </script>

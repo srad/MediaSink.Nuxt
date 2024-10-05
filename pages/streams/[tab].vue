@@ -231,20 +231,9 @@ const editChannel = (channel: ChannelResponse) => {
   showModal.value = true;
 };
 
-const loginHandler = async (isLoggedIn: boolean) => {
-  if (isLoggedIn) {
-    const { $client } = useNuxtApp();
-    const { data } = await useAsyncData('channels', () => $client.channels.channelsList());
-    data.value?.data.forEach(channel => channelStore.add(channel));
-    busy.value = false;
-  }
-};
-
 // --------------------------------------------------------------------------------------
 // Watchers
 // --------------------------------------------------------------------------------------
-
-watch(loggedIn, value => loginHandler(value));
 
 watch(searchVal, (search) => router.replace({ query: { search } }));
 
@@ -260,7 +249,10 @@ watch(tagFilter, val => {
   router.replace({ params: { tag: val } });
 });
 
-await loginHandler(loggedIn.value);
+const { $client } = useNuxtApp();
+const { data } = await useAsyncData('channels', () => $client.channels.channelsList());
+data.value?.data.forEach(channel => channelStore.add(channel));
+busy.value = false;
 </script>
 
 <style lang="scss" scoped>
