@@ -1,15 +1,12 @@
-import type { RequestsAuthenticationRequest } from '@/services/api/v1/StreamSinkClient';
-import type { CookieRef } from "#imports";
-import type { MyClient } from "@/services/api/v1/ClientFactory";
-
 import AuthService, { TOKEN_NAME } from '@/services/auth.service';
-import { createClient } from "@/services/api/v1/ClientFactory";
 import { defineStore } from 'pinia';
-import { useCookie } from "~/.nuxt/imports";
+import { useCookie } from '~/.nuxt/imports';
+import { useNuxtApp } from '#app/nuxt';
+import type { CookieRef } from '#app';
+import type { RequestsAuthenticationRequest } from '@/services/api/v1/StreamSinkClient';
 
 export interface AuthState {
   loggedIn: boolean;
-  service: AuthService;
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -18,15 +15,15 @@ export const useAuthStore = defineStore('auth', {
     loggedIn: false,
   }),
   actions: {
-    checkLogin(tokenCookie: CookieRef<string>) {
+    checkLogin(tokenCookie: CookieRef<string | null>) {
       const auth = new AuthService(tokenCookie);
       this.loggedIn = auth.isLoggedIn();
     },
     login(user: RequestsAuthenticationRequest) {
       return new Promise(async (resolve, reject) => {
-        const tokenCookie = useCookie(TOKEN_NAME);
-        const auth = new AuthService(tokenCookie);
-        auth.login(user, createClient(tokenCookie)).then((token: string) => {
+        const { $client, $auth } = useNuxtApp();
+
+        $auth.login(user, $client).then((token: string) => {
           this.loggedIn = true;
           resolve(token);
         }).catch(error => {
@@ -36,15 +33,15 @@ export const useAuthStore = defineStore('auth', {
       });
     },
     logout() {
-      const tokenCookie = useCookie(TOKEN_NAME);
+      const tokenCookie = useCookie<string | null>(TOKEN_NAME);
       const auth = new AuthService(tokenCookie);
       auth.logout();
       this.loggedIn = false;
     },
-    register({ user, client }: { user: RequestsAuthenticationRequest, client: MyClient }) {
+    register({ user }: { user: RequestsAuthenticationRequest }) {
       return new Promise((resolve, reject) => {
-        const auth = new AuthService(tokenCookie);
-        auth.signup(user, client)
+        const { $client, $auth } = useNuxtApp();
+        $auth.signup(user, $client)
           .then(response => resolve(response.data))
           .catch(reject);
       });

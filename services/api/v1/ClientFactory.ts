@@ -1,19 +1,13 @@
 import { ContentType, type DatabaseRecording, type DatabaseRecording as RecordingResponse, type HttpResponse, type ResponsesRecordingStatusResponse } from './StreamSinkClient';
-import type { AuthHeader } from '@/services/auth.service';
 import { StreamSinkClient, HttpClient } from './StreamSinkClient';
-import AuthService from '@/services/auth.service';
-import { useNuxtApp } from "#imports";
+import type { AuthHeader } from '@/services/auth.service';
 
 export class MyClient extends StreamSinkClient<any> {
-  constructor(header: AuthHeader | null) {
-    const { $config } = useNuxtApp();
+  constructor(header: AuthHeader | null, apiUrl: string) {
     const client = new HttpClient({
-      baseUrl: $config.public.apiUrl,
+      baseUrl: apiUrl,
       baseApiParams: {
-        headers: { ...header }
-      },
-      customFetch: (input, init) => {
-        return fetch(input, init);
+        headers: { ...header },
       },
     });
     super(client);
@@ -25,7 +19,7 @@ export class MyClient extends StreamSinkClient<any> {
    * @param file File object to upload
    * @param progress Returns the progress as number in range [0.0 ... 1.0]
    */
-  channelUpload(channelId: number, file: File, progress: (pcent: number) => void, tokenCookie: CookieRef<string>): [ Promise<HttpResponse<RecordingResponse, any>>, AbortSignal ] {
+  channelUpload(channelId: number, file: File, progress: (pcent: number) => void): [Promise<HttpResponse<RecordingResponse, any>>, AbortController] {
     const controller = new AbortController();
     const signal = controller.signal;
     const formData = new FormData();
@@ -33,13 +27,13 @@ export class MyClient extends StreamSinkClient<any> {
 
     const req = this.http.request<DatabaseRecording, any>({
       path: `/channels/${channelId}/upload`,
-      method: "POST",
+      method: 'POST',
       body: formData,
       type: ContentType.FormData,
       signal,
     });
 
-    return [ req, signal ];
+    return [req, controller];
   }
 
   /**
@@ -47,12 +41,10 @@ export class MyClient extends StreamSinkClient<any> {
    * although the returned data look fine in the browser.
    */
   async isRecording(): Promise<boolean> {
-    const res = await this.http.request<ResponsesRecordingStatusResponse, any>({ path: `/recorder`, method: "GET" });
-    return res.isRecording;
+    return (await this.recorder.recorderList()).data.isRecording;
   }
 }
 
-export const createClient = (tokenCookie: CookieRef<string>): MyClient => {
-  const auth = new AuthService(tokenCookie);
-  return new MyClient(auth.getAuthHeader());
+export const createClient = (authHeader: AuthHeader | null, apiUrl: string): MyClient => {
+  return new MyClient(authHeader, apiUrl);
 };

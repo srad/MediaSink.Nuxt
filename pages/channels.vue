@@ -60,11 +60,11 @@
 </template>
 
 <script setup lang="ts">
-import { createClient } from '~/services/api/v1/ClientFactory.js';
-import { useRuntimeConfig, computed, onMounted, useState, downloadObjectAsJson, useCookie } from "#imports";
+import { useRuntimeConfig, computed, onMounted, useState, downloadObjectAsJson, useCookie } from '#imports';
 import ChannelFavButton from '~/components/controls/ChannelFavButton.vue';
 import type { DatabaseChannel, ServicesChannelInfo } from '~/services/api/v1/StreamSinkClient';
-import { TOKEN_NAME } from "~/services/auth.service";
+import { useNuxtApp } from '#app/nuxt';
+import { useAsyncData } from '#app';
 
 const config = useRuntimeConfig();
 const isImporting = useState('isImporting', () => false);
@@ -81,10 +81,8 @@ const totalCount = computed(() => channels.value.map(x => x.recordingsCount).red
  * @param client
  */
 const downloadChannelsAsJson = () => {
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const api = createClient(tokenCookie);
-
-  client.channels.channelsList()
+  const { $client } = useNuxtApp();
+  $client.channels.channelsList()
       .then(res => {
         downloadObjectAsJson(res.data, 'channels', document.body);
       })
@@ -120,13 +118,11 @@ const inputFileChanged = (event: Event) => {
  */
 const importChannels = (channelsResponse: DatabaseChannel[]) => {
   isImporting.value = true;
-
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const client = createClient(tokenCookie);
+  const { $client } = useNuxtApp();
 
   channelsResponse.forEach(async channel => {
     try {
-      const response = await client.channels.channelsCreate({
+      const response = await $client.channels.channelsCreate({
         minDuration: channel.minDuration,
         channelName: channel.channelName,
         displayName: channel.displayName,
@@ -144,14 +140,9 @@ const importChannels = (channelsResponse: DatabaseChannel[]) => {
   isImporting.value = false;
 };
 
-if (import.meta.server) {
-  try {
-    const tokenCookie = useCookie(TOKEN_NAME);
-    const api = createClient(tokenCookie);
-    const response = await api.channels.channelsList();
-    channels.value = response.data.sort((a, b) => a.channelName.localeCompare(b.channelName));
-  } catch (res: any) {
-    alert(res.error);
-  }
+const { $client } = useNuxtApp();
+const response = await useAsyncData('channels', () => $client.channels.channelsList());
+if (response.data.value) {
+  channels.value = response.data.value.data.sort((a, b) => a.channelName.localeCompare(b.channelName));
 }
 </script>

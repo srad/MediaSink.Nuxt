@@ -2,8 +2,9 @@ import { DatabaseJobOrder, DatabaseJobStatus } from '~/services/api/v1/StreamSin
 import type { DatabaseJob as JobData } from '~/services/api/v1/StreamSinkClient';
 import { createClient } from '~/services/api/v1/ClientFactory';
 import { defineStore } from 'pinia';
-import { useCookie } from "#imports";
-import { TOKEN_NAME } from "~/services/auth.service";
+import { useCookie } from '#imports';
+import { TOKEN_NAME } from '~/services/auth.service';
+import { useNuxtApp } from '#app/nuxt';
 
 export interface TaskInfo {
   job: JobData;
@@ -53,8 +54,8 @@ export const useJobStore = defineStore('job', {
     },
     // Just load 100 jobs for the initial state.
     async load() {
-      const api = createClient(useCookie(TOKEN_NAME));
-      const res = await api.jobs.listCreate({ skip: 0, take: 100, states: [DatabaseJobStatus.StatusJobOpen], sortOrder: DatabaseJobOrder.JobOrderASC });
+      const { $client } = useNuxtApp();
+      const res = await $client.jobs.listCreate({ skip: 0, take: 100, states: [DatabaseJobStatus.StatusJobOpen], sortOrder: DatabaseJobOrder.JobOrderASC });
       this.update({ jobs: res.data.jobs || [], totalCount: res.data.totalCount });
     },
     dec() {

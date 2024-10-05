@@ -25,11 +25,11 @@
 <script setup lang="ts">
 import StreamInfo from './StreamInfo.vue';
 import Preview from './Preview.vue';
-import { ServicesChannelInfo as ChannelInfo } from '../services/api/v1/StreamSinkClient';
-import { createClient } from '../services/api/v1/ClientFactory';
-import { useI18n, useState, computed, useRouter, useCookie } from '#imports'
-import { useChannelStore } from "~/stores/channel";
-import { TOKEN_NAME } from "~/services/auth.service";
+import type { ServicesChannelInfo as ChannelInfo } from '../services/api/v1/StreamSinkClient';
+import { useI18n, useState, computed, useRouter, useCookie } from '#imports';
+import { useChannelStore } from '~/stores/channel';
+import { useNuxtApp } from '#app/nuxt';
+import { useRuntimeConfig } from 'nuxt/app';
 
 // --------------------------------------------------------------------------------------
 // Emits
@@ -50,10 +50,10 @@ const props = defineProps<{ channel: ChannelInfo }>();
 const channelStore = useChannelStore();
 const { t } = useI18n();
 
-const router = useRouter()
+const router = useRouter();
 
 const config = useRuntimeConfig();
-const fileUrl = config.fileUrl;
+const fileUrl = config.public.fileUrl;
 
 const destroyed = useState('destroyed', () => false);
 const busy = useState('busy', () => false);
@@ -66,26 +66,23 @@ const previewVideo = computed(() => fileUrl + '/' + props.channel.preview + '?' 
 // --------------------------------------------------------------------------------------
 
 const fav = async (channel: ChannelInfo) => {
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const api = createClient(tokenCookie);
-  await api.channels.favPartialUpdate(channel.channelId!);
+  const { $client } = useNuxtApp();
+  await $client.channels.favPartialUpdate(channel.channelId!);
   channelStore.fav(channel.channelId);
 };
 
 const unfav = async (channel: ChannelInfo) => {
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const api = createClient(tokenCookie);
-  await api.channels.unfavPartialUpdate(channel.channelId!);
+  const { $client } = useNuxtApp();
+  await $client.channels.unfavPartialUpdate(channel.channelId!);
   channelStore.unfav(channel.channelId);
 };
 
 const destroyChannel = async (channel: ChannelInfo) => {
-  if (window.confirm(t('crud.destroy', [ channel.channelName ]))) {
+  if (window.confirm(t('crud.destroy', [channel.channelName]))) {
     try {
-      const tokenCookie = useCookie(TOKEN_NAME);
-      const api = createClient(tokenCookie);
+      const { $client } = useNuxtApp();
       busy.value = true;
-      await api.channels.channelsDelete(channel.channelId!);
+      await $client.channels.channelsDelete(channel.channelId!);
       destroyed.value = true;
       setTimeout(() => {
         channelStore.destroy(channel.channelId);
@@ -100,10 +97,9 @@ const destroyChannel = async (channel: ChannelInfo) => {
 
 const pause = async (channel: ChannelInfo) => {
   try {
-    const tokenCookie = useCookie(TOKEN_NAME);
-    const api = createClient(tokenCookie);
+    const { $client } = useNuxtApp();
     busy.value = true;
-    const method = channel.isPaused ? api.channels.resumeCreate : api.channels.pauseCreate;
+    const method = channel.isPaused ? $client.channels.resumeCreate : $client.channels.pauseCreate;
     await method(channel.channelId!);
 
     // Invert current paused mode.

@@ -46,11 +46,11 @@
 </template>
 
 <script setup lang="ts">
-import { createClient } from '../services/api/v1/ClientFactory';
-import { DatabaseRecording as RecordingResponse } from '../services/api/v1/StreamSinkClient';
+import type { DatabaseRecording as RecordingResponse } from '../services/api/v1/StreamSinkClient';
 import RecordingItem from '../components/RecordingItem.vue';
-import { useI18n, useState, useRoute, useRouter, onMounted, watch, useCookie } from '#imports'
-import { TOKEN_NAME } from "~/services/auth.service";
+import { useI18n, useState, useRoute, useRouter, watch } from '#imports';
+import { useNuxtApp } from '#app/nuxt';
+import { useAsyncData } from '#app';
 
 const { t } = useI18n();
 
@@ -72,9 +72,9 @@ const limits = useState('limits', () => [
   200,
 ]);
 
-const columns = [ [ 'Created at', 'created_at' ], [ 'Filesize', 'size' ], [ 'Video duration', 'duration' ] ];
+const columns = [['Created at', 'created_at'], ['Filesize', 'size'], ['Video duration', 'duration']];
 
-const order = [ 'asc', 'desc' ];
+const order = ['asc', 'desc'];
 
 const recordings = useState<RecordingResponse[]>('recordings', () => []);
 
@@ -97,14 +97,6 @@ const resetFilters = () => {
   routeFilter();
 };
 
-const fetch = async () => {
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const api = createClient(tokenCookie);
-
-  const res = await api.recordings.filterDetail(route.query.column as string || 'created_at', route.query.order as string || 'desc', route.query.limit as string || '25');
-  recordings.value = res.data;
-};
-
 const destroyRecording = (recording: RecordingResponse) => {
   for (let i = 0; i < recordings.value.length; i += 1) {
     if (recordings.value[i].filename === recording.filename) {
@@ -114,7 +106,11 @@ const destroyRecording = (recording: RecordingResponse) => {
   }
 };
 
-onMounted(() => {
-  fetch();
-});
+const fetch = async () => {
+  const { $client } = useNuxtApp();
+  const { data } = await useAsyncData('recordings', () => $client.recordings.filterDetail(route.query.column as string || 'created_at', route.query.order as string || 'desc', route.query.limit as string || '25'));
+  recordings.value = data.value?.data || [];
+};
+
+await fetch();
 </script>

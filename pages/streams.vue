@@ -120,14 +120,16 @@
 </template>
 
 <script setup lang="ts">
-import { createClient } from '../services/api/v1/ClientFactory';
+import type { ChannelUpdate } from '@/components/modals/ChannelModal.vue';
+import type { DatabaseChannel as ChannelResponse } from '~/services/api/v1/StreamSinkClient';
 import ChannelItem from '../components/ChannelItem.vue';
-import ChannelModal, { ChannelUpdate } from '../components/modals/ChannelModal.vue';
-import { useChannelStore } from "~/stores/channel";
-import { useAuthStore } from "~/stores/auth";
-import LoadIndicator from "../components/LoadIndicator.vue";
-import { useState, useRoute, useRouter, watch, computed, onMounted, useCookie } from '#imports'
-import { TOKEN_NAME } from "~/services/auth.service";
+import ChannelModal from '../components/modals/ChannelModal.vue';
+import { useChannelStore } from '~/stores/channel';
+import { useAuthStore } from '~/stores/auth';
+import LoadIndicator from '../components/LoadIndicator.vue';
+import { computed, ref, useAsyncData, useRoute, useRouter, watch } from '#imports';
+import { useNuxtApp } from '#app/nuxt';
+import { navigateTo } from '#app/composables/router';
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -138,20 +140,20 @@ const authStore = useAuthStore();
 const route = useRoute();
 
 const channelItemClass = 'col-lg-6 col-xl-6 col-xxl-4 col-md-6';
-const channelId = useState('channelId', () => 0);
-const showModal = useState('showModal', () => false);
-const channelName = useState('channelName', () => '');
-const displayName = useState('displayName', () => '');
-const isPaused = useState('isPaused', () => false);
-const url = useState('url', () => '');
-const busy = useState('busy', () => true);
+const channelId = ref<number>();
+const showModal = ref(false);
+const channelName = ref('');
+const displayName = ref('');
+const isPaused = ref(false);
+const url = ref('');
+const busy = ref(false);
 
-const minDuration = useState('minDuration', () => 0);
-const skipStart = useState('skipStart', () => 0);
-const favs = useState('favs', () => false);
+const minDuration = ref(20);
+const skipStart = ref(0);
+const favs = ref(false);
 
-const searchVal = useState<string>('searchVal', () => (route.query.search || route.query.tag || route.params.tag || '') as string);
-const tagFilter = useState<string>('tagFilter', () => (route.params.tag || route.query.tag || '') as string);
+const searchVal = ref<string>((route.query.search || route.query.tag || route.params.tag || '') as string);
+const tagFilter = ref<string>((route.params.tag || route.query.tag || '') as string);
 
 const router = useRouter();
 
@@ -195,21 +197,17 @@ const loggedIn = computed(() => authStore.isLoggedIn);
 
 const searchFilter = (channel: ChannelResponse, search: string, tag: string): boolean => {
 
-  const matches = ((search && search.length > 0) ? channel.channelName!.indexOf(search) !== -1 : true) &&
+  return ((search && search.length > 0) ? channel.channelName!.indexOf(search) !== -1 : true) &&
       ((tag && tag.length > 0 && channel.tags) ? channel.tags.some(t => t === tag) : true);
-
-  return matches;
 };
 
 const sort = (a: ChannelResponse, b: ChannelResponse) => a.channelName!.localeCompare(b.channelName!);
 
-const save = async (data: ChannelUpdate) => {
+const save = async (channel: ChannelUpdate) => {
   try {
-    const tokenCookie = useCookie(TOKEN_NAME);
-    const api = createClient(tokenCookie);
-
-    const res = await api.channels.channelsPartialUpdate(data.channelId, data);
-    channelStore.update(res.data);
+    const { $client } = useNuxtApp();
+    const { data } = await useAsyncData('save', () => $client.channels.channelsPartialUpdate(channel.channelId, channel));
+    channelStore.update(data.value!.data);
     showModal.value = false;
   } catch (e) {
     alert(e);
@@ -227,15 +225,13 @@ const editChannel = (channel: ChannelResponse) => {
   showModal.value = true;
 };
 
-const tab = (tab: string) => router.push({ name: 'Stream', params: { tag: tagFilter.value, tab } });
+const tab = async (tabName: string) => await navigateTo({ path: '/streams', query: { tag: tagFilter.value ?? null, tab: tabName } });
 
 const loginHandler = async (isLoggedIn: boolean) => {
   if (isLoggedIn) {
-    const tokenCookie = useCookie(TOKEN_NAME);
-    const api = createClient(tokenCookie);
-
-    const res = await api.channels.channelsList();
-    res.data.forEach(channel => channelStore.add(channel));
+    const { $client } = useNuxtApp();
+    const { data } = await useAsyncData('channels', () => $client.channels.channelsList());
+    data.value?.data.forEach(channel => channelStore.add(channel));
     busy.value = false;
   }
 };
@@ -260,9 +256,11 @@ watch(tagFilter, val => {
   router.replace({ params: { tag: val } });
 });
 
-onMounted(() => {
-  loginHandler(loggedIn.value);
-});
+if (!route.params.tab) {
+  route.params.tab = 'live';
+}
+
+await loginHandler(loggedIn.value);
 </script>
 
 <style lang="scss" scoped>

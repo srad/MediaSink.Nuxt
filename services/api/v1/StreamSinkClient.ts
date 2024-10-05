@@ -81,7 +81,7 @@ export interface DatabaseRecording {
     duration: number;
     filename: string;
     height: number;
-    /** Total number of recordings packets/frames. */
+    /** Total number of video packets/frames. */
     packets: number;
     pathRelative: string;
     previewCover?: string;
@@ -659,7 +659,7 @@ export namespace Jobs {
     }
 
     /**
-     * @description Enqueue a preview job for a recordings in a channel. For now only preview jobs allowed via REST
+     * @description Enqueue a preview job for a video in a channel. For now only preview jobs allowed via REST
      * @tags jobs
      * @name JobsCreate
      * @summary Enqueue a preview job
@@ -967,10 +967,10 @@ export namespace Recordings {
     }
 
     /**
-     * @description Cut a recordings and merge all defined segments
+     * @description Cut a video and merge all defined segments
      * @tags recordings
      * @name CutCreate
-     * @summary Cut a recordings and merge all defined segments
+     * @summary Cut a video and merge all defined segments
      * @request POST:/recordings/{id}/cut
      * @response `200` `DatabaseJob` OK
      * @response `400` `any` Error message
@@ -988,10 +988,10 @@ export namespace Recordings {
     }
 
     /**
-     * @description Bookmark a certain recordings in a channel.
+     * @description Bookmark a certain video in a channel.
      * @tags recordings
      * @name FavPartialUpdate
-     * @summary Bookmark a certain recordings in a channel
+     * @summary Bookmark a certain video in a channel
      * @request PATCH:/recordings/{id}/fav
      * @response `200` `void` OK
      * @response `400` `any` Error message
@@ -1009,10 +1009,10 @@ export namespace Recordings {
     }
 
     /**
-     * @description Generate preview for a certain recordings in a channel.
+     * @description Generate preview for a certain video in a channel.
      * @tags recordings
      * @name PreviewCreate
-     * @summary Generate preview for a certain recordings in a channel
+     * @summary Generate preview for a certain video in a channel
      * @request POST:/recordings/{id}/preview
      * @response `200` `(DatabaseJob)[]` OK
      * @response `400` `any` Error message
@@ -1030,10 +1030,10 @@ export namespace Recordings {
     }
 
     /**
-     * @description Bookmark a certain recordings in a channel.
+     * @description Bookmark a certain video in a channel.
      * @tags recordings
      * @name UnfavPartialUpdate
-     * @summary Bookmark a certain recordings in a channel
+     * @summary Bookmark a certain video in a channel
      * @request PATCH:/recordings/{id}/unfav
      * @response `200` `void` OK
      * @response `400` `any` Error message
@@ -1051,10 +1051,10 @@ export namespace Recordings {
     }
 
     /**
-     * @description Cut a recordings and merge all defined segments
+     * @description Cut a video and merge all defined segments
      * @tags recordings
      * @name ConvertCreate
-     * @summary Cut a recordings and merge all defined segments
+     * @summary Cut a video and merge all defined segments
      * @request POST:/recordings/{id}/{mediaType}/convert
      * @response `200` `DatabaseJob` OK
      * @response `400` `any` Error message
@@ -1744,7 +1744,7 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Enqueue a preview job for a recordings in a channel. For now only preview jobs allowed via REST
+         * @description Enqueue a preview job for a video in a channel. For now only preview jobs allowed via REST
          *
          * @tags jobs
          * @name JobsCreate
@@ -2046,11 +2046,11 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Cut a recordings and merge all defined segments
+         * @description Cut a video and merge all defined segments
          *
          * @tags recordings
          * @name CutCreate
-         * @summary Cut a recordings and merge all defined segments
+         * @summary Cut a video and merge all defined segments
          * @request POST:/recordings/{id}/cut
          * @response `200` `DatabaseJob` OK
          * @response `400` `any` Error message
@@ -2067,11 +2067,11 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Bookmark a certain recordings in a channel.
+         * @description Bookmark a certain video in a channel.
          *
          * @tags recordings
          * @name FavPartialUpdate
-         * @summary Bookmark a certain recordings in a channel
+         * @summary Bookmark a certain video in a channel
          * @request PATCH:/recordings/{id}/fav
          * @response `200` `void` OK
          * @response `400` `any` Error message
@@ -2086,11 +2086,11 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Generate preview for a certain recordings in a channel.
+         * @description Generate preview for a certain video in a channel.
          *
          * @tags recordings
          * @name PreviewCreate
-         * @summary Generate preview for a certain recordings in a channel
+         * @summary Generate preview for a certain video in a channel
          * @request POST:/recordings/{id}/preview
          * @response `200` `(DatabaseJob)[]` OK
          * @response `400` `any` Error message
@@ -2106,11 +2106,11 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Bookmark a certain recordings in a channel.
+         * @description Bookmark a certain video in a channel.
          *
          * @tags recordings
          * @name UnfavPartialUpdate
-         * @summary Bookmark a certain recordings in a channel
+         * @summary Bookmark a certain video in a channel
          * @request PATCH:/recordings/{id}/unfav
          * @response `200` `void` OK
          * @response `400` `any` Error message
@@ -2125,11 +2125,11 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
             }),
 
         /**
-         * @description Cut a recordings and merge all defined segments
+         * @description Cut a video and merge all defined segments
          *
          * @tags recordings
          * @name ConvertCreate
-         * @summary Cut a recordings and merge all defined segments
+         * @summary Cut a video and merge all defined segments
          * @request POST:/recordings/{id}/{mediaType}/convert
          * @response `200` `DatabaseJob` OK
          * @response `400` `any` Error message

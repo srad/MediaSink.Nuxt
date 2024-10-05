@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
 import Modal from './Modal.vue';
-import { useState, watch } from '#imports'
+import { ref, useState, watch } from '#imports';
 // --------------------------------------------------------------------------------------
 // Props
 // --------------------------------------------------------------------------------------
@@ -35,8 +35,8 @@ const props = defineProps<{
 // Declarations
 // --------------------------------------------------------------------------------------
 
-const working = useState('working', () => false);
-const showModal = useState('showModal', () => false);
+const working = ref(false);
+const showModal = ref(false);
 
 // --------------------------------------------------------------------------------------
 // Emits

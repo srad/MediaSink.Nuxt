@@ -12,11 +12,11 @@
 </template>
 
 <script setup lang="ts">
-import { createClient } from '../services/api/v1/ClientFactory';
-import { DatabaseRecording } from '../services/api/v1/StreamSinkClient';
+import type { DatabaseRecording } from '@/services/api/v1/StreamSinkClient';
 import RecordingItem from '../components/RecordingItem.vue';
-import { useI18n, useState, onMounted, useCookie } from '#imports'
-import { TOKEN_NAME } from "~/services/auth.service";
+import { useI18n, useState, onMounted } from '#imports';
+import { useNuxtApp } from '#app/nuxt';
+import { useAsyncData } from '#app';
 
 const { t } = useI18n();
 const recordings = useState<DatabaseRecording[]>('recordings', () => []);
@@ -39,15 +39,13 @@ const bookmark = (recording: DatabaseRecording) => {
 };
 
 const destroyRecording = async (recording: DatabaseRecording) => {
-  if (!window.confirm(t('crud.destroy', [ recording.filename ]))) {
+  if (!window.confirm(t('crud.destroy', [recording.filename]))) {
     return;
   }
 
   try {
-    const tokenCookie = useCookie(TOKEN_NAME);
-    const api = createClient(tokenCookie);
-
-    await api.recordings.recordingsDelete(recording.recordingId);
+    const { $client } = useNuxtApp();
+    await $client.recordings.recordingsDelete(recording.recordingId);
     removeItem(recording);
   } catch (ex) {
     alert(ex);
@@ -58,11 +56,7 @@ const destroyRecording = async (recording: DatabaseRecording) => {
 // Hooks
 // --------------------------------------------------------------------------------------
 
-onMounted(async () => {
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const api = createClient(tokenCookie);
-
-  const res = await api.recordings.bookmarksList();
-  recordings.value = res.data;
-});
+const { $client } = useNuxtApp();
+const { data } = await useAsyncData('bookmarkedRecordings', () => $client.recordings.bookmarksList());
+recordings.value = data.value?.data || [];
 </script>

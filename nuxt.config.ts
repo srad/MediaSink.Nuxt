@@ -1,7 +1,7 @@
 const silenceSomeSassDeprecationWarnings = {
   verbose: true,
   logger: {
-    warn(message, options) {
+    warn(message: any, options: any) {
       const { stderr } = process;
       const span = options.span ?? undefined;
       const stack = (options.stack === 'null' ? undefined : options.stack) ?? undefined;
@@ -33,6 +33,9 @@ const silenceSomeSassDeprecationWarnings = {
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  experimental: {
+    renderJsonPayloads: false
+  },
   compatibilityDate: '2024-04-03',
   devtools: { enabled: true },
   runtimeConfig: {
@@ -51,7 +54,7 @@ export default defineNuxtConfig({
   },
   css: [
     // SCSS file in the project
-    "./assets/main.scss", // you should add main.scss somewhere in your app
+    './assets/main.scss', // you should add main.scss somewhere in your app
   ],
   modules: [
     '@nuxtjs/i18n',
@@ -59,7 +62,7 @@ export default defineNuxtConfig({
     'pinia-plugin-persistedstate/nuxt',
   ],
   pinia: {
-    storesDirs: [ './stores/**' ],
+    storesDirs: ['./stores/**'],
   },
   i18n: {
     vueI18n: './i18n/i18n'

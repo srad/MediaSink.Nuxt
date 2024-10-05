@@ -3,9 +3,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, watch } from '#imports';
-import { createChart, IChartApi, ISeriesApi } from 'lightweight-charts';
-import { useState } from '#imports'
+import { computed, onMounted, onUnmounted, watch } from '#imports';
+import type { IChartApi, ISeriesApi } from 'lightweight-charts';
+import { useState } from '#imports';
+import { useNuxtApp } from '#app/nuxt';
 
 const props = defineProps<{
   series: { load: number, time: number }[]
@@ -23,7 +24,8 @@ watch(() => props.series, () => {
 });
 
 onMounted(() => {
-  chart = createChart(container.value!, {
+  const { $createChart } = useNuxtApp();
+  chart = $createChart(container.value!, {
     autoSize: true,
     layout: { attributionLogo: false, fontSize: 11 },
     localization: {
@@ -38,6 +40,13 @@ onMounted(() => {
     color: '#990d37',
     title: 'Load  ',
   });
+});
+
+onUnmounted(() => {
+  if (chart) {
+    chart.remove();
+    chart = null;
+  }
 });
 </script>
 

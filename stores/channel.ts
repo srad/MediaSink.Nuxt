@@ -1,10 +1,9 @@
-import type { RequestsChannelRequest as ChannelRequest } from '@/services/api/v1/StreamSinkClient';
+import type { DatabaseChannel, RequestsChannelRequest as ChannelRequest } from '@/services/api/v1/StreamSinkClient';
 import type { ServicesChannelInfo as ChannelInfo } from '@/services/api/v1/StreamSinkClient';
 
-import { createClient } from '@/services/api/v1/ClientFactory';
 import { defineStore } from 'pinia';
-import { useCookie } from '#imports';
-import { TOKEN_NAME } from "~/services/auth.service";
+import { useJobStore } from '#imports';
+import { useNuxtApp } from '#app/nuxt';
 
 export interface ChannelState {
   channels: ChannelInfo[];
@@ -18,8 +17,8 @@ export const useChannelStore = defineStore('channel', {
   actions: {
     save(channel: ChannelRequest) {
       return new Promise((resolve, reject) => {
-        const api = createClient(useCookie(TOKEN_NAME));
-        api.channels.channelsCreate(channel)
+        const { $client } = useNuxtApp();
+        $client.channels.channelsCreate(channel)
           .then(res => {
             this.add(res.data);
             resolve(res.data);
@@ -59,7 +58,7 @@ export const useChannelStore = defineStore('channel', {
         this.channels.push(channel);
       }
     },
-    update(channel: ChannelInfo) {
+    update(channel: DatabaseChannel) {
       const i = this.channels.findIndex(c => c.channelId === channel.channelId);
       if (i !== -1) {
         const ch = this.channels[i] as ChannelInfo;
@@ -73,8 +72,10 @@ export const useChannelStore = defineStore('channel', {
     },
     destroy(channelId: number) {
       this.channels = this.channels.filter(x => x.channelId !== channelId);
-      commit(ChannelMutation.Destroy, channelId);
-      commit(JobMutation.DeleteChannel, channelId);
+      const channelStore = useChannelStore();
+      const jobStore = useJobStore();
+      channelStore.destroy(channelId);
+      jobStore.deleteChannel(channelId);
     },
     pause(channelId: number) {
       const i = this.channels.findIndex(c => c.channelId === channelId);

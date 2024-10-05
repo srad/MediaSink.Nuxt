@@ -3,6 +3,7 @@
     <NavTop v-if="loggedIn" :routes="routes" :title="title" @add="showModal=true" :show-logout="loggedIn" @logout="logout"/>
 
     <main class="container-fluid" :data-logged-in="loggedIn">
+      <nuxt-loading-indicator/>
       <NuxtPage :keepalive="{include: 'SteamView,ChannelsView,JobView'}"/>
 
       <ChannelModal
@@ -21,24 +22,26 @@
 
 <script setup lang="ts">
 import type { DatabaseJob, RequestsChannelRequest as ChannelRequest } from '@/services/api/v1/StreamSinkClient';
-import { createSocket, MessageType } from '@/utils/socket';
-import ChannelModal from '@/components/modals/ChannelModal';
+import { createSocket, MessageType, SocketManager } from '@/utils/socket';
+import ChannelModal from '~/components/modals/ChannelModal.vue';
 import NavTop from '@/components/navs/NavTop.vue';
 import Toaster from '@/components/Toaster.vue';
 import { useChannelStore } from '@/stores/channel';
-import { useJobStore } from '@/stores/job';
+import { type TaskProgress, useJobStore } from '@/stores/job';
 import type { TaskInfo } from '@/stores/job';
 import { useToastStore } from '@/stores/toast';
 import { useAuthStore } from '@/stores/auth';
-import AuthService, { TOKEN_NAME } from "@/services/auth.service";
-import { useRuntimeConfig, useState, useCookie } from "nuxt/app";
-import { computed, onMounted, watch, useI18n } from "#imports";
+import { useRuntimeConfig, useState, useRouter } from 'nuxt/app';
+import { computed, onMounted, watch, useI18n, ref } from '#imports';
+import { useNuxtApp } from '#app/nuxt';
 
 // --------------------------------------------------------------------------------------
 // Declarations
 // --------------------------------------------------------------------------------------
 
 const config = useRuntimeConfig();
+
+let socket: SocketManager | null = null;
 
 const channelStore = useChannelStore();
 const toastStore = useToastStore();
@@ -47,10 +50,10 @@ const jobStore = useJobStore();
 
 const { t } = useI18n();
 
-const socket = createSocket();
+const router = useRouter();
 
 const title = config.public.appName;
-const showModal = useState('showModal', () => false);
+const showModal = ref(false);
 
 const toasts = computed(() => toastStore.getToast);
 
@@ -72,14 +75,15 @@ const save = (data: ChannelRequest) => channelStore.save(data)
     .finally(() => showModal.value = false);
 
 const logout = () => {
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const auth = new AuthService(tokenCookie);
-  auth.logout();
+  const { $auth } = useNuxtApp();
+  $auth.logout();
   router.push('/login');
 };
 
 const loginHandler = async (isLoggedIn: boolean) => {
   if (isLoggedIn) {
+    socket = createSocket();
+
     socket.connect();
 
     socket.on(MessageType.JobStart, data => {
@@ -110,13 +114,13 @@ const loginHandler = async (isLoggedIn: boolean) => {
       toastStore.add({ title: 'Job done', message: `File ${job.filename} in ${job.channelName}` });
     });
 
-    socket.on(MessageType.JobDeleted, data => jobStore.destroy(data));
-    socket.on(MessageType.JobProgress, data => jobStore.progress(data));
-    socket.on(MessageType.JobPreviewProgress, data => jobStore.progress(data));
+    socket.on(MessageType.JobDeleted, data => jobStore.destroy(data as number));
+    socket.on(MessageType.JobProgress, data => jobStore.progress(data as TaskProgress));
+    socket.on(MessageType.JobPreviewProgress, data => jobStore.progress(data as TaskProgress));
 
-    socket.on(MessageType.ChannelOnline, data => channelStore.online(data));
-    socket.on(MessageType.ChannelOffline, data => channelStore.offline(data));
-    socket.on(MessageType.ChannelThumbnail, data => channelStore.thumbnail(data));
+    socket.on(MessageType.ChannelOnline, data => channelStore.online(data as number));
+    socket.on(MessageType.ChannelOffline, data => channelStore.offline(data as number));
+    socket.on(MessageType.ChannelThumbnail, data => channelStore.thumbnail(data as number));
 
     socket.on(MessageType.ChannelStart, data => {
       const id = data as number;
@@ -126,7 +130,7 @@ const loginHandler = async (isLoggedIn: boolean) => {
 
     await jobStore.load();
   } else {
-    socket.close();
+    socket?.close();
   }
 };
 

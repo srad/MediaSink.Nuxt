@@ -4,10 +4,9 @@
 </template>
 
 <script setup lang="ts">
-import { createClient } from '../../services/api/v1/ClientFactory.ts';
-import { useCookie, useState, watch } from '#imports'
+import { useState, watch } from '#imports'
 import FavButton from './FavButton.vue';
-import { TOKEN_NAME } from "~/services/auth.service";
+import { useNuxtApp } from '#app/nuxt';
 
 // --------------------------------------------------------------------------------------
 // Props
@@ -37,9 +36,8 @@ watch(() => props.bookmarked, val => fav.value = val);
 
 const bookmark = () => {
   busy.value = true;
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const api = createClient(tokenCookie);
-  const fn = fav.value ? api.channels.unfavPartialUpdate : api.channels.favPartialUpdate;
+  const { $client } = useNuxtApp();
+  const fn = fav.value ? $client.channels.unfavPartialUpdate : $client.channels.favPartialUpdate;
 
   fn(props.channelId)
       .then(() => fav.value = !fav.value)

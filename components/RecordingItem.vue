@@ -50,11 +50,10 @@
 <script setup lang="ts">
 import RecordInfo from './RecordInfo.vue';
 import Preview from './Preview.vue';
-import { DatabaseRecording as RecordingResponse } from '../services/api/v1/StreamSinkClient';
-import { createClient } from '../services/api/v1/ClientFactory';
+import type { DatabaseRecording as RecordingResponse } from '../services/api/v1/StreamSinkClient';
 import { useI18n, useState, watch, useRouter, useCookie } from '#imports'
-import { TOKEN_NAME } from "~/services/auth.service";
 import { useRuntimeConfig } from "nuxt/app";
+import { useNuxtApp } from '#app/nuxt';
 
 // --------------------------------------------------------------------------------------
 // Emits
@@ -120,9 +119,8 @@ watch(() => props.select, val => {
 const bookmark = async (recording: RecordingResponse, yesNo: boolean) => {
   try {
     busy.value = true;
-    const tokenCookie = useCookie(TOKEN_NAME);
-    const api = createClient(tokenCookie);
-    const method = yesNo ? api.recordings.favPartialUpdate : api.recordings.unfavPartialUpdate;
+    const { $client } = useNuxtApp();
+    const method = yesNo ? $client.recordings.favPartialUpdate : $client.recordings.unfavPartialUpdate;
     await method(recording.recordingId);
     recording.bookmark = yesNo;
     emit('bookmark', recording);
@@ -137,9 +135,8 @@ const generatePreview = async (recording: RecordingResponse) => {
   if (window.confirm('Generate new preview?')) {
     try {
       busy.value = true;
-      const tokenCookie = useCookie(TOKEN_NAME);
-      const api = createClient(tokenCookie);
-      await api.recordings.previewCreate(recording.recordingId);
+      const { $client } = useNuxtApp();
+      await $client.recordings.previewCreate(recording.recordingId);
     } catch (ex) {
       alert(ex);
     } finally {
@@ -155,9 +152,8 @@ const convert = async ({ recording, mediaType }: { recording: RecordingResponse,
 
   try {
     busy.value = true;
-    const tokenCookie = useCookie(TOKEN_NAME);
-    const api = createClient(tokenCookie);
-    await api.recordings.convertCreate(recording.recordingId, mediaType);
+    const { $client } = useNuxtApp();
+    await $client.recordings.convertCreate(recording.recordingId, mediaType);
   } catch (ex) {
     alert(ex);
   } finally {
@@ -172,9 +168,8 @@ const destroyRecording = async (recording: RecordingResponse) => {
 
   try {
     busy.value = true;
-    const tokenCookie = useCookie(TOKEN_NAME);
-    const api = createClient(tokenCookie);
-    await api.recordings.recordingsDelete(recording.recordingId);
+    const { $client } = useNuxtApp();
+    await $client.recordings.recordingsDelete(recording.recordingId);
     destroyed.value = true;
     setTimeout(() => emit('destroyed', recording), 1000);
   } catch (ex) {

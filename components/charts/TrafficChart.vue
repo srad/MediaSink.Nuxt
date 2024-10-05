@@ -3,14 +3,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, watch, useState } from '#imports';
-import { createChart, IChartApi, ISeriesApi } from 'lightweight-charts';
+import { computed, onMounted, watch, onUnmounted, ref } from '#imports';
+import type { IChartApi, ISeriesApi } from 'lightweight-charts';
+import { useNuxtApp } from '#app/nuxt';
 
 const props = defineProps<{
   series: { in: number, out: number, time: number }[]
 }>();
 
-const container = useState<HTMLDivElement | null>('container', () => null);
+const container = ref<HTMLDivElement | null>();
 let chart: IChartApi | null = null;
 let inSeries: ISeriesApi<any> | null = null;
 let outSeries: ISeriesApi<any> | null = null;
@@ -25,7 +26,8 @@ watch(() => props.series, () => {
 });
 
 onMounted(() => {
-  chart = createChart(container.value!, {
+  const { $createChart } = useNuxtApp();
+  chart = $createChart(container.value!, {
     autoSize: true,
     layout: { attributionLogo: false, fontSize: 11 },
     localization: {
@@ -46,6 +48,13 @@ onMounted(() => {
     color: '#990d37',
     title: 'outgoing  ',
   });
+});
+
+onUnmounted(() => {
+  if (chart) {
+    chart.remove();
+    chart = null;
+  }
 });
 </script>
 

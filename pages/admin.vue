@@ -93,7 +93,6 @@
 </template>
 
 <script setup lang="ts">
-import { createClient } from '~/services/api/v1/ClientFactory';
 import type {
   HelpersCPUInfo,
   HelpersDiskInfo,
@@ -102,19 +101,20 @@ import type {
 } from '~/services/api/v1/StreamSinkClient';
 import TrafficChart from '~/components/charts/TrafficChart.vue';
 import CPUChart from '~/components/charts/CPUChart.vue';
-import { useRuntimeConfig } from "nuxt/app";
-import { useState, onBeforeRouteLeave, computed, onMounted, useCookie } from '#imports'
-import { TOKEN_NAME } from "~/services/auth.service";
+import { useRuntimeConfig } from 'nuxt/app';
+import { useState, onBeforeRouteLeave, computed, onMounted } from '#imports';
+import { useNuxtApp } from '#app/nuxt';
+import { useAsyncData } from '#app';
 
 const config = useRuntimeConfig();
 const build = config.build;
 const version = config.version;
 
 const versions = computed(() => [
-  [ 'Client-Version', version ],
-  [ 'Client-Revision', build ],
-  [ 'Server-Version', serverInfo.value?.version ],
-  [ 'Server-Revision', serverInfo.value?.commit ],
+  ['Client-Version', version],
+  ['Client-Revision', build],
+  ['Server-Version', serverInfo.value?.version],
+  ['Server-Revision', serverInfo.value?.commit],
 ]);
 
 const importing = useState('importing', () => false);
@@ -137,31 +137,25 @@ const id = useState<number | NodeJS.Timeout>('id', () => 0);
 //const receivedMb = computed(() => ((netInfo.value?.receiveBytes || 0) / 1024 / 1024).toFixed(2));
 //const transmittedMb = computed(() => ((netInfo.value?.transmitBytes || 0) / 1024 / 1024).toFixed(2));
 
-//@ts-ignore
-const mainCpuLoad = computed(() => cpuInfo.value && cpuInfo.value.loadCpu!.length > 0 ? cpuInfo.value.loadCpu[0].load * 100 : 0);
-
 const startImport = async () => {
   if (window.confirm('Start Import?')) {
-    const tokenCookie = useCookie(TOKEN_NAME);
-    const api = createClient(tokenCookie);
-    await api.admin.importCreate();
+    const { $client } = useNuxtApp();
+    await $client.admin.importCreate();
     importing.value = true;
   }
 };
 
 const posters = async () => {
   if (window.confirm('Regenerate all posters?')) {
-    const tokenCookie = useCookie(TOKEN_NAME);
-    const api = createClient(tokenCookie);
-    await api.recordings.generatePostersCreate();
+    const { $client } = useNuxtApp();
+    await $client.recordings.generatePostersCreate();
   }
 };
 
 const updateInfo = () => {
   if (window.confirm('Check all durations and update in database?')) {
-    const tokenCookie = useCookie(TOKEN_NAME);
-    const api = createClient(tokenCookie);
-    api.recordings.updateinfoCreate()
+    const { $client } = useNuxtApp();
+    $client.recordings.updateinfoCreate()
         .then(() => isUpdating.value = true)
         .catch(res => console.error(res.error));
   }
@@ -169,13 +163,12 @@ const updateInfo = () => {
 
 const fetch = async () => {
   try {
-    const tokenCookie = useCookie(TOKEN_NAME);
-    const api = createClient(tokenCookie);
-    const result = await Promise.all([ api.info.infoDetail(1), api.admin.importList() ]);
+    const { $client } = useNuxtApp();
+    const { data } = await useAsyncData('infos', () => Promise.all([$client.info.infoDetail(1), $client.admin.importList()]));
 
-    netInfo.value = result[0].data.netInfo;
-    cpuInfo.value = result[0].data.cpuInfo;
-    diskInfo.value = result[0].data.diskInfo;
+    netInfo.value = data.value![0].data.netInfo;
+    cpuInfo.value = data.value![0].data.cpuInfo;
+    diskInfo.value = data.value![0].data.diskInfo;
 
     trafficSeries.value = trafficSeries.value.concat({
       in: netInfo.value.receiveBytes / 1024 / 1024,
@@ -183,30 +176,33 @@ const fetch = async () => {
       time: Date.now()
     });
     cpuLoadSeries.value = cpuLoadSeries.value.concat({
-      load: result[0].data.cpuInfo.loadCpu[0].load * 100,
+      load: data.value![0].data.cpuInfo.loadCpu[0].load * 100,
       time: Date.now()
     });
 
-    importing.value = result[1].data.isImporting || false;
-    importProgress.value = result[1].data.progress || 0;
-    importSize.value = result[1].data.size || 0;
+    importing.value = data.value![1].data.isImporting || false;
+    importProgress.value = data.value![1].data.progress || 0;
+    importSize.value = data.value![1].data.size || 0;
   } catch (err) {
     alert(err);
   }
 };
 
 onBeforeRouteLeave(() => {
-  clearInterval(id.value);
+  if (import.meta.browser) {
+    clearInterval(id.value);
+  }
 });
 
+await fetch();
+const { $client } = useNuxtApp();
+const { data } = await useAsyncData('versions', () => $client.admin.versionList());
+serverInfo.value = data.value!.data;
+
 onMounted(async () => {
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const api = createClient(tokenCookie);
-  //fillData();
-  await fetch();
-  const res = await api.admin.versionList();
-  serverInfo.value = res.data;
-  id.value = setInterval(fetch, 2500);
+  if (import.meta.browser) {
+    id.value = setInterval(fetch, 2500);
+  }
 });
 </script>
 

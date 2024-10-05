@@ -59,18 +59,17 @@
 </template>
 
 <script setup lang="ts">
-import { createClient } from '../../services/api/v1/ClientFactory';
-import { createSocket, MessageType } from '../../utils/socket';
-import { useChannelStore } from "~/stores/channel";
-import { useAuthStore } from "~/stores/auth";
-import { useJobStore } from "~/stores/job";
-import { useState, computed, onMounted, reactive, watch, useRoute, useRouter, useCookie } from "#imports";
+import { createSocket, MessageType } from '~/utils/socket';
+import { useChannelStore } from '~/stores/channel';
+import { useAuthStore } from '~/stores/auth';
+import { useJobStore } from '~/stores/job';
+import { useState, computed, onMounted, reactive, watch, useRoute, useRouter, ref } from '#imports';
 
 import DiskStatus from '../DiskStatus.vue';
 import RecordingControls from '../RecordingControls.vue';
 import AppBrand from '../AppBrand.vue';
 import ModalConfirmDialog from '../modals/ModalConfirmDialog.vue';
-import { TOKEN_NAME } from "~/services/auth.service";
+import { useNuxtApp } from '#app/nuxt';
 
 // --------------------------------------------------------------------------------------
 // Props
@@ -100,12 +99,12 @@ const authStore = useAuthStore();
 const jobStore = useJobStore();
 
 const diskInfo = reactive({ avail: '', pcent: '', size: '', used: '' });
-const collapseNav = useState('collapseNav', () => true);
-const isRecording = useState('isRecording', () => false);
-const heartBeatNextUpdate = useState<number>('heartbebat', () => -1);
+const collapseNav = ref(true);
+const isRecording = ref(false);
+const heartBeatNextUpdate = ref<number>(-1);
 const route = useRoute();
-const showNav = useState('showNav', () => false);
-const showConfirmRecording = useState('showConfirmRecording', () => false);
+const showNav = ref(false);
+const showConfirmRecording = ref(false);
 
 const router = useRouter();
 const socket = createSocket();
@@ -125,9 +124,8 @@ const loggedIn = computed(() => authStore.isLoggedIn);
 // --------------------------------------------------------------------------------------
 
 const query = async () => {
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const api = createClient(tokenCookie);
-  const res = await Promise.all([ api.isRecording(), api.info.diskList() ]);
+  const { $client } = useNuxtApp();
+  const res = await Promise.all([$client.isRecording(), $client.info.diskList()]);
 
   isRecording.value = res[0];
   const diskRes = res[1];
@@ -139,14 +137,13 @@ const query = async () => {
 
 const record = async () => {
   try {
-    const tokenCookie = useCookie(TOKEN_NAME);
-    const api = createClient(tokenCookie);
+    const { $client } = useNuxtApp();
     if (isRecording.value) {
-      await api.recorder.pauseCreate();
+      await $client.recorder.pauseCreate();
       channelStore.stop();
       isRecording.value = false;
     } else {
-      await api.recorder.resumeCreate();
+      await $client.recorder.resumeCreate();
       isRecording.value = true;
     }
   } catch (err) {

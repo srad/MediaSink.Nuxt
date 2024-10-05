@@ -1,6 +1,6 @@
-import type { MyClient } from "./api/v1/ClientFactory";
-import type { RequestsAuthenticationRequest } from "./api/v1/StreamSinkClient";
-import type { CookieRef } from "#imports";
+import type { MyClient } from './api/v1/ClientFactory';
+import type { RequestsAuthenticationRequest } from './api/v1/StreamSinkClient';
+import type { CookieRef } from '#app';
 
 export interface AuthInfo {
   token: string;
@@ -10,12 +10,12 @@ export interface AuthHeader {
   Authorization: string;
 }
 
-export const TOKEN_NAME = "jwt";
+export const TOKEN_NAME = 'jwt';
 
 export default class AuthService {
-  private readonly tokenCookie: CookieRef<string>
+  private readonly tokenCookie: CookieRef<string | null>;
 
-  constructor(tokenCookie: CookieRef<string>) {
+  constructor(tokenCookie: CookieRef<string | null>) {
     this.tokenCookie = tokenCookie;
   }
 
@@ -27,7 +27,7 @@ export default class AuthService {
           this.tokenCookie.value = r.token;
           return resolve(r.token);
         } else {
-          return reject("token not found");
+          return reject('token not found');
         }
       }).catch(reject);
     });
@@ -37,7 +37,7 @@ export default class AuthService {
     this.tokenCookie.value = null;
   }
 
-  getToken(): string {
+  getToken(): string | null {
     return this.tokenCookie.value;
   }
 

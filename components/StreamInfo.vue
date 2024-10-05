@@ -58,12 +58,11 @@
 </template>
 
 <script setup lang="ts">
-import { watch, computed, onMounted, onUnmounted, useState, useRouter, useCookie } from '#imports';
-import { ServicesChannelInfo as ChannelResponse } from '../services/api/v1/StreamSinkClient';
-import { createClient } from '../services/api/v1/ClientFactory';
+import { watch, computed, onMounted, onUnmounted, useState, useRouter } from '#imports';
+import type { ServicesChannelInfo as ChannelResponse } from '../services/api/v1/StreamSinkClient';
 import { validTag } from '../utils/parser';
 import FavButton from "./controls/FavButton.vue";
-import { TOKEN_NAME } from "~/services/auth.service";
+import { useNuxtApp } from '#app/nuxt';
 
 // --------------------------------------------------------------------------------------
 // Props
@@ -121,9 +120,8 @@ const seconds = computed(() => {
 
 const destroyTag = async (tag: string) => {
   const removeTag = tagArray.value?.filter(t => t !== tag);
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const api = createClient(tokenCookie);
-  await api.channels.tagsPartialUpdate(props.channel.channelId!, { tags: removeTag });
+  const { $client } = useNuxtApp();
+  await $client.channels.tagsPartialUpdate(props.channel.channelId!, { tags: removeTag });
   tagArray.value = removeTag;
 };
 
@@ -143,10 +141,8 @@ const addTag = () => {
   // Optimistic add.
   tagArray.value.push(tag);
 
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const api = createClient(tokenCookie);
-
-  api.channels.tagsPartialUpdate(props.channel.channelId!, { tags: tagArray.value })
+  const { $client } = useNuxtApp();
+  $client.channels.tagsPartialUpdate(props.channel.channelId!, { tags: tagArray.value })
       .then(() => {
         showTagInput.value = false;
         tagVal.value = '';

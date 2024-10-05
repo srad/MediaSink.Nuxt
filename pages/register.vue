@@ -33,10 +33,9 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from "~/stores/auth";
-import { useState, useRouter, useCookie } from "#imports";
-import { TOKEN_NAME } from "~/services/auth.service";
-import { createClient } from "~/services/api/v1/ClientFactory";
+import { useAuthStore } from '~/stores/auth';
+import { useState, useRouter, useCookie } from '#imports';
+import { useNuxtApp } from '#app/nuxt';
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -48,8 +47,8 @@ const router = useRouter();
 const message = useState<string | null>('message', () => null);
 const successful = useState('successful', () => false);
 const loading = useState('loading', () => false);
-const email = useState('email', () => "");
-const password = useState('password', () => "");
+const email = useState('email', () => '');
+const password = useState('password', () => '');
 
 // --------------------------------------------------------------------------------------
 // Methods
@@ -60,14 +59,12 @@ const register = () => {
   successful.value = false;
   loading.value = true;
 
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const client = createClient(tokenCookie);
-
-  authStore.register({ user: { username: email.value, password: password.value }, client }).then(data => {
+  const { $client } = useNuxtApp();
+  authStore.register({ user: { username: email.value, password: password.value }, client: $client }).then(data => {
     message.value = data.message;
     successful.value = true;
     loading.value = false;
-    router.push('/login')
+    router.push('/login');
   }).catch(error => {
     loading.value = false;
     message.value = error.response.data;

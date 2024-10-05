@@ -101,22 +101,17 @@
 
 <script setup lang="ts">
 import RecordingItem from '~/components/RecordingItem.vue';
-import { createClient } from '~/services/api/v1/ClientFactory';
-import { DatabaseRecording } from '~/services/api/v1/StreamSinkClient';
-
-import {
+import type {
   DatabaseChannel as ChannelResponse,
   DatabaseRecording as RecordingResponse
 } from '~/services/api/v1/StreamSinkClient';
-
-import { onBeforeRouteLeave, useRoute, useRouter, onMounted, computed, useState, useCookie } from '#imports';
-import { createSocket, MessageType, SocketManager } from '~/utils/socket.ts';
+import { onBeforeRouteLeave, useRoute, useRouter, onMounted, computed, useState } from '#imports';
+import { createSocket, MessageType, SocketManager } from '~/utils/socket';
 import BusyOverlay from '~/components/BusyOverlay.vue';
-
-import { useToastStore } from "~/stores/toast";
-import { useChannelStore } from "~/stores/channel";
-import { useJobStore } from "~/stores/job";
-import { TOKEN_NAME } from "~/services/auth.service";
+import { useToastStore } from '~/stores/toast';
+import { useChannelStore } from '~/stores/channel';
+import { useJobStore } from '~/stores/job';
+import { useNuxtApp } from '#app/nuxt';
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -138,7 +133,7 @@ const uploadProgress = useState('uploadProgress', () => 0);
 const busyOverlay = useState('busyOverlay', () => false);
 const channel = useState<ChannelResponse | null>('channel', () => null);
 const channelId = (+route.params.id) as unknown as number;
-let cancellationToken: CancelTokenSource | null = null;
+let uploadAbortController: AbortController | null = null;
 const showModal = useState('showModal', () => false);
 
 // --------------------------------------------------------------------------------------
@@ -152,14 +147,13 @@ const areItemsSelected = computed(() => selectedRecordings.value.length > 0);
 // --------------------------------------------------------------------------------------
 
 const pauseChannel = (element: HTMLInputElement): void => {
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const api = createClient(tokenCookie);
-  const fn = element.checked ? client.channels.resumeCreate : client.channels.pauseCreate;
+  const { $client } = useNuxtApp();
+  const fn = element.checked ? $client.channels.resumeCreate : $client.channels.pauseCreate;
   fn(channel.value!.channelId).then(() => {
     if (element.checked) {
-      channelStore.resume(channel.value?.channelId);
+      channelStore.resume(channel.value!.channelId);
     } else {
-      channelStore.pause(channel.value?.channelId);
+      channelStore.pause(channel.value!.channelId);
     }
     toastSTore.add({
       title: element.checked ? 'Channel resume' : 'Channel pause',
@@ -177,12 +171,11 @@ const destroySelection = async () => {
     return;
   }
 
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const api = createClient(tokenCookie);
+  const { $client } = useNuxtApp();
 
   for (let i = 0; i < selectedRecordings.value.length; i++) {
     const rec = selectedRecordings.value[i];
-    await api.recordings.recordingsDelete(rec.recordingId);
+    await $client.recordings.recordingsDelete(rec.recordingId);
     const j = channel.value?.recordings?.findIndex(r => r.filename === rec.filename);
     if (j && j !== -1) {
       channel.value?.recordings?.splice(j, 1);
@@ -203,10 +196,9 @@ const deleteChannel = () => {
   if (window.confirm(`Delete channel "${channelId}"?`)) {
     busyOverlay.value = true;
 
-    const tokenCookie = useCookie(TOKEN_NAME);
-    const api = createClient(tokenCookie);
+    const { $client } = useNuxtApp();
 
-    api.channels.channelsDelete(channelId)
+    $client.channels.channelsDelete(channelId)
         .then(() => channelStore.destroy(channelId))
         .catch(err => alert(err))
         .finally(() => {
@@ -221,8 +213,8 @@ const deleteChannel = () => {
 };
 
 const cancelUpload = () => {
-  if (cancellationToken) {
-    cancellationToken.cancel();
+  if (uploadAbortController) {
+    uploadAbortController.abort();
   }
   showModal.value = false;
 };
@@ -233,14 +225,13 @@ const submit = () => {
     uploadProgress.value = 0;
     showModal.value = true;
 
-    const tokenCookie = useCookie(TOKEN_NAME);
-    const api = createClient(tokenCookie);
+    const { $client } = useNuxtApp();
 
-    const [ req, cancelToken ] = api.channelUpload(channelId, el.files![0], pcent => uploadProgress.value = pcent);
+    const [req, cancelToken] = $client.channelUpload(channelId, el.files![0], pcent => uploadProgress.value = pcent);
     req.then(res => {
       uploadProgress.value = 0;
       channel.value?.recordings?.unshift(res.data);
-      cancellationToken = null;
+      uploadAbortController = null;
       showModal.value = false;
       // clear old file
       el.value = '';
@@ -248,7 +239,7 @@ const submit = () => {
       alert(res.error);
       showModal.value = false;
     });
-    cancellationToken = cancelToken;
+    uploadAbortController = cancelToken;
   }
 };
 
@@ -265,10 +256,8 @@ const destroyRecording = (recording: RecordingResponse) => {
 };
 
 const bookmark = () => {
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const api = createClient(tokenCookie);
-
-  const fn = channel.value!.fav ? api.channels.unfavPartialUpdate : api.channels.favPartialUpdate;
+  const { $client } = useNuxtApp();
+  const fn = channel.value!.fav ? $client.channels.unfavPartialUpdate : $client.channels.favPartialUpdate;
 
   fn(channel.value!.channelId)
       .then(() => channel.value!.fav = !channel.value!.fav)
@@ -285,10 +274,8 @@ onBeforeRouteLeave((to, from) => {
   socket?.close();
 });
 
-const tokenCookie = useCookie(TOKEN_NAME);
-const api = createClient(tokenCookie);
-
-const res = await api.channels.channelsDetail(channelId);
+const { $client } = useNuxtApp();
+const res = await $client.channels.channelsDetail(channelId);
 channel.value = res.data;
 
 onMounted(async () => {
@@ -297,13 +284,13 @@ onMounted(async () => {
     socket?.connect();
 
     socket.on(MessageType.RecordingAdd, recording => {
-      const r = recording as DatabaseRecording;
+      const r = recording as RecordingResponse;
       console.log(r);
     });
 
     window.scrollTo(0, 0);
   } catch (error: any) {
-    alert(err);
+    alert(error.error);
     router.back();
   }
 });

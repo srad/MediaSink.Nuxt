@@ -120,19 +120,19 @@
 </template>
 
 <script setup lang="ts">
-import { createClient } from '../services/api/v1/ClientFactory';
-import JobTable from '../components/JobTable.vue';
+import { createClient } from '../../services/api/v1/ClientFactory';
+import JobTable from '../../components/JobTable.vue';
 import {
   DatabaseJob,
   DatabaseJobOrder,
   DatabaseJobStatus,
   ResponsesJobsResponse,
   ServicesProcessInfo as ProcessInfo
-} from '../services/api/v1/StreamSinkClient';
-import { fromNow } from '../utils/datetime.ts';
+} from '../../services/api/v1/StreamSinkClient';
+import { fromNow } from '../../utils/datetime.ts';
 //import { Tab } from 'bootstrap';
 import { useJobStore } from "~/stores/job";
-import ModalConfirmDialog from '../components/modals/ModalConfirmDialog.vue';
+import ModalConfirmDialog from '../../components/modals/ModalConfirmDialog.vue';
 import { useI18n, useState, useRoute, useRouter, computed, onMounted, watch, useCookie } from '#imports'
 import { TOKEN_NAME } from "~/services/auth.service";
 

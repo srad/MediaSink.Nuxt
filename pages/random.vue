@@ -32,11 +32,11 @@
 </template>
 
 <script setup lang="ts">
-import { createClient } from '../services/api/v1/ClientFactory';
-import RecordingItem from '../components/RecordingItem.vue';
-import { DatabaseRecording as RecordingResponse } from '../services/api/v1/StreamSinkClient';
-import { useState, useRoute, watch, onMounted, useCookie } from '#imports'
-import { TOKEN_NAME } from "~/services/auth.service";
+import RecordingItem from '@/components/RecordingItem.vue';
+import type { DatabaseRecording as RecordingResponse } from '@/services/api/v1/StreamSinkClient';
+import { useState, useRoute, watch } from '#imports';
+import { useNuxtApp } from '#app/nuxt';
+import { useAsyncData } from '#app';
 
 const route = useRoute();
 
@@ -57,11 +57,9 @@ const limits = useState('limits', () => [
 const recordings = useState<RecordingResponse[]>('recordings', () => []);
 
 const fetch = async () => {
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const api = createClient(tokenCookie);
-
-  const res = await api.recordings.randomDetail(filterLimit);
-  recordings.value = res.data;
+  const { $client } = useNuxtApp();
+  const { data } = await useAsyncData('randomRecordings', () => $client.recordings.randomDetail(filterLimit));
+  recordings.value = data.value?.data || [];
 };
 
 const destroyRecording = (recording: RecordingResponse) => {
@@ -73,10 +71,5 @@ const destroyRecording = (recording: RecordingResponse) => {
   }
 };
 
-onMounted(() => {
-  fetch();
-});
+await fetch();
 </script>
-
-<style scoped>
-</style>

@@ -63,7 +63,7 @@ const login = async () => {
   try {
     loading.value = true;
     await authStore.login({ username: email.value, password: password.value });
-    await router.replace('/');
+    await router.replace('/streams');
   } catch (res: any) {
     message.value = res.error;
   } finally {

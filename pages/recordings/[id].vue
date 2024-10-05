@@ -129,12 +129,11 @@
 </template>
 
 <script setup lang="ts">
-import type { Marking } from "~/components/Stripe.vue";
+import type { Marking } from '~/components/Stripe.vue';
 import type { DatabaseRecording } from '~/services/api/v1/StreamSinkClient.ts';
-import { createClient } from "~/services/api/v1/ClientFactory";
-import Stripe from "~/components/Stripe.vue";
-import RecordingFavButton from "~/components/controls/RecordingFavButton.vue";
-import BusyOverlay from "~/components/BusyOverlay.vue";
+import Stripe from '~/components/Stripe.vue';
+import RecordingFavButton from '~/components/controls/RecordingFavButton.vue';
+import BusyOverlay from '~/components/BusyOverlay.vue';
 import {
   useI18n,
   useCookie,
@@ -144,15 +143,14 @@ import {
   useRoute,
   computed,
   watch,
-  onMounted,
   onUnmounted
-} from '#imports'
-import ModalConfirmDialog from "~/components/modals/ModalConfirmDialog.vue";
-import MarkingsTable from "~/components/MarkingsTable.vue";
-import { useToastStore } from "~/stores/toast";
-import { useJobStore } from "~/stores/job";
-import { TOKEN_NAME } from "~/services/auth.service";
-import { useRuntimeConfig } from "nuxt/app";
+} from '#imports';
+import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.vue';
+import MarkingsTable from '~/components/MarkingsTable.vue';
+import { useToastStore } from '~/stores/toast';
+import { useJobStore } from '~/stores/job';
+import { useAsyncData, useRuntimeConfig } from 'nuxt/app';
+import { useNuxtApp } from '#app/nuxt';
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -164,8 +162,8 @@ const { t } = useI18n();
 const jobStore = useJobStore();
 const toastStore = useToastStore();
 
-const volume = useCookie('volume');
-const muted = useCookie('muted');
+const volume = useCookie<number>('volume');
+const muted = useCookie<boolean>('muted');
 
 const stripeContainer = useState('stripeContainer', () => null);
 
@@ -186,8 +184,8 @@ const playbackSpeed = useState('playbackSpeed', () => 1.0);
 const markings = useState<Marking[]>('markings', () => []);
 const timeCode = useState<number>('timeCode', () => 0);
 const duration = useState<number>('dureation', () => 0);
-const recording = useState<DatabaseRecording>('recording', () => null);
-const id = useState<number>('id', () => null);
+const recording = useState<DatabaseRecording | undefined>('recording', () => undefined);
+const id = useState<number | null>('id', () => null);
 const busy = useState('busy', () => false);
 const showConfirmDialog = useState('confirm', () => false);
 const deleteFileAfterCut = useState('deleteFile', () => false);
@@ -208,22 +206,19 @@ onBeforeRouteLeave(() => {
   isShown.value = false;
 });
 
+const rotate = () => {
+  const mql = window.matchMedia('(orientation: portrait)');
+
+  if (mql.matches) {
+    video.value!.requestFullscreen();
+  } else {
+    document.exitFullscreen();
+  }
+};
+
 onUnmounted(() => {
-  window.removeEventListener('orientationchange', rotate);
-});
-
-onMounted(async () => {
-  try {
-    const tokenCookie = useCookie(TOKEN_NAME);
-    const api = createClient(tokenCookie);
-
-    id.value = Number(route.params.id);
-    const rec = await api.recordings.recordingsDetail(id.value);
-    recording.value = rec.data;
-  } finally {
-    window.addEventListener('orientationchange', rotate);
-    isMounted.value = true;
-    isShown.value = true;
+  if (import.meta.browser) {
+    window.removeEventListener('orientationchange', rotate);
   }
 });
 
@@ -326,22 +321,12 @@ const destroyMarking = (marking: Marking) => {
   }
 };
 
-const rotate = () => {
-  const mql = window.matchMedia('(orientation: portrait)');
-
-  if (mql.matches) {
-    video.value!.requestFullscreen();
-  } else {
-    document.exitFullscreen();
-  }
-};
-
 const destroy = () => {
   if (!recording.value) {
     return;
   }
 
-  if (!window.confirm(t('videoView.destroy', [ recording.value.filename ]))) {
+  if (!window.confirm(t('videoView.destroy', [recording.value.filename]))) {
     return;
   }
 
@@ -349,10 +334,8 @@ const destroy = () => {
 
   unloadVideo();
 
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const api = createClient(tokenCookie);
-
-  api.recordings.recordingsDelete(recording.value.recordingId)
+  const { $client } = useNuxtApp();
+  $client.recordings.recordingsDelete(recording.value.recordingId)
       .then(() => {
         // Remove from Job list if existent.
         jobStore.deleteRecording(recording.value!.recordingId);
@@ -365,13 +348,11 @@ const destroy = () => {
 };
 
 const cutVideo = () => {
-  const tokenCookie = useCookie(TOKEN_NAME);
-  const api = createClient(tokenCookie);
-
+  const { $client } = useNuxtApp();
   const starts = markings.value.map(m => String(m.timestart.toFixed(4)));
   const ends = markings.value.map(m => String(m.timeend.toFixed(4)));
 
-  api.recordings.cutCreate(id.value!, { starts, ends, deleteAfterCut: deleteFileAfterCut.value })
+  $client.recordings.cutCreate(id.value!, { starts, ends, deleteAfterCut: deleteFileAfterCut.value })
       .then(() => markings.value = [])
       .catch((err) => alert(err))
       .finally(() => showConfirmDialog.value = false);
@@ -409,4 +390,17 @@ const unloadVideo = () => {
     video.value.load();
   }
 };
+
+try {
+  const { $client } = useNuxtApp();
+  id.value = Number(route.params.id);
+  const rec = await useAsyncData('rec', () => $client.recordings.recordingsDetail(id.value!));
+  recording.value = rec.data.value?.data;
+} finally {
+  if (import.meta.browser) {
+    window.addEventListener('orientationchange', rotate);
+  }
+  isMounted.value = true;
+  isShown.value = true;
+}
 </script>
