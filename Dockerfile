@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY ./package.json /app/
 
-## Install dependencies
+RUN npm install -g npm@latest
 RUN npm install
 
 COPY . .
