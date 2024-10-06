@@ -48,4 +48,4 @@ ENV PORT=80
 EXPOSE 80
 
 # Start the application
-CMD ["node","/app/server/index.mjs"]
+ENTRYPOINT ["node","/app/server/index.mjs"]
