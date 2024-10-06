@@ -20,7 +20,7 @@
       <table class="table table-bordered table-hover table-sm m-0">
         <thead>
         <tr class="align-middle text-center">
-          <th rowspan="2" style="width: 0%" class="bg-light p-2">Preview</th>
+          <th rowspan="2" style="width: 1%" class="bg-light p-2">Preview</th>
           <th rowspan="2" style="width: 10%" class="bg-light p-2">Name</th>
           <th rowspan="2" style="width: 20%" class="bg-light p-2">Link</th>
           <th rowspan="2" style="width: 5%" class="bg-light p-2">Favourite?</th>

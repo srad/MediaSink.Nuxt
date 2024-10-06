@@ -6,8 +6,7 @@
 
     <Preview class="card-img-top"
              @selected="viewFolder(props.channel.channelId!, props.channel.channelName)"
-             :data="props.channel.channelId!"
-             :previewImage="previewImage"/>
+             :data="props.channel.channelId!" :preview-image="previewImage"/>
     <div class="card-body">
       <div class="card-title p-1 m-0" :class="{'bg-primary' : !props.channel.isRecording && !props.channel.isOnline, 'bg-danger': props.channel.isRecording, 'bg-success': props.channel.isOnline && !props.channel.isRecording}">
         <h6 class="p-2 m-0 text-white">

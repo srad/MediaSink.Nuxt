@@ -1,0 +1,11 @@
+.nuxt
+.output
+node_modules
+
+.gitignore
+README.md
+.idea
+.vscode
+.code
+.env
+.env.*
