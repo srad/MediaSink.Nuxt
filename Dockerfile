@@ -4,11 +4,12 @@ FROM node:22-bookworm AS build
 WORKDIR /app
 
 COPY ./package.json /app/
+COPY ./package-lock.json /app/
 
 RUN npm install -g npm@latest
 RUN npm install
 
-COPY . .
+ADD . /app
 
 RUN npm run build
 
@@ -19,7 +20,8 @@ FROM node:22-bookworm
 WORKDIR /app
 
 # Copy the output from the build stage to the working directory
-COPY --from=build /app/.output .
+COPY --from=builder /app/.output .
+COPY --from=builder /app/.nuxt .
 
 ARG APP_NAME=StreamSink
 ARG API_URL
