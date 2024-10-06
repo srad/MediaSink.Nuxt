@@ -20,8 +20,8 @@ FROM node:22-bookworm
 WORKDIR /app
 
 # Copy the output from the build stage to the working directory
-COPY --from=builder /app/.output .
-COPY --from=builder /app/.nuxt .
+COPY --from=build /app/.output .
+COPY --from=build /app/.nuxt .
 
 ARG APP_NAME=StreamSink
 ARG API_URL
