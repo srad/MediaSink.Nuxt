@@ -1,5 +1,5 @@
 <template>
-  <LoadIndicator :busy="busy">
+  <div>
     <ChannelModal
         @save="save"
         @close="showModal=false"
@@ -122,7 +122,7 @@
 
     </div>
     <!-- Body end -->
-  </LoadIndicator>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -131,18 +131,14 @@ import type { DatabaseChannel as ChannelResponse } from '~/services/api/v1/Strea
 import ChannelItem from '../../components/ChannelItem.vue';
 import ChannelModal from '../../components/modals/ChannelModal.vue';
 import { useChannelStore } from '~/stores/channel';
-import { useAuthStore } from '~/stores/auth';
-import LoadIndicator from '../../components/LoadIndicator.vue';
 import { computed, ref, useAsyncData, useRoute, useRouter, watch } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
-import { navigateTo } from '#app/composables/router';
 
 // --------------------------------------------------------------------------------------
 // Declarations
 // --------------------------------------------------------------------------------------
 
 const channelStore = useChannelStore();
-const authStore = useAuthStore();
 const route = useRoute();
 
 const channelItemClass = 'col-lg-6 col-xl-6 col-xxl-4 col-md-6';
@@ -152,7 +148,6 @@ const channelName = ref('');
 const displayName = ref('');
 const isPaused = ref(false);
 const url = ref('');
-const busy = ref(false);
 
 const minDuration = ref(20);
 const skipStart = ref(0);
@@ -162,6 +157,10 @@ const searchVal = ref<string>((route.query.search || route.query.tag || route.pa
 const tagFilter = ref<string>((route.params.tag || route.query.tag || '') as string);
 
 const router = useRouter();
+
+const { $client } = useNuxtApp();
+const { data } = await useAsyncData('channels', () => $client.channels.channelsList());
+data.value?.data.forEach(channel => channelStore.add(channel));
 
 // --------------------------------------------------------------------------------------
 // Computes
@@ -194,8 +193,6 @@ const searchResults = computed(() => channelStore.channels.slice()
     .filter(channel => searchFilter(channel, searchTerms.value, tagTerms.value))
     .filter(channel => favs.value ? channel.fav : true) // Only use, if defined.
     .sort(sort));
-
-const loggedIn = computed(() => authStore.isLoggedIn);
 
 // --------------------------------------------------------------------------------------
 // Methods
@@ -248,11 +245,6 @@ watch(() => route.query, params => {
 watch(tagFilter, val => {
   router.replace({ params: { tag: val } });
 });
-
-const { $client } = useNuxtApp();
-const { data } = await useAsyncData('channels', () => $client.channels.channelsList());
-data.value?.data.forEach(channel => channelStore.add(channel));
-busy.value = false;
 </script>
 
 <style lang="scss" scoped>

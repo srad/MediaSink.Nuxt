@@ -1,5 +1,5 @@
-import { expect, describe, it } from 'vitest'
-import { randomString } from "./math.ts";
+import { expect, describe, it } from 'vitest';
+import { randomString } from './math';
 
 describe('randomString', function () {
 

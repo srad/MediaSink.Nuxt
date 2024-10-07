@@ -34,7 +34,9 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth';
 import { ref, useRouter, computed, definePageMeta } from '#imports';
-import { createLog } from "~/utils/log";
+import { createLog } from '~/utils/log';
+import { useNuxtApp } from '#app/nuxt';
+import { reloadNuxtApp } from '#app/composables/chunk';
 
 definePageMeta({
   layout: 'auth'
@@ -53,7 +55,7 @@ const loading = ref(false);
 const email = ref('');
 const password = ref('');
 
-const logger = createLog("login");
+const logger = createLog('login');
 
 // --------------------------------------------------------------------------------------
 // Computes
@@ -68,8 +70,11 @@ const loggedIn = computed(() => authStore.isLoggedIn);
 const login = async () => {
   try {
     loading.value = true;
-    await authStore.login({ username: email.value, password: password.value });
-    await router.replace('/streams/live');
+    const { $auth } = useNuxtApp();
+    await $auth.login({ username: email.value, password: password.value });
+    reloadNuxtApp({
+      path: '/streams/live',
+    });
   } catch (res: any) {
     logger.error(res);
     message.value = res.error || res;

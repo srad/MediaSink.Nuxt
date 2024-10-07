@@ -1,13 +1,16 @@
-import { ContentType, type DatabaseRecording, type DatabaseRecording as RecordingResponse, type HttpResponse, type ResponsesRecordingStatusResponse } from './StreamSinkClient';
+import { ContentType, type DatabaseRecording, type DatabaseRecording as RecordingResponse, type HttpResponse } from './StreamSinkClient';
 import { StreamSinkClient, HttpClient } from './StreamSinkClient';
-import type { AuthHeader } from '@/services/auth.service';
 
 export class MyClient extends StreamSinkClient<any> {
-  constructor(header: AuthHeader | null, apiUrl: string) {
+  constructor(token: string | null, apiUrl: string) {
+    let auth = {};
+    if (token !== null) {
+      auth = { Authorization: `Bearer ${token}` };
+    }
     const client = new HttpClient({
       baseUrl: apiUrl,
       baseApiParams: {
-        headers: { ...header },
+        headers: { ...auth },
       },
     });
     super(client);
@@ -36,15 +39,12 @@ export class MyClient extends StreamSinkClient<any> {
     return [req, controller];
   }
 
-  /**
-   * For unclear reasons the object is not correctly parsed from this route,
-   * although the returned data look fine in the browser.
-   */
   async isRecording(): Promise<boolean> {
-    return (await this.recorder.recorderList()).data.isRecording;
+    const { data } = await this.recorder.recorderList();
+    return data.isRecording;
   }
 }
 
-export const createClient = (authHeader: AuthHeader | null, apiUrl: string): MyClient => {
-  return new MyClient(authHeader, apiUrl);
+export const createClient = (token: string | null, apiUrl: string): MyClient => {
+  return new MyClient(token, apiUrl);
 };

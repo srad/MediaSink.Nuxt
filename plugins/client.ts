@@ -1,13 +1,12 @@
 import { defineNuxtPlugin } from '#app/nuxt';
 import { createClient } from '~/services/api/v1/ClientFactory';
-import AuthService, { TOKEN_NAME } from '~/services/auth.service';
-import { useCookie, useRuntimeConfig } from 'nuxt/app';
+import { useRuntimeConfig } from 'nuxt/app';
+import { useAuthStore } from '#imports';
 
 export default defineNuxtPlugin((nuxtApp) => {
   const config = useRuntimeConfig();
-  const tokenCookie = useCookie<string>(TOKEN_NAME);
-  const auth = new AuthService(tokenCookie);
-  const client = createClient(auth.getAuthHeader(), config.apiUrl || config.public.apiUrl);
+  const authStore = useAuthStore();
+  const client = createClient(authStore.getToken, config.public.apiUrl);
 
   return {
     provide: {

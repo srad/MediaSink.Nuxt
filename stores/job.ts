@@ -2,8 +2,6 @@ import { DatabaseJobOrder, DatabaseJobStatus } from '~/services/api/v1/StreamSin
 import type { DatabaseJob as JobData } from '~/services/api/v1/StreamSinkClient';
 import { createClient } from '~/services/api/v1/ClientFactory';
 import { defineStore } from 'pinia';
-import { useCookie } from '#imports';
-import { TOKEN_NAME } from '~/services/auth.service';
 import { useNuxtApp } from '#app/nuxt';
 
 export interface TaskInfo {

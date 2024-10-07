@@ -1,5 +1,6 @@
 const silenceSomeSassDeprecationWarnings = {
   verbose: true,
+  ssr: true,
   logger: {
     warn(message: any, options: any) {
       const { stderr } = process;
@@ -45,17 +46,17 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   runtimeConfig: {
     public: {
-      apiUrl: process.env.NUXT_PUBLIC_API_URL,
-      baseUrl: process.env.NUXT_PUBLIC_BASE_URL,
-      appName: process.env.NUXT_PUBLIC_APP_NAME,
-      socketUrl: process.env.NUXT_PUBLIC_APP_SOCKET_URL,
-      fileUrl: process.env.NUXT_PUBLIC_APP_FILE_URL,
+      apiUrl: '',
+      baseUrl: '',
+      appName: '',
+      socketUrl: '',
+      fileUrl: '',
     },
-    apiUrl: process.env.NUXT_API_URL,
-    baseUrl: process.env.NUXT_BASE_URL,
-    appName: process.env.NUXT_APP_NAME,
-    socketUrl: process.env.NUXT_APP_SOCKET_URL,
-    fileUrl: process.env.NUXT_APP_FILE_URL,
+    apiUrl: '',
+    baseUrl: '',
+    appName: '',
+    socketUrl: '',
+    fileUrl: '',
   },
   css: [
     // SCSS file in the project

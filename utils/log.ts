@@ -11,7 +11,6 @@ import { createConsola } from "consola";
 export const createLog = (tag: string) => {
   return createConsola({
     level: 3,
-    fancy: true,
     formatOptions: {
       colors: true,
       date: true,

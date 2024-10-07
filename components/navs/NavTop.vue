@@ -61,9 +61,8 @@
 <script setup lang="ts">
 import { createSocket, MessageType } from '~/utils/socket';
 import { useChannelStore } from '~/stores/channel';
-import { useAuthStore } from '~/stores/auth';
 import { useJobStore } from '~/stores/job';
-import { computed, onMounted, reactive, watch, useRoute, useRouter, ref } from '#imports';
+import { computed, onMounted, reactive, watch, useRoute, useRouter, ref, onUnmounted } from '#imports';
 
 import DiskStatus from '../DiskStatus.vue';
 import RecordingControls from '../RecordingControls.vue';
@@ -95,7 +94,6 @@ const emit = defineEmits<{
 // --------------------------------------------------------------------------------------
 
 const channelStore = useChannelStore();
-const authStore = useAuthStore();
 const jobStore = useJobStore();
 
 const diskInfo = reactive({ avail: '', pcent: '', size: '', used: '' });
@@ -117,7 +115,6 @@ let thread: undefined | ReturnType<typeof setInterval> = undefined;
 
 const jobs = computed(() => jobStore.getOpen);
 const jobsCount = computed(() => jobStore.jobsCount);
-const loggedIn = computed(() => authStore.isLoggedIn);
 
 // --------------------------------------------------------------------------------------
 // Methods
@@ -153,43 +150,37 @@ const record = async () => {
   }
 };
 
-const connector = async (isLoggedIn: boolean) => {
-  if (isLoggedIn) {
-    socket.connect();
-
-    socket.on(MessageType.HeartBeat, nextUpdate => {
-      heartBeatNextUpdate.value = nextUpdate as number;
-      const id = setInterval(() => {
-        heartBeatNextUpdate.value -= 1;
-        if (heartBeatNextUpdate.value <= 0) {
-          clearInterval(id);
-        }
-      }, 1000);
-    });
-
-    await query();
-    // The catch stops the polling when the query is rejected because of 401 unauthorized.
-    thread = setInterval(async () => {
-      try {
-        await query();
-      } catch (e) {
-        clearInterval(thread);
-      }
-    }, 1000 * 10);
-
-  } else {
-    socket.close();
-  }
-};
-
 // --------------------------------------------------------------------------------------
 // Watchers
 // --------------------------------------------------------------------------------------
 
 watch(route, () => collapseNav.value = true);
-watch(loggedIn, connector);
 
-onMounted(() => {
-  connector(loggedIn.value);
+onMounted(async () => {
+  socket.connect();
+
+  socket.on(MessageType.HeartBeat, nextUpdate => {
+    heartBeatNextUpdate.value = nextUpdate as number;
+    const id = setInterval(() => {
+      heartBeatNextUpdate.value -= 1;
+      if (heartBeatNextUpdate.value <= 0) {
+        clearInterval(id);
+      }
+    }, 1000);
+  });
+
+  await query();
+  // The catch stops the polling when the query is rejected because of 401 unauthorized.
+  thread = setInterval(async () => {
+    try {
+      await query();
+    } catch (e) {
+      clearInterval(thread);
+    }
+  }, 1000 * 10);
+});
+
+onUnmounted(() => {
+  socket.close();
 });
 </script>
