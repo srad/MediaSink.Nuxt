@@ -1,6 +1,6 @@
 import AuthService, { TOKEN_NAME } from '@/services/auth.service';
 import { defineStore } from 'pinia';
-import { useCookie } from '~/.nuxt/imports';
+import { createLog, useCookie } from '~/.nuxt/imports';
 import { useNuxtApp } from '#app/nuxt';
 import type { CookieRef } from '#app';
 import type { RequestsAuthenticationRequest } from '@/services/api/v1/StreamSinkClient';
@@ -22,7 +22,6 @@ export const useAuthStore = defineStore('auth', {
     login(user: RequestsAuthenticationRequest) {
       return new Promise(async (resolve, reject) => {
         const { $client, $auth } = useNuxtApp();
-
         $auth.login(user, $client).then((token: string) => {
           this.loggedIn = true;
           resolve(token);

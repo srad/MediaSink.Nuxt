@@ -1,6 +1,7 @@
 import type { MyClient } from './api/v1/ClientFactory';
 import type { RequestsAuthenticationRequest } from './api/v1/StreamSinkClient';
 import type { CookieRef } from '#app';
+import { createLog } from "~/utils/log";
 
 export interface AuthInfo {
   token: string;
@@ -10,7 +11,7 @@ export interface AuthHeader {
   Authorization: string;
 }
 
-export const TOKEN_NAME = 'jwt';
+export const TOKEN_NAME = 'streamsink_token';
 
 export default class AuthService {
   private readonly tokenCookie: CookieRef<string | null>;
@@ -21,8 +22,10 @@ export default class AuthService {
 
   login(user: RequestsAuthenticationRequest, client: MyClient) {
     return new Promise<string>((resolve, reject) => {
+      const logger = createLog("services/auth/login");
       client.auth.loginCreate(user).then(response => {
         const r = response.data as unknown as AuthInfo;
+        logger.warn(",,,,,,,,,", response);
         if (r.token) {
           this.tokenCookie.value = r.token;
           return resolve(r.token);

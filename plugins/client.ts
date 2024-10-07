@@ -7,7 +7,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   const config = useRuntimeConfig();
   const tokenCookie = useCookie<string>(TOKEN_NAME);
   const auth = new AuthService(tokenCookie);
-  const client = createClient(auth.getAuthHeader(), config.public.apiUrl);
+  const client = createClient(auth.getAuthHeader(), config.apiUrl || config.public.apiUrl);
 
   return {
     provide: {

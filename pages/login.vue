@@ -34,6 +34,7 @@
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth';
 import { ref, useRouter, computed, definePageMeta } from '#imports';
+import { createLog } from "~/utils/log";
 
 definePageMeta({
   layout: 'auth'
@@ -52,6 +53,8 @@ const loading = ref(false);
 const email = ref('');
 const password = ref('');
 
+const logger = createLog("login");
+
 // --------------------------------------------------------------------------------------
 // Computes
 // --------------------------------------------------------------------------------------
@@ -68,7 +71,8 @@ const login = async () => {
     await authStore.login({ username: email.value, password: password.value });
     await router.replace('/streams/live');
   } catch (res: any) {
-    message.value = res.error;
+    logger.error(res);
+    message.value = res.error || res;
   } finally {
     loading.value = false;
   }
