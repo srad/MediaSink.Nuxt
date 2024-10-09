@@ -106,9 +106,8 @@ import { ref, onBeforeRouteLeave, computed, onMounted } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
 import { useAsyncData } from '#app';
 
-const config = useRuntimeConfig();
-const build = config.build;
-const version = config.version;
+const build = import.meta.env.VITE_BUILD;
+const version = import.meta.env.VITE_VERSION;
 
 const versions = computed(() => [
   ['Client-Version', version],
