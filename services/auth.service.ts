@@ -39,7 +39,7 @@ export default class AuthService {
     return authStore.isLoggedIn;
   }
 
-  signup(user: RequestsAuthenticationRequest, client: MyClient) {
+  signup(user: RequestsAuthenticationRequest) {
     const { $client } = useNuxtApp();
     return $client.auth.signupCreate(user);
   }

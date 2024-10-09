@@ -34,8 +34,9 @@
 
 <script setup lang="ts">
 import { useAuthStore } from '~/stores/auth';
-import { definePageMeta, ref, useRouter } from '#imports';
+import { createLog, definePageMeta, ref, useRouter } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
+import { reloadNuxtApp } from '#app/composables/chunk';
 
 definePageMeta({
   layout: 'auth'
@@ -54,25 +55,26 @@ const loading = ref(false);
 const email = ref('');
 const password = ref('');
 
+const logger = createLog('register');
+
 // --------------------------------------------------------------------------------------
 // Methods
 // --------------------------------------------------------------------------------------
 
-const register = () => {
-  message.value = null;
-  successful.value = false;
-  loading.value = true;
-
-  const { $client } = useNuxtApp();
-  authStore.register({ user: { username: email.value, password: password.value }, client: $client }).then(data => {
-    message.value = data.message;
-    successful.value = true;
-    loading.value = false;
-    router.push('/login');
-  }).catch(error => {
-    loading.value = false;
-    message.value = error.response.data;
+const register = async () => {
+  try {
+    message.value = null;
     successful.value = false;
-  });
+    logger.info(`Registering ${email.value}`);
+    const { $auth } = useNuxtApp();
+    await $auth.signup({ username: email.value, password: password.value });
+    await router.push('/login');
+  } catch (error: any) {
+    logger.error(error);
+    message.value = JSON.stringify(error);
+    successful.value = false;
+  } finally {
+    loading.value = false;
+  }
 };
 </script>

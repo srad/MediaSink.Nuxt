@@ -63,7 +63,7 @@
           <div v-if="job.active" class="progress">
             <div class="progress-bar progress-bar-striped bg-info progress-bar-animated" role="progressbar" :style="'width:'+ job.progress + '%'" :aria-valuenow="job.progress" aria-valuemin="0" :aria-valuemax="100"></div>
           </div>
-          <div>
+          <div v-if="showInfo">
             <textarea class="form-control form-control-sm text-wrap" style="font-size: 0.8rem" rows="3">{{ job.info }}</textarea>
           </div>
         </td>

@@ -1,6 +1,4 @@
 const silenceSomeSassDeprecationWarnings = {
-  verbose: true,
-  ssr: true,
   logger: {
     warn(message: any, options: any) {
       const { stderr } = process;
@@ -34,6 +32,7 @@ const silenceSomeSassDeprecationWarnings = {
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+  ssr: true,
   build: {
     analyze: {
 
