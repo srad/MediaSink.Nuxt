@@ -64,7 +64,11 @@ import { useRuntimeConfig, computed, ref, downloadObjectAsJson } from '#imports'
 import ChannelFavButton from '~/components/controls/ChannelFavButton.vue';
 import type { DatabaseChannel, ServicesChannelInfo } from '~/services/api/v1/StreamSinkClient';
 import { useNuxtApp } from '#app/nuxt';
-import { useAsyncData } from '#app';
+import { useAsyncData, useHead } from '#app';
+
+useHead({
+  title: 'Channels'
+});
 
 const config = useRuntimeConfig();
 const isImporting = ref(false);

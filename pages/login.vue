@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex align-items-center justify-content-center vh-100">
-    <div class="card shadow-sm border border-primary" style="width: 400px" v-if="!loggedIn">
+    <div class="card shadow-sm border border-primary" style="width: 400px">
       <h5 class="card-header p-3 bg-primary text-white">Login</h5>
       <div class="card-body px-4 py-3">
         <form @submit.prevent="login">
@@ -32,11 +32,15 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '~/stores/auth';
-import { ref, useRouter, computed, definePageMeta } from '#imports';
+import { ref, definePageMeta } from '#imports';
 import { createLog } from '~/utils/log';
 import { useNuxtApp } from '#app/nuxt';
 import { reloadNuxtApp } from '#app/composables/chunk';
+import { useHead } from '#app';
+
+useHead({
+  title: 'Login'
+})
 
 definePageMeta({
   layout: 'auth'
@@ -46,9 +50,6 @@ definePageMeta({
 // Declarations
 // --------------------------------------------------------------------------------------
 
-const authStore = useAuthStore();
-const router = useRouter();
-
 const message = ref<string | null>(null);
 const loading = ref(false);
 
@@ -56,12 +57,6 @@ const email = ref('');
 const password = ref('');
 
 const logger = createLog('login');
-
-// --------------------------------------------------------------------------------------
-// Computes
-// --------------------------------------------------------------------------------------
-
-const loggedIn = computed(() => authStore.isLoggedIn);
 
 // --------------------------------------------------------------------------------------
 // Methods

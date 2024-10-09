@@ -1,6 +1,11 @@
 @import "./custom-bootstrap";
 @import "bootstrap-icons/font/bootstrap-icons.css";
 
+html,
+body {
+  overscroll-behavior-y: contain;
+}
+
 input:invalid {
   border: 2px solid red;
 }

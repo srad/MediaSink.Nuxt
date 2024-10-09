@@ -151,6 +151,7 @@ import { useToastStore } from '~/stores/toast';
 import { useJobStore } from '~/stores/job';
 import { useAsyncData, useRuntimeConfig } from 'nuxt/app';
 import { useNuxtApp } from '#app/nuxt';
+import { useHead } from '#app';
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -394,6 +395,10 @@ const rec = await useAsyncData('rec', () => $client.recordings.recordingsDetail(
 recording.value = rec.data.value?.data;
 const stripeUrl = fileUrl + '/' + recording.value?.previewStripe;
 const videoUrl = fileUrl + '/' + recording.value?.pathRelative;
+
+useHead({
+  title: recording.value?.filename
+});
 
 onMounted(() => {
   window.addEventListener('orientationchange', rotate);

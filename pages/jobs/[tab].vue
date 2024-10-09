@@ -136,6 +136,11 @@ import { useJobStore } from '~/stores/job';
 import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.vue';
 import { useI18n, useRoute, computed, ref } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
+import { useHead } from '#app';
+
+useHead({
+  title: 'Jobs'
+});
 
 const { t } = useI18n();
 

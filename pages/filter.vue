@@ -50,7 +50,11 @@ import type { DatabaseRecording as RecordingResponse } from '../services/api/v1/
 import RecordingItem from '../components/RecordingItem.vue';
 import { useI18n, ref, useRoute, useRouter, watch } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
-import { useAsyncData } from '#app';
+import { useAsyncData, useHead } from '#app';
+
+useHead({
+  title: 'Latest Recordings'
+});
 
 const { t } = useI18n();
 

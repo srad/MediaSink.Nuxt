@@ -101,10 +101,13 @@ import type {
 } from '~/services/api/v1/StreamSinkClient';
 import TrafficChart from '~/components/charts/TrafficChart.vue';
 import CPUChart from '~/components/charts/CPUChart.vue';
-import { useRuntimeConfig } from 'nuxt/app';
 import { ref, onBeforeRouteLeave, computed, onMounted } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
-import { useAsyncData } from '#app';
+import { useAsyncData, useHead } from '#app';
+
+useHead({
+  title: 'Administration'
+});
 
 const build = import.meta.env.VITE_BUILD;
 const version = import.meta.env.VITE_VERSION;

@@ -37,6 +37,11 @@ import { useAuthStore } from '~/stores/auth';
 import { createLog, definePageMeta, ref, useRouter } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
 import { reloadNuxtApp } from '#app/composables/chunk';
+import { useHead } from '#app';
+
+useHead({
+  title: 'Register'
+});
 
 definePageMeta({
   layout: 'auth'

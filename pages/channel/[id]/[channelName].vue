@@ -109,6 +109,7 @@ import { useToastStore } from '~/stores/toast';
 import { useChannelStore } from '~/stores/channel';
 import { useJobStore } from '~/stores/job';
 import { useNuxtApp } from '#app/nuxt';
+import { useHead } from '#app';
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -274,6 +275,10 @@ onBeforeRouteLeave((to, from) => {
 const { $client } = useNuxtApp();
 const res = await $client.channels.channelsDetail(channelId);
 channel.value = res.data;
+
+useHead({
+  title: channel.value.displayName
+});
 
 onMounted(async () => {
   try {

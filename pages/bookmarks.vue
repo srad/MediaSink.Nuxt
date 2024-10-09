@@ -16,7 +16,11 @@ import type { DatabaseRecording } from '@/services/api/v1/StreamSinkClient';
 import RecordingItem from '../components/RecordingItem.vue';
 import { useI18n, ref } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
-import { useAsyncData } from '#app';
+import { useAsyncData, useHead } from '#app';
+
+useHead({
+  title: 'Bookmarks'
+});
 
 const { t } = useI18n();
 const recordings = ref<DatabaseRecording[]>([]);
