@@ -1,27 +1,37 @@
 import { DatabaseJobOrder, DatabaseJobStatus } from '~/services/api/v1/StreamSinkClient';
-import type { DatabaseJob as JobData } from '~/services/api/v1/StreamSinkClient';
-import { createClient } from '~/services/api/v1/ClientFactory';
+import type { DatabaseJob as Job } from '~/services/api/v1/StreamSinkClient';
 import { defineStore } from 'pinia';
 import { useNuxtApp } from '#app/nuxt';
 
 export interface TaskInfo {
-  job: JobData;
-  data: {
-    steps: number
-    step: number
-    pid: number
-    command: string
-    message: string
-  };
+  steps: number;
+  step: number;
+  pid: number;
+  command: string;
+  message: string;
+}
+
+export interface JobMessage<T> {
+  data: T,
+  job: Job
+}
+
+export interface TaskComplete {
+  steps: number;
+  step: number;
+  message: string;
 }
 
 export interface TaskProgress {
-  job: JobData;
-  data: { current: number, total: number, steps: number, step: number, message: string };
+  current: number;
+  total: number;
+  steps: number;
+  step: number;
+  message: string;
 }
 
 export interface JobState {
-  jobs: JobData[];
+  jobs: Job[];
   jobsCount: number;
 }
 
@@ -34,20 +44,20 @@ export const useJobStore = defineStore('job', {
     };
   },
   getters: {
-    getJobs(): JobData[] {
+    getJobs(): Job[] {
       return this.jobs || [];
     },
-    getOpen(): JobData[] {
+    getOpen(): Job[] {
       return (this.jobs || []).filter(x => x.status === DatabaseJobStatus.StatusJobOpen);
     }
   },
   actions: {
-    create(job: JobData) {
+    create(job: Job) {
       this.jobs.push(job);
       this.jobsCount += 1;
     },
-    done(job: JobData) {
-      this.destroy(job.jobId);
+    done(message: JobMessage<TaskComplete>) {
+      this.destroy(message.job.jobId);
       this.dec();
     },
     // Just load 100 jobs for the initial state.
@@ -59,51 +69,50 @@ export const useJobStore = defineStore('job', {
     dec() {
       this.jobsCount = Math.max(this.jobsCount - 1, 0);
     },
-    update(data: { jobs: JobData[], totalCount: number }) {
+    update(data: { jobs: Job[], totalCount: number }) {
       this.jobs = data.jobs;
       this.jobsCount = data.totalCount;
     },
-    inactive(progress: TaskProgress) {
-      const i = this.jobs.findIndex((j: JobData) => j.recordingId === progress.job.recordingId);
+    inactive(job: Job) {
+      const i = this.jobs.findIndex((j: Job) => j.jobId === job.jobId);
       if (i !== -1) {
-        this.jobs[i].status = progress.job.status;
         this.jobs[i].active = false;
       }
     },
-    start(info: TaskInfo) {
-      let i = this.jobs.findIndex((j: JobData) => j.jobId === info.job.jobId);
+    start(message: JobMessage<TaskInfo>) {
+      let i = this.jobs.findIndex((j: Job) => j.jobId === message.job.jobId);
       if (i === -1) {
-        this.jobs.unshift(info.job);
+        this.jobs.unshift(message.job);
         i = 0;
       }
       this.jobs[i].active = true;
-      this.jobs[i].pid = info.data.pid;
-      this.jobs[i].command = info.data.command;
+      this.jobs[i].pid = message.data.pid;
+      this.jobs[i].command = message.data.command;
     },
-    progress(info: TaskProgress) {
-      const i = this.jobs.findIndex(j => j.jobId === info.job.jobId);
-      const progress = String((info.data.step / info.data.steps) * info.data.current / info.data.total * 100);
+    progress(message: JobMessage<TaskProgress>) {
+      const i = this.jobs.findIndex(j => j.jobId === message.job.jobId);
+      const progress = String((message.data.step / message.data.steps) * message.data.current / message.data.total * 100);
       if (i !== -1) {
         this.jobs[i].progress = progress;
-        this.jobs[i].info = info.data.message;
+        this.jobs[i].info = message.data.message;
       } else {
-        this.jobs.unshift(info.job);
+        this.jobs.unshift(message.job);
         this.jobs[0].progress = progress;
-        this.jobs[0].info = info.data.message;
+        this.jobs[0].info = message.data.message;
       }
     },
-    refresh(data: { jobs: JobData[], totalCount: number }) {
+    refresh(data: { jobs: Job[], totalCount: number }) {
       this.jobs = data.jobs;
       this.jobsCount = data.totalCount;
     },
     destroy(jobId: number) {
-      this.jobs = this.jobs.filter((x: JobData) => x.jobId !== jobId);
+      this.jobs = this.jobs.filter((x: Job) => x.jobId !== jobId);
     },
     deleteChannel(channelId: number) {
-      this.jobs = this.jobs.filter((x: JobData) => x.channelId !== channelId);
+      this.jobs = this.jobs.filter((x: Job) => x.channelId !== channelId);
     },
     deleteRecording(recordingId: number) {
-      this.jobs = this.jobs.filter((x: JobData) => x.recordingId !== recordingId);
+      this.jobs = this.jobs.filter((x: Job) => x.recordingId !== recordingId);
     }
   }
 });

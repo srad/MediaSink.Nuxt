@@ -103,7 +103,7 @@
 import RecordingItem from '~/components/RecordingItem.vue';
 import type { DatabaseChannel as ChannelResponse, DatabaseRecording as RecordingResponse } from '~/services/api/v1/StreamSinkClient';
 import { onBeforeRouteLeave, useRoute, useRouter, onMounted, computed, ref } from '#imports';
-import { createSocket, MessageType, SocketManager } from '~/utils/socket';
+import { MessageType, connectSocket, socketOn, closeSocket } from '~/utils/socket';
 import BusyOverlay from '~/components/BusyOverlay.vue';
 import { useToastStore } from '~/stores/toast';
 import { useChannelStore } from '~/stores/channel';
@@ -262,14 +262,12 @@ const bookmark = () => {
       .catch(err => alert(err));
 };
 
-let socket: SocketManager | null = null;
-
 // --------------------------------------------------------------------------------------
 // Hooks
 // --------------------------------------------------------------------------------------
 
 onBeforeRouteLeave((to, from) => {
-  socket?.close();
+  closeSocket();
 });
 
 const { $client } = useNuxtApp();
@@ -282,10 +280,9 @@ useHead({
 
 onMounted(async () => {
   try {
-    socket = createSocket();
-    socket?.connect();
+    connectSocket();
 
-    socket.on(MessageType.RecordingAdd, recording => {
+    socketOn(MessageType.RecordingAdd, recording => {
       const r = recording as RecordingResponse;
       console.log(r);
     });

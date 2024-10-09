@@ -239,7 +239,7 @@ const addFromNowToJob = (job: DatabaseJob): JobTableItem => {
   return newJob;
 };
 
-const itemsOpen = computed(() => (jobStore.jobs || []).map(addFromNowToJob));
+const itemsOpen = computed(() => jobStore.getOpen.map(addFromNowToJob));
 const itemsCount = computed(() => jobStore.jobsCount);
 
 const itemsCompleted = computed(() => (jobsCompleted.value?.jobs || []).map(addFromNowToJob));

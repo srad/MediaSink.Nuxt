@@ -9,7 +9,6 @@ import { createPinia } from 'pinia';
 import state from 'pinia-plugin-persistedstate';
 import { createLog } from '~/utils/log';
 import { useRuntimeConfig } from 'nuxt/app';
-import { defineHead } from 'zhead';
 
 createPinia().use(state);
 

@@ -59,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { createSocket, MessageType } from '~/utils/socket';
+import { MessageType, socketOn, connectSocket, closeSocket } from '~/utils/socket';
 import { useChannelStore } from '~/stores/channel';
 import { useJobStore } from '~/stores/job';
 import { computed, onMounted, reactive, watch, useRoute, useRouter, ref, onUnmounted } from '#imports';
@@ -105,7 +105,6 @@ const showNav = ref(false);
 const showConfirmRecording = ref(false);
 
 const router = useRouter();
-const socket = createSocket();
 
 let thread: undefined | ReturnType<typeof setInterval> = undefined;
 
@@ -157,9 +156,9 @@ const record = async () => {
 watch(route, () => collapseNav.value = true);
 
 onMounted(async () => {
-  socket.connect();
+  connectSocket();
 
-  socket.on(MessageType.HeartBeat, nextUpdate => {
+  socketOn(MessageType.HeartBeat, nextUpdate => {
     heartBeatNextUpdate.value = nextUpdate as number;
     const id = setInterval(() => {
       heartBeatNextUpdate.value -= 1;
@@ -181,6 +180,6 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
-  socket.close();
+  closeSocket();
 });
 </script>

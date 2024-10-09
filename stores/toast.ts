@@ -23,15 +23,17 @@ export const useToastStore = defineStore('toast', {
       const i = this.toasts.push(toast) - 1;
 
       // The animation can also be implemented with pure CSS, but that free us from this state update logic.
-      const toastDisplayDurationMs = 3000;
-      const id = setInterval(() => {
-        const dtMS = ((new Date()).getTime() - toast.created.getTime());
-        this.toasts[i].countdown = 100 - (dtMS / toastDisplayDurationMs * 100);
-        if (this.toasts[i].countdown <= 0) {
-          clearInterval(id);
-          this.toasts[i].hide = true;
-        }
-      }, toastDisplayDurationMs / 10);
+      if (import.meta.client) {
+        const toastDisplayDurationMs = 3000;
+        const id = setInterval(() => {
+          const dtMS = ((new Date()).getTime() - toast.created.getTime());
+          this.toasts[i].countdown = 100 - (dtMS / toastDisplayDurationMs * 100);
+          if (this.toasts[i].countdown <= 0) {
+            clearInterval(id);
+            this.toasts[i].hide = true;
+          }
+        }, toastDisplayDurationMs / 10);
+      }
     },
     destroy(toast: Toast) {
       const i = this.toasts.findIndex(x => x === toast);
