@@ -1,5 +1,4 @@
-import type { MyClient } from './api/v1/ClientFactory';
-import type { RequestsAuthenticationRequest } from './api/v1/StreamSinkClient';
+import type { HttpResponse, RequestsAuthenticationRequest } from './api/v1/StreamSinkClient';
 import { useAuthStore } from '~/stores/auth';
 import { useNuxtApp } from '#app/nuxt';
 
@@ -39,9 +38,9 @@ export default class AuthService {
     return authStore.isLoggedIn;
   }
 
-  signup(user: RequestsAuthenticationRequest) {
+  async signup(user: RequestsAuthenticationRequest): Promise<HttpResponse<void, string>> {
     const { $client } = useNuxtApp();
-    return $client.auth.signupCreate(user);
+    return await $client.auth.signupCreate(user);
   }
 
   getAuthHeader(): AuthHeader | null {

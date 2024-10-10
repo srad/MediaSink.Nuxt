@@ -71,9 +71,8 @@ const login = async () => {
       path: '/streams/live',
     });
   } catch (res: any) {
-    logger.error(res);
-    message.value = res.error || res;
-  } finally {
+    message.value = res.error;
+    logger.error(message.value);
     loading.value = false;
   }
 };

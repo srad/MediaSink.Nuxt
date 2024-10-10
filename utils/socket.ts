@@ -14,43 +14,53 @@ const notify = (event: string, data: object) => {
   }
 };
 
-// This function is only called globally once to connect to the server.
+// The callee can optionally wait for the promise.
+// Either, the socket is already open and the promise is resolved.
+// Or the connection is created and resolved, once the websocket is open.
 export const connectSocket = () => {
-  if (!import.meta.browser) {
-    return;
-  }
-  // Already connected
-  if (connection !== null) {
-    return;
-  }
+  return new Promise<void>((resolve, reject) => {
+    // Ignore on server.
+    if (!import.meta.browser) {
+      resolve();
+      return;
+    }
+    // Already connected
+    if (connection !== null) {
+      resolve();
+      return;
+    }
 
-  const authStore = useAuthStore();
-  if (!authStore.getToken) {
-    throw { error: 'WebSocket missing authorization token' };
-  }
+    // Not logged-in.
+    const authStore = useAuthStore();
+    if (!authStore.isLoggedIn) {
+      reject('WebSocket missing authorization token');
+    }
 
-  const { $config } = useNuxtApp();
-  connection = new WebSocket($config.public.socketUrl + '?Authorization=' + authStore.getToken);
+    const { $config } = useNuxtApp();
+    connection = new WebSocket($config.public.socketUrl + '?Authorization=' + authStore.getToken);
 
-  connection.addEventListener('message', (msg: any) => {
-    const json = JSON.parse(msg.data) as { name: string, data: Object };
-    notify(json.name, json.data);
-  });
+    connection.addEventListener('message', (msg: any) => {
+      const json = JSON.parse(msg.data) as { name: string, data: Object };
+      notify(json.name, json.data);
+    });
 
-  connection.addEventListener('open', () => {
-    console.log('open ws');
-  });
+    connection.addEventListener('open', () => {
+      resolve();
+      console.log('open ws');
+    });
 
-  connection.addEventListener('close', () => {
-    console.log('close ws');
-  });
+    connection.addEventListener('close', () => {
+      console.log('close ws');
+    });
 
-  connection.addEventListener('error', (ev: Event) => {
-    console.error(ev);
+    connection.addEventListener('error', (ev: Event) => {
+      console.error(ev);
+      reject(ev);
+    });
   });
 };
 
-// Do not close the socket, since also other clients might use the connection.
+// Do not close the socket, since multiple callers might use the connection still, even one does not.
 // The more reasonable action is to remove all the client's function from the listeners array.
 export const closeSocket = () => {
   /*

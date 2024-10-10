@@ -144,7 +144,7 @@ watch(() => props.clear, (val) => {
     myUrl.value = '';
     myDisplayName.value = '';
     mySkipStart.value = 0;
-    myMinDuration.value = 10;
+    myMinDuration.value = 20;
   }
 });
 

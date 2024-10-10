@@ -33,10 +33,8 @@
 </template>
 
 <script setup lang="ts">
-import { useAuthStore } from '~/stores/auth';
 import { createLog, definePageMeta, ref, useRouter } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
-import { reloadNuxtApp } from '#app/composables/chunk';
 import { useHead } from '#app';
 
 useHead({
@@ -51,11 +49,9 @@ definePageMeta({
 // Declarations
 // --------------------------------------------------------------------------------------
 
-const authStore = useAuthStore();
 const router = useRouter();
 
 const message = ref<string | null>(null);
-const successful = ref(false);
 const loading = ref(false);
 const email = ref('');
 const password = ref('');
@@ -68,17 +64,14 @@ const logger = createLog('register');
 
 const register = async () => {
   try {
-    message.value = null;
-    successful.value = false;
+    loading.value = true;
     logger.info(`Registering ${email.value}`);
     const { $auth } = useNuxtApp();
     await $auth.signup({ username: email.value, password: password.value });
     await router.push('/login');
-  } catch (error: any) {
-    logger.error(error);
-    message.value = JSON.stringify(error);
-    successful.value = false;
-  } finally {
+  } catch (res: any) {
+    message.value = res.error;
+    logger.error(message.value);
     loading.value = false;
   }
 };

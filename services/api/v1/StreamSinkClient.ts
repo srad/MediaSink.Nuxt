@@ -175,6 +175,8 @@ export interface ResponsesJobsResponse {
     totalCount: number;
 }
 
+export type ResponsesLoginResponse = object;
+
 export interface ResponsesRecordingStatusResponse {
     isRecording: boolean;
 }
@@ -214,6 +216,11 @@ export interface ServicesProcessInfo {
     output?: string;
     path?: string;
     pid?: number;
+}
+
+export interface UploadCreatePayload {
+    /** Uploaded file chunk */
+    file: number[];
 }
 
 export namespace Admin {
@@ -271,21 +278,21 @@ export namespace Admin {
 
 export namespace Auth {
     /**
-     * @description Create new user
+     * @description User login
      * @tags auth
      * @name LoginCreate
-     * @summary Create new user
+     * @summary User login
      * @request POST:/auth/login
-     * @response `200` `string` OK
-     * @response `400` `any` Bad Request
-     * @response `500` `any` Internal Server Error
+     * @response `200` `ResponsesLoginResponse` JWT token for authentication
+     * @response `400` `string` Error message
+     * @response `401` `string` Error message
      */
     export namespace LoginCreate {
         export type RequestParams = {};
         export type RequestQuery = {};
         export type RequestBody = RequestsAuthenticationRequest;
         export type RequestHeaders = {};
-        export type ResponseBody = string;
+        export type ResponseBody = ResponsesLoginResponse;
     }
 
     /**
@@ -294,16 +301,16 @@ export namespace Auth {
      * @name SignupCreate
      * @summary Create new user
      * @request POST:/auth/signup
-     * @response `200` `void` OK
-     * @response `400` `any` Bad Request
-     * @response `500` `any` Internal Server Error
+     * @response `200` `any` JWT token for authentication
+     * @response `400` `string` Error message
+     * @response `500` `string` Error message
      */
     export namespace SignupCreate {
         export type RequestParams = {};
         export type RequestQuery = {};
         export type RequestBody = RequestsAuthenticationRequest;
         export type RequestHeaders = {};
-        export type ResponseBody = void;
+        export type ResponseBody = any;
     }
 }
 
@@ -522,10 +529,7 @@ export namespace Channels {
             id: number;
         };
         export type RequestQuery = {};
-        export type RequestBody = {
-            /** Uploaded file chunk */
-            file: number[];
-        };
+        export type RequestBody = UploadCreatePayload;
         export type RequestHeaders = {};
         export type ResponseBody = DatabaseRecording;
     }
@@ -1350,18 +1354,18 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
     };
     auth = {
         /**
-         * @description Create new user
+         * @description User login
          *
          * @tags auth
          * @name LoginCreate
-         * @summary Create new user
+         * @summary User login
          * @request POST:/auth/login
-         * @response `200` `string` OK
-         * @response `400` `any` Bad Request
-         * @response `500` `any` Internal Server Error
+         * @response `200` `ResponsesLoginResponse` JWT token for authentication
+         * @response `400` `string` Error message
+         * @response `401` `string` Error message
          */
         loginCreate: (AuthenticationRequest: RequestsAuthenticationRequest, params: RequestParams = {}) =>
-            this.http.request<string, any>({
+            this.http.request<ResponsesLoginResponse, string>({
                 path: `/auth/login`,
                 method: "POST",
                 body: AuthenticationRequest,
@@ -1377,16 +1381,17 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
          * @name SignupCreate
          * @summary Create new user
          * @request POST:/auth/signup
-         * @response `200` `void` OK
-         * @response `400` `any` Bad Request
-         * @response `500` `any` Internal Server Error
+         * @response `200` `any` JWT token for authentication
+         * @response `400` `string` Error message
+         * @response `500` `string` Error message
          */
         signupCreate: (AuthenticationRequest: RequestsAuthenticationRequest, params: RequestParams = {}) =>
-            this.http.request<void, any>({
+            this.http.request<any, string>({
                 path: `/auth/signup`,
                 method: "POST",
                 body: AuthenticationRequest,
                 type: ContentType.Json,
+                format: "json",
                 ...params,
             }),
     };
@@ -1597,14 +1602,7 @@ export class StreamSinkClient<SecurityDataType extends unknown> {
          * @response `400` `any` Bad Request
          * @response `500` `any` Internal Server Error
          */
-        uploadCreate: (
-            id: number,
-            data: {
-                /** Uploaded file chunk */
-                file: number[];
-            },
-            params: RequestParams = {},
-        ) =>
+        uploadCreate: (id: number, data: UploadCreatePayload, params: RequestParams = {}) =>
             this.http.request<DatabaseRecording, any>({
                 path: `/channels/${id}/upload`,
                 method: "POST",
