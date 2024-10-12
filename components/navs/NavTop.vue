@@ -155,8 +155,12 @@ const record = async () => {
 
 watch(route, () => collapseNav.value = true);
 
+if (import.meta.server) {
+  await query();
+}
+
 onMounted(async () => {
-  connectSocket();
+  await connectSocket();
 
   socketOn(MessageType.HeartBeat, nextUpdate => {
     heartBeatNextUpdate.value = nextUpdate as number;
@@ -168,7 +172,6 @@ onMounted(async () => {
     }, 1000);
   });
 
-  await query();
   // The catch stops the polling when the query is rejected because of 401 unauthorized.
   thread = setInterval(async () => {
     try {

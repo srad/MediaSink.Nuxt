@@ -16,7 +16,7 @@
       </span>
     </button>
 
-    <button v-if="route.name=='Stream'" class="btn btn-lg btn-success shadow-sm border-success-subtle d-md-none position-fixed d-flex justify-content-center align-items-center" style="bottom: 5%; right: 10%; border-radius: 50%; width: 3.5rem; height: 3.5rem;" @click="emit('add')">
+    <button v-if="route.path.startsWith('/streams')" class="btn btn-lg btn-success shadow-sm border-success-subtle d-md-none position-fixed d-flex justify-content-center align-items-center" style="bottom: 5%; right: 10%; border-radius: 50%; width: 3.5rem; height: 3.5rem;" @click="emit('add')">
       <i class="bi bi-plus-lg fw-bold"></i>
     </button>
 
@@ -29,8 +29,8 @@
 
 <script setup lang="ts">
 import JobStatus from './JobStatus.vue';
-import { DatabaseJob } from '../services/api/v1/StreamSinkClient.ts';
-import { useI18n, useRoute } from '#imports'
+import type { DatabaseJob } from '~/services/api/v1/StreamSinkClient';
+import { useI18n, useRoute } from '#imports';
 
 const { t } = useI18n();
 const route = useRoute();
