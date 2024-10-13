@@ -1,4 +1,4 @@
-import { defineStore } from "pinia";
+import { defineStore } from 'pinia';
 
 export interface ToastState {
   toasts: Toast[];
@@ -20,17 +20,17 @@ export const useToastStore = defineStore('toast', {
   actions: {
     add(info: { title: string, message: string }) {
       const toast: Toast = { ...info, hide: false, created: new Date(), countdown: 100 };
-      const i = this.toasts.push(toast) - 1;
+      this.toasts.push(toast);
 
       // The animation can also be implemented with pure CSS, but that free us from this state update logic.
       if (import.meta.client) {
         const toastDisplayDurationMs = 3000;
         const id = setInterval(() => {
           const dtMS = ((new Date()).getTime() - toast.created.getTime());
-          this.toasts[i].countdown = 100 - (dtMS / toastDisplayDurationMs * 100);
-          if (this.toasts[i].countdown <= 0) {
+          toast.countdown = 100 - (dtMS / toastDisplayDurationMs * 100);
+          if (toast.countdown <= 0) {
             clearInterval(id);
-            this.toasts[i].hide = true;
+            toast.hide = true;
           }
         }, toastDisplayDurationMs / 10);
       }
@@ -42,9 +42,9 @@ export const useToastStore = defineStore('toast', {
       }
     },
     hide(toast: Toast) {
-      const i = this.toasts.findIndex(x => x === toast);
-      if (i !== -1) {
-        this.toasts[i].hide = true;
+      const foundToast = this.toasts.find(x => x === toast);
+      if (foundToast) {
+        foundToast.hide = true;
       }
     },
   },

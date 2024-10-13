@@ -105,10 +105,10 @@ export interface HelpersCPULoad {
 }
 
 export interface HelpersDiskInfo {
-    availFormattedGb: string;
-    pcent: string;
-    sizeFormattedGb: string;
-    usedFormattedGb: string;
+    availFormattedGb: number;
+    pcent: number;
+    sizeFormattedGb: number;
+    usedFormattedGb: number;
 }
 
 export interface HelpersNetInfo {
@@ -175,15 +175,17 @@ export interface ResponsesJobsResponse {
     totalCount: number;
 }
 
-export type ResponsesLoginResponse = object;
+export interface ResponsesLoginResponse {
+    token: string;
+}
 
 export interface ResponsesRecordingStatusResponse {
     isRecording: boolean;
 }
 
 export interface ResponsesServerInfoResponse {
-    commit?: string;
-    version?: string;
+    commit: string;
+    version: string;
 }
 
 export interface ServicesChannelInfo {
@@ -1237,7 +1239,7 @@ export class HttpClient<SecurityDataType = unknown> {
         }
     };
 
-    public request = async <T = any, E = any>({ body, secure, path, type, query, format, baseUrl, cancelToken, ...params }: FullRequestParams): Promise<HttpResponse<T, E>> => {
+    public request = async <T = any, E = any>({ body, secure, path, type, query, format, baseUrl, cancelToken, ...params }: FullRequestParams): Promise<T> => {
         const secureParams = ((typeof secure === "boolean" ? secure : this.baseApiParams.secure) && this.securityWorker && (await this.securityWorker(this.securityData))) || {};
         const requestParams = this.mergeRequestParams(params, secureParams);
         const queryString = query && this.toQueryString(query);
@@ -1278,7 +1280,7 @@ export class HttpClient<SecurityDataType = unknown> {
             }
 
             if (!response.ok) throw data;
-            return data;
+            return data.data;
         });
     };
 }

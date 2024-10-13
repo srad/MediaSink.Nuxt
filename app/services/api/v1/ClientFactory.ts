@@ -1,4 +1,4 @@
-import { ContentType, type DatabaseRecording, type DatabaseRecording as RecordingResponse, type HttpResponse } from './StreamSinkClient';
+import { ContentType, type DatabaseRecording, type DatabaseRecording as RecordingResponse } from './StreamSinkClient';
 import { StreamSinkClient, HttpClient } from './StreamSinkClient';
 
 export class MyClient extends StreamSinkClient<any> {
@@ -22,7 +22,7 @@ export class MyClient extends StreamSinkClient<any> {
    * @param file File object to upload
    * @param progress Returns the progress as number in range [0.0 ... 1.0]
    */
-  channelUpload(channelId: number, file: File, progress: (pcent: number) => void): [Promise<HttpResponse<RecordingResponse, any>>, AbortController] {
+  channelUpload(channelId: number, file: File, progress: (pcent: number) => void): [Promise<RecordingResponse>, AbortController] {
     const controller = new AbortController();
     const signal = controller.signal;
     const formData = new FormData();
@@ -40,8 +40,8 @@ export class MyClient extends StreamSinkClient<any> {
   }
 
   async isRecording(): Promise<boolean> {
-    const { data } = await this.recorder.recorderList();
-    return data.isRecording;
+    const { isRecording } = await this.recorder.recorderList();
+    return isRecording;
   }
 }
 

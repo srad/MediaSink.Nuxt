@@ -1,5 +1,5 @@
-import type { HttpResponse, RequestsAuthenticationRequest } from './api/v1/StreamSinkClient';
-import { useAuthStore } from '~/stores/auth';
+import type { RequestsAuthenticationRequest } from './api/v1/StreamSinkClient';
+import { useAuthStore } from '~~/stores/auth';
 import { useNuxtApp } from '#app/nuxt';
 
 export interface AuthInfo {
@@ -14,10 +14,9 @@ export default class AuthService {
   async login(user: RequestsAuthenticationRequest) {
     const authStore = useAuthStore();
     const { $client } = useNuxtApp();
-    const { data } = await $client.auth.loginCreate(user);
-    const r = data as unknown as AuthInfo;
-    if (r.token) {
-      authStore.setToken(r.token);
+    const { token } = await $client.auth.loginCreate(user);
+    if (token) {
+      authStore.setToken(token);
       authStore.login();
     }
   }
@@ -38,7 +37,7 @@ export default class AuthService {
     return authStore.isLoggedIn;
   }
 
-  async signup(user: RequestsAuthenticationRequest): Promise<HttpResponse<void, string>> {
+  async signup(user: RequestsAuthenticationRequest): Promise<any> {
     const { $client } = useNuxtApp();
     return await $client.auth.signupCreate(user);
   }
