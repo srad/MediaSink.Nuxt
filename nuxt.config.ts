@@ -46,14 +46,14 @@ export default defineNuxtConfig({
     }
   },
   ssr: true,
-  build: {
-    analyze: {}
-  },
+  // build: {
+  //   analyze: {}
+  // },
   experimental: {
     renderJsonPayloads: false
   },
   compatibilityDate: '2024-04-03',
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   runtimeConfig: {
     public: {
       apiUrl: '',

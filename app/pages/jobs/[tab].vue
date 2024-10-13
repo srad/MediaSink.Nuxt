@@ -134,12 +134,16 @@ import { DatabaseJobOrder, DatabaseJobStatus } from '~/services/api/v1/StreamSin
 import { fromNow } from '~/utils/datetime';
 import { useJobStore } from '~~/stores/job';
 import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.vue';
-import { useI18n, useRoute, computed, ref } from '#imports';
+import { useI18n, useRoute, computed, ref, definePageMeta } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
 import { useHead } from '#app';
 
 useHead({
   title: 'Jobs'
+});
+
+definePageMeta({
+  keepalive: true
 });
 
 const { t } = useI18n();

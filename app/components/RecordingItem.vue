@@ -17,7 +17,7 @@
         <span v-else>{{ props.recording.width }}x{{ props.recording.height }}</span>
       </span>
       <span v-if="props.recording.videoType==='cut'" class="badge bg-warning position-absolute" style="user-select: none; z-index: 10; bottom: 10px; right: 10px">cut</span>
-      <RouterLink :to="link">
+      <RouterLink class="d-flex" :to="link">
         <Preview class="card-img-top" :data="recording.recordingId" :preview-video="previewVideoUrl" :preview-image="previewCoverUrl"/>
       </RouterLink>
     </div>

@@ -131,12 +131,16 @@ import type { DatabaseChannel, DatabaseChannel as ChannelResponse, ServicesChann
 import ChannelItem from '~/components/ChannelItem.vue';
 import ChannelModal from '~/components/modals/ChannelModal.vue';
 import { useChannelStore } from '~~/stores/channel';
-import { computed, ref, useAsyncData, useRoute, useRouter, watch } from '#imports';
+import { computed, definePageMeta, ref, useAsyncData, useRoute, useRouter, watch } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
 import { useHead } from '#app';
 
 useHead({
   title: 'Streams'
+});
+
+definePageMeta({
+  keepalive: true
 });
 
 // --------------------------------------------------------------------------------------
