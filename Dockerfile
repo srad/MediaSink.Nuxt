@@ -7,6 +7,8 @@ COPY ./package.json /app/
 #COPY ./package-lock.json /app/
 
 RUN npm i -g npm@latest
+RUN npm rebuild
+RUN npm i -D esbuild
 RUN npm ci
 
 ADD . /app
