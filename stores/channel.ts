@@ -10,7 +10,7 @@ export interface ChannelState {
 }
 
 export const useChannelStore = defineStore('channel', {
-  persist: true,
+  persist: false,
   state: (): ChannelState => ({
     channels: [],
   }),
@@ -20,8 +20,8 @@ export const useChannelStore = defineStore('channel', {
         const { $client } = useNuxtApp();
         $client.channels.channelsCreate(channel)
           .then(res => {
-            this.add(res.data);
-            resolve(res.data);
+            this.add(res);
+            resolve(res);
           })
           .catch(res => reject(res.error));
       });
@@ -29,28 +29,28 @@ export const useChannelStore = defineStore('channel', {
     online(channelId: number) {
       const i = this.channels.findIndex(ch => ch.channelId === channelId);
       if (i !== -1) {
-        this.channels[i].isOnline = true;
+        this.channels[i]!.isOnline = true;
       }
     },
     offline(channelId: number) {
       const i = this.channels.findIndex(ch => ch.channelId === channelId);
       if (i !== -1) {
-        this.channels[i].isOnline = false;
-        this.channels[i].isRecording = false;
+        this.channels[i]!.isOnline = false;
+        this.channels[i]!.isRecording = false;
       }
     },
     thumbnail(channelId: number) {
       const index = this.channels.findIndex(ch => ch.channelId === channelId);
       if (index !== -1) {
         // Refresh cache with url timestamp update.
-        this.channels[index].preview = this.channels[index].preview.split('?')[0] + `?time=${new Date().toISOString()}`;
+        this.channels[index]!.preview = this.channels[index]!.preview.split('?')[0] + `?time=${new Date().toISOString()}`;
       }
     },
     start(channelId: number) {
       const i = this.channels.findIndex(ch => ch.channelId === channelId);
       if (i !== -1) {
-        this.channels[i].isRecording = true;
-        this.channels[i].isOnline = true;
+        this.channels[i]!.isRecording = true;
+        this.channels[i]!.isOnline = true;
       }
     },
     add(channel: ChannelInfo) {
@@ -80,30 +80,30 @@ export const useChannelStore = defineStore('channel', {
     pause(channelId: number) {
       const i = this.channels.findIndex(c => c.channelId === channelId);
       if (i !== -1) {
-        this.channels[i].isRecording = false;
-        this.channels[i].isPaused = true;
+        this.channels[i]!.isRecording = false;
+        this.channels[i]!.isPaused = true;
       }
     },
     resume(channelId: number) {
       const i = this.channels.findIndex(c => c.channelId === channelId);
       if (i !== -1) {
-        this.channels[i].isPaused = false;
+        this.channels[i]!.isPaused = false;
       }
     },
     fav(id: number) {
       const i = this.channels.findIndex(ch => ch.channelId === id);
-      this.channels[i].fav = true;
+      this.channels[i]!.fav = true;
     },
     unfav(id: number) {
       const i = this.channels.findIndex(ch => ch.channelId === id);
-      this.channels[i].fav = false;
+      this.channels[i]!.fav = false;
     },
     clear() {
       this.channels = [];
     },
     stop() {
       for (let i = 0; i < this.channels.length; i += 1) {
-        this.channels[i].isRecording = false;
+        this.channels[i]!.isRecording = false;
       }
     }
   },

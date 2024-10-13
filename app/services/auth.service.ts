@@ -2,10 +2,6 @@ import type { RequestsAuthenticationRequest } from './api/v1/StreamSinkClient';
 import { useAuthStore } from '~~/stores/auth';
 import { useNuxtApp } from '#app/nuxt';
 
-export interface AuthInfo {
-  token: string;
-}
-
 export interface AuthHeader {
   Authorization: string;
 }

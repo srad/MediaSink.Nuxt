@@ -56,7 +56,7 @@ await generateApi({
   extractRequestBody: true,
   extractEnums: true,
   extractResponseError: false,
-  unwrapResponseData: false,
+  unwrapResponseData: true,
   prettier: {
     printWidth: 240,
     tabWidth: 4,

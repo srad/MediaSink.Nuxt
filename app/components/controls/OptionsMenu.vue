@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from '#imports';
+import { onMounted, ref } from '#imports';
 import { Dropdown } from 'bootstrap';
 
 const props = defineProps<{
@@ -56,7 +56,8 @@ const fileChanged = () => {
   const el = file as unknown as HTMLInputElement;
 
   if (el.files && el.files.length > 0) {
-    emit('file', el.files[0]);
+    const firstFile = el.files[0];
+    emit('file', firstFile);
     // clear old file
     el.value = '';
   }
