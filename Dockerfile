@@ -4,10 +4,9 @@ FROM node:22-bookworm AS build
 WORKDIR /app
 
 COPY ./package.json /app/
-COPY ./package-lock.json /app/
+#COPY ./package-lock.json /app/
 
 RUN npm i -g npm@latest
-RUN npm i @rollup/rollup-linux-x64-gnu # https://github.com/npm/cli/issues/4828
 RUN npm ci
 
 ADD . /app
