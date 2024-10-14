@@ -1,7 +1,7 @@
 <template>
   <div>
     <ModalConfirmDialog :show="showConfirmToggleWorkerDialog" @cancel="showConfirmToggleWorkerDialog=false" @confirm="toggleWorker">
-      <template #header>
+      <template v-slot:header>
         <div class="d-flex justify-content-between">
           <h5 class="modal-title">
             <span v-if="processingJobs">Pause job worker?</span>
@@ -9,7 +9,7 @@
           </h5>
         </div>
       </template>
-      <template #body>
+      <template v-slot:body>
         <span v-if="processingJobs">
           Do you want to pause the job worker?
         </span>

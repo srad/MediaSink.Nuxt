@@ -1,21 +1,10 @@
 @import "./custom-bootstrap";
 @import "bootstrap-icons/font/bootstrap-icons.css";
+@import "form";
 
 html,
 body {
   overscroll-behavior-y: contain;
-}
-
-input:invalid {
-  border: 2px solid red;
-}
-
-input:invalid:required {
-  background-color: pink;
-}
-
-input:valid {
-  border: 1px solid limegreen;
 }
 
 .navbar {

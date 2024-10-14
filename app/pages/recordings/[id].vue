@@ -1,10 +1,10 @@
 <template>
   <div>
     <ModalConfirmDialog :show="showConfirmDialog" @cancel="showConfirmDialog=false" @confirm="cutVideo">
-      <template #header>
+      <template v-slot:header>
         <span class="fs-5">Confirm your video cut</span>
       </template>
-      <template #body>
+      <template v-slot:body>
         <MarkingsTable
             v-if="showConfirmDialog"
             :show-destroy="false"

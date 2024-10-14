@@ -75,7 +75,10 @@ const isImporting = ref(false);
 const fileUrl = config.public.fileUrl;
 const channelsFile = ref<HTMLInputElement | null>(null);
 
-const channels = ref<ServicesChannelInfo[]>([]);
+const { $client } = useNuxtApp();
+const { data } = await useAsyncData<ServicesChannelInfo[]>('channels', () => $client.channels.channelsList());
+const sortedChannels = data.value.sort((a: ServicesChannelInfo, b: ServicesChannelInfo) => a.channelName.localeCompare(b.channelName));
+const channels = ref(sortedChannels);
 
 const totalSize = computed(() => channels.value.map(x => x.recordingsSize).reduce((a, b) => a + b, 0) / 1024 / 1024 / 1024);
 const totalCount = computed(() => channels.value.map(x => x.recordingsCount).reduce((a, b) => a + b, 0));
@@ -133,10 +136,4 @@ const importChannels = (channelsResponse: DatabaseChannel[]) => {
   });
   isImporting.value = false;
 };
-
-const { $client } = useNuxtApp();
-const { data } = await useAsyncData<ServicesChannelInfo[]>('channels', () => $client.channels.channelsList());
-if (data.value) {
-  channels.value = data.value.sort((a: ServicesChannelInfo, b: ServicesChannelInfo) => a.channelName.localeCompare(b.channelName));
-}
 </script>

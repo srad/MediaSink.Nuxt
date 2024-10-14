@@ -77,6 +77,46 @@ export const socketOn = (event: string, fn: (data: Object) => void) => {
   listeners[event]!.push(fn);
 };
 
+/**
+ * The benefit of this function is that is also allows to remove listeners from the open connection.
+ * @example
+ * const listeners = socketCreateListeners();
+ *
+ * // Subscribe.
+ * listeners.on(JobCreate, () => {
+ *     // ...
+ * });
+ *
+ * // Removes all added observers.
+ * listeners.off();
+ */
+export const socketCreateListeners = function () {
+  const fns = [];
+
+  return {
+    on(event: string, fn: (data: Object) => void) {
+      if (!listeners[event]) {
+        listeners[event] = [];
+      }
+      listeners[event]!.push(fn);
+      fns.push(fn);
+    },
+    off() {
+      // Remove all functions from the global "listeners" object.
+      for (const listener of listeners) {
+        for (let i = 0; i < listener.length; i++) {
+          for (let j = 0; j < fns.length; j++) {
+            if (listener[i] === fns[j]) {
+              listener.splice(i, 1);
+              fns.splice(j, 1);
+            }
+          }
+        }
+      }
+    }
+  }
+};
+
 export const MessageType = {
   HeartBeat: 'heartbeat',
 

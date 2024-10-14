@@ -1,0 +1,19 @@
+input:invalid {
+  border: 2px solid red;
+}
+
+input:invalid:required {
+  background-color: pink;
+}
+
+input:valid {
+  border: 1px solid limegreen;
+}
+
+form.disabled {
+  input {
+    pointer-events: none !important;
+    background-color: #e2e2e2 !important;
+    border: 1px solid darkgrey !important;
+  }
+}

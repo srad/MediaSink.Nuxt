@@ -1,11 +1,11 @@
 <template>
   <div>
     <ModalConfirmDialog :show="showConfirmRecording" @cancel="showConfirmRecording=false" @confirm="record">
-      <template #header>
+      <template v-slot:header>
         <span v-if="isRecording">Stop Recording</span>
         <span v-else>Resume Recording</span>
       </template>
-      <template #body>
+      <template v-slot:body>
         <div v-if="isRecording">
           Do you want to stop recording?
         </div>

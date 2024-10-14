@@ -6,14 +6,16 @@
       <NuxtLoadingIndicator/>
       <NuxtPage/>
 
-      <ChannelModal
-          :clear="showModal"
-          :show="showModal"
-          :is-paused="false"
-          title="Add Stream"
-          @save="save"
-          @close="showModal=false"/>
-
+      <ClientOnly>
+        <ChannelModal
+            :clear="showModal"
+            :is-paused="false"
+            :saving="saving"
+            :show="showModal"
+            title="Add Stream"
+            @close="showModal=false"
+            @save="save"/>
+      </ClientOnly>
       <Toaster :toasts="toasts"/>
     </main>
   </div>
@@ -49,6 +51,7 @@ const router = useRouter();
 
 const title = config.public.appName;
 const showModal = ref(false);
+const saving = ref(false);
 
 const toasts = computed(() => toastStore.getToast);
 
@@ -65,9 +68,15 @@ const routes = [
 // Methods
 // --------------------------------------------------------------------------------------
 
-const save = (data: ChannelRequest) => channelStore.save(data)
-    .catch(err => alert(err))
-    .finally(() => showModal.value = false);
+const save = (data: ChannelRequest) => {
+  saving.value = true;
+  channelStore.save(data)
+      .then(() => showModal.value = false)
+      .catch(err => alert(err))
+      .finally(() => {
+        saving.value = false;
+      });
+}
 
 const logout = () => {
   const { $auth } = useNuxtApp();
@@ -76,7 +85,7 @@ const logout = () => {
 };
 
 onMounted(async () => {
-  connectSocket();
+  await connectSocket();
 
   socketOn(MessageType.JobStart, message => {
     const data = message as JobMessage<TaskInfo>;
