@@ -1,13 +1,9 @@
-import type { DatabaseChannel, RequestsChannelRequest as ChannelRequest } from '@/services/api/v1/StreamSinkClient';
-import type { ServicesChannelInfo as ChannelInfo } from '@/services/api/v1/StreamSinkClient';
+import type { DatabaseChannel, RequestsChannelRequest as ChannelRequest, ServicesChannelInfo as ChannelInfo } from '@/services/api/v1/StreamSinkClient';
 
 import { defineStore } from 'pinia';
 import { useJobStore } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
-
-export interface ChannelState {
-  channels: ChannelInfo[];
-}
+import type { ChannelState } from '~/types';
 
 export const useChannelStore = defineStore('channel', {
   persist: false,

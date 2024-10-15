@@ -1,39 +1,8 @@
-import { DatabaseJobOrder, DatabaseJobStatus } from '~/services/api/v1/StreamSinkClient';
 import type { DatabaseJob as Job } from '~/services/api/v1/StreamSinkClient';
+import { DatabaseJobOrder, DatabaseJobStatus } from '~/services/api/v1/StreamSinkClient';
 import { defineStore } from 'pinia';
 import { useNuxtApp } from '#app/nuxt';
-
-export interface TaskInfo {
-  steps: number;
-  step: number;
-  pid: number;
-  command: string;
-  message: string;
-}
-
-export interface JobMessage<T> {
-  data: T,
-  job: Job
-}
-
-export interface TaskComplete {
-  steps: number;
-  step: number;
-  message: string;
-}
-
-export interface TaskProgress {
-  current: number;
-  total: number;
-  steps: number;
-  step: number;
-  message: string;
-}
-
-export interface JobState {
-  jobs: Job[];
-  jobsCount: number;
-}
+import type { JobMessage, JobState, TaskComplete, TaskInfo, TaskProgress } from '~/types';
 
 export const useJobStore = defineStore('job', {
   persist: false,

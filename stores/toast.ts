@@ -1,16 +1,5 @@
 import { defineStore } from 'pinia';
-
-export interface ToastState {
-  toasts: Toast[];
-}
-
-export interface Toast {
-  title: string;
-  message: string;
-  hide: boolean;
-  created: Date;
-  countdown: number;
-}
+import type { Toast, ToastState } from '~/types';
 
 export const useToastStore = defineStore('toast', {
   persist: false,

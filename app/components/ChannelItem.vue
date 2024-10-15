@@ -4,9 +4,11 @@
       <div class="loader"></div>
     </div>
 
-    <Preview class="card-img-top"
-             @selected="viewFolder(props.channel.channelId!, props.channel.channelName)"
-             :data="props.channel.channelId!" :preview-image="previewImage"/>
+    <NuxtLink class="text-decoration-none" :to="`/channel/${props.channel.channelId}/${props.channel.channelName}`">
+      <Preview class="card-img-top"
+               @selected="viewFolder(props.channel.channelId!, props.channel.channelName)"
+               :data="props.channel.channelId!" :preview-image="data?.previewImage"/>
+    </NuxtLink>
     <div class="card-body">
       <div class="card-title p-1 m-0" :class="{'bg-primary' : !props.channel.isRecording && !props.channel.isOnline, 'bg-danger': props.channel.isRecording, 'bg-success': props.channel.isOnline && !props.channel.isRecording}">
         <h6 class="p-2 m-0 text-white">
@@ -25,7 +27,7 @@
 import StreamInfo from './StreamInfo.vue';
 import Preview from './Preview.vue';
 import type { ServicesChannelInfo as ChannelInfo } from '~/services/api/v1/StreamSinkClient';
-import { useI18n, computed, useRouter, ref, onMounted } from '#imports';
+import { useI18n, computed, useRouter, ref, useAsyncData } from '#imports';
 import { useChannelStore } from '~~/stores/channel';
 import { useNuxtApp } from '#app/nuxt';
 import { useRuntimeConfig } from 'nuxt/app';
@@ -57,7 +59,9 @@ const fileUrl = config.public.fileUrl;
 const destroyed = ref(false);
 const busy = ref(false);
 
-const previewImage = computed(() => fileUrl + '/' + props.channel.preview + '?' + Date.now());
+const { data } = await useAsyncData(`preview-imamge-${props.channel.channelId}`, async () => {
+  return { previewImage: fileUrl + '/' + props.channel.preview + '?' + Date.now() }; // Server and client will share this timestamp
+});
 
 // --------------------------------------------------------------------------------------
 // Methods

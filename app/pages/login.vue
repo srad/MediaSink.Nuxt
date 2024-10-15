@@ -40,7 +40,7 @@ import { useHead } from '#app';
 
 useHead({
   title: 'Login'
-})
+});
 
 definePageMeta({
   layout: 'auth'

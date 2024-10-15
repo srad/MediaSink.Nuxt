@@ -60,7 +60,7 @@
 <script setup lang="ts">
 import { watch, computed, onMounted, onUnmounted, ref, useRouter } from '#imports';
 import type { ServicesChannelInfo as ChannelResponse } from '~/services/api/v1/StreamSinkClient';
-import { validTag } from '../utils/parser';
+import { validTag } from '~/utils/parser';
 import FavButton from './controls/FavButton.vue';
 import { useNuxtApp } from '#app/nuxt';
 

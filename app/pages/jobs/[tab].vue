@@ -134,9 +134,10 @@ import { DatabaseJobOrder, DatabaseJobStatus } from '~/services/api/v1/StreamSin
 import { fromNow } from '~/utils/datetime';
 import { useJobStore } from '~~/stores/job';
 import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.vue';
-import { useI18n, useRoute, computed, ref, definePageMeta } from '#imports';
+import { computed, definePageMeta, ref, useI18n, useRoute } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
 import { useHead } from '#app';
+import type { JobTableItem } from '~/types';
 
 useHead({
   title: 'Jobs'
@@ -153,13 +154,6 @@ const route = useRoute();
 const processes = ref<ProcessInfo[]>([]);
 const processingJobs = ref(true);
 const showConfirmToggleWorkerDialog = ref(false);
-
-export interface JobTableItem extends DatabaseJob {
-  createdAtFromNow: string;
-  startedFromNow?: string;
-  completedAtFromNow?: string;
-  jobDuration?: string;
-}
 
 const skip = ref(0);
 const take = ref(50);
@@ -250,7 +244,7 @@ const itemsCompleted = computed(() => (jobsCompleted.value?.jobs || []).map(addF
 const itemsCompletedCount = computed(() => jobsCompleted.value?.totalCount || 0);
 
 const itemsOther = computed(() => (jobsOther.value?.jobs || []).map(addFromNowToJob));
-const itemsOtherCount = computed(() => jobsOther.value?.totalCount || 0);
+//const itemsOtherCount = computed(() => jobsOther.value?.totalCount || 0);
 
 const destroy = (id: number) => {
   if (window.confirm('Delete?')) {

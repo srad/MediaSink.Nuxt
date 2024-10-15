@@ -7,7 +7,7 @@
     </template>
     <template v-slot:body>
       <form :class="{saving: 'disabled'}">
-        <Alert :alert-type="AlertType.Error" v-if="validations.length > 0">
+        <Alert style="font-size: 0.9rem" :alert-type="AlertType.Error" v-if="validations.length > 0">
           <CheckList :items="validations"/>
         </Alert>
 
@@ -86,9 +86,9 @@
 import Modal from './Modal.vue';
 import { ref, watch } from '#imports';
 import { randomString } from '~/utils/math';
-import Alert from "~/components/Alert.vue";
-import { AlertType } from "~~/app/types";
-import { createValidator } from "~/utils/validator";
+import Alert from '~/components/Alert.vue';
+import { AlertType, type ChannelUpdate } from '~~/app/types';
+import { createValidator, type ValidationMessage } from '~/utils/validator';
 
 // --------------------------------------------------------------------------------------
 // Props
@@ -159,16 +159,6 @@ const validations = ref<{ message: string, checked: boolean }[]>([]);
 // Emits
 // --------------------------------------------------------------------------------------
 
-export interface ChannelUpdate {
-  isPaused: boolean,
-  channelId: number,
-  channelName: string,
-  url: string,
-  displayName: string,
-  skipStart: number
-  minDuration: number
-}
-
 const emit = defineEmits<{
   (e: 'save', value: ChannelUpdate): void
   (e: 'close'): void
@@ -237,12 +227,6 @@ const recommendChannelName = () => {
   }
 };
 
-const validate = (message: string, isValid: boolean) => {
-  if (!isValid) {
-    validations.value.push({ message, checked: isValid });
-  }
-};
-
 const formValid = (): { validations: ValidationMessage[], isValid: boolean } => {
   validations.value = [];
 
@@ -251,8 +235,6 @@ const formValid = (): { validations: ValidationMessage[], isValid: boolean } => 
     { name: validatorChannelDisplayName, value: myDisplayName.value },
     { name: validatorChannelUrl, value: myUrl.value },
   ]);
-
-  results.forEach(result => validate(result.message, result.isValid));
 
   const isValid = results.reduce((previousValue, currentValue) => previousValue && currentValue.isValid, true);
 
@@ -264,17 +246,27 @@ const formValid = (): { validations: ValidationMessage[], isValid: boolean } => 
 
 const save = () => {
   const validationResult = formValid();
-  if (validationResult.isValid) {
-    emit('save', {
-      isPaused: myIsPaused.value,
-      channelId: props.channelId!,
-      channelName: myChannelName.value,
-      url: myUrl.value,
-      displayName: myDisplayName.value,
-      skipStart: mySkipStart.value,
-      minDuration: myMinDuration.value
+
+  if (!validationResult.isValid) {
+    validations.value = validationResult.validations.map(({ message, isValid }) => ({ message: message, checked: isValid }));
+    // Scroll to the top to show message
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
     });
+    return;
   }
+
+  // Valid
+  emit('save', {
+    isPaused: myIsPaused.value,
+    channelId: props.channelId!,
+    channelName: myChannelName.value,
+    url: myUrl.value,
+    displayName: myDisplayName.value,
+    skipStart: mySkipStart.value,
+    minDuration: myMinDuration.value
+  });
 };
 </script>
 

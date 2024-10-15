@@ -1,19 +1,22 @@
 <template>
   <div>
-    <ChannelModal
-        @save="save"
-        @close="showModal=false"
-        title="Edit Stream"
-        :is-paused="isPaused"
-        :channel-disabled="true"
-        :clear="false"
-        :channel-id="channelId"
-        :show="showModal"
-        :channel-name="channelName"
-        :display-name="displayName"
-        :url="url"
-        :min-duration="minDuration"
-        :skip-start="skipStart"/>
+    <ClientOnly>
+      <ChannelModal
+          @save="save"
+          @close="showModal=false"
+          title="Edit Stream"
+          :saving="saving"
+          :is-paused="isPaused"
+          :channel-disabled="true"
+          :clear="false"
+          :channel-id="channelId"
+          :show="showModal"
+          :channel-name="channelName"
+          :display-name="displayName"
+          :url="url"
+          :min-duration="minDuration"
+          :skip-start="skipStart"/>
+    </ClientOnly>
 
     <!-- Search bar -->
     <div class="row">
@@ -126,7 +129,6 @@
 </template>
 
 <script setup lang="ts">
-import type { ChannelUpdate } from '~/components/modals/ChannelModal.vue';
 import type { DatabaseChannel, DatabaseChannel as ChannelResponse, ServicesChannelInfo } from '~/services/api/v1/StreamSinkClient';
 import ChannelItem from '~/components/ChannelItem.vue';
 import ChannelModal from '~/components/modals/ChannelModal.vue';
@@ -134,13 +136,16 @@ import { useChannelStore } from '~~/stores/channel';
 import { computed, definePageMeta, ref, useAsyncData, useRoute, useRouter, watch } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
 import { useHead } from '#app';
+import type { ChannelUpdate } from '~/types';
 
 useHead({
   title: 'Streams'
 });
 
 definePageMeta({
-  keepalive: true
+  name: 'Streams',
+  keepalive: true,
+  alias: '/'
 });
 
 // --------------------------------------------------------------------------------------
@@ -157,10 +162,11 @@ const channelName = ref('');
 const displayName = ref('');
 const isPaused = ref(false);
 const url = ref('');
-
 const minDuration = ref(20);
 const skipStart = ref(0);
 const favs = ref(false);
+
+const saving = ref(false);
 
 const searchVal = ref<string>((route.query.search || route.query.tag || route.params.tag || '') as string);
 const tagFilter = ref<string>((route.params.tag || route.query.tag || '') as string);
@@ -208,7 +214,6 @@ const searchResults = computed(() => channelStore.channels.slice()
 // --------------------------------------------------------------------------------------
 
 const searchFilter = (channel: ChannelResponse, search: string, tag: string): boolean => {
-
   return ((search && search.length > 0) ? channel.channelName!.indexOf(search) !== -1 : true) &&
       ((tag && tag.length > 0 && channel.tags) ? channel.tags.some(t => t === tag) : true);
 };
@@ -217,12 +222,15 @@ const sort = (a: ChannelResponse, b: ChannelResponse) => a.channelName!.localeCo
 
 const save = async (channel: ChannelUpdate) => {
   try {
+    saving.value = true;
     const { $client } = useNuxtApp();
     const { data } = await useAsyncData<DatabaseChannel>('save', () => $client.channels.channelsPartialUpdate(channel.channelId, channel));
     channelStore.update(data.value!);
     showModal.value = false;
   } catch (e) {
     alert(e);
+  } finally {
+    saving.value = false;
   }
 };
 

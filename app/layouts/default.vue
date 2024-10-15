@@ -28,12 +28,13 @@ import ChannelModal from '~/components/modals/ChannelModal.vue';
 import NavTop from '~/components/navs/NavTop.vue';
 import Toaster from '~/components/Toaster.vue';
 import { useChannelStore } from '~~/stores/channel';
-import { type JobMessage, type TaskComplete, type TaskProgress, useJobStore } from '~~/stores/job';
-import type { TaskInfo } from '~~/stores/job';
+import { useJobStore } from '~~/stores/job';
 import { useToastStore } from '~~/stores/toast';
 import { useRuntimeConfig, useRouter } from 'nuxt/app';
 import { computed, onMounted, useI18n, ref, onUnmounted } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
+import type { JobMessage, TaskComplete, TaskInfo, TaskProgress } from '~/types';
+import { reloadNuxtApp } from '#app/composables/chunk';
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -76,12 +77,14 @@ const save = (data: ChannelRequest) => {
       .finally(() => {
         saving.value = false;
       });
-}
+};
 
 const logout = () => {
   const { $auth } = useNuxtApp();
   $auth.logout();
-  router.push('/login');
+  reloadNuxtApp({
+    path: '/login',
+  });
 };
 
 onMounted(async () => {

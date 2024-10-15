@@ -129,7 +129,6 @@
 </template>
 
 <script setup lang="ts">
-import type { Marking } from '~/components/Stripe.vue';
 import type { DatabaseRecording } from '~/services/api/v1/StreamSinkClient.ts';
 import Stripe from '~/components/Stripe.vue';
 import RecordingFavButton from '~/components/controls/RecordingFavButton.vue';
@@ -151,6 +150,7 @@ import { useJobStore } from '~~/stores/job';
 import { useAsyncData, useRuntimeConfig } from 'nuxt/app';
 import { useNuxtApp } from '#app/nuxt';
 import { useHead } from '#app';
+import type { Marking } from '~/types';
 
 // --------------------------------------------------------------------------------------
 // Declarations

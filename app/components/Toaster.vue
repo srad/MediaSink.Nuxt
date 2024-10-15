@@ -18,7 +18,8 @@
 </template>
 
 <script setup lang="ts">
-import { type Toast, useToastStore } from '~~/stores/toast';
+import { useToastStore } from '~~/stores/toast';
+import type { Toast } from '~/types';
 
 const store = useToastStore();
 const props = defineProps<{ toasts: Toast[] }>();

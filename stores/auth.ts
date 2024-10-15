@@ -1,9 +1,5 @@
 import { defineStore } from 'pinia';
-
-export interface AuthState {
-  loggedIn: boolean;
-  token: string | null;
-}
+import type { AuthState } from '~/types';
 
 export const useAuthStore = defineStore('auth', {
   persist: true,

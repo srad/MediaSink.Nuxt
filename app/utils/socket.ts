@@ -1,8 +1,10 @@
 import { useNuxtApp } from '#imports';
 import { useAuthStore } from '~~/stores/auth';
 
+type ListenerType = (data: Object) => void;
+
 let connection: WebSocket | null = null;
-const listeners: { [key: string]: ((data: Object) => void)[] } = {};
+const listeners: { [key: string]: ListenerType[] } = {};
 
 const notify = (event: string, data: object) => {
   if (!connection) {
@@ -70,7 +72,7 @@ export const closeSocket = () => {
    */
 };
 
-export const socketOn = (event: string, fn: (data: Object) => void) => {
+export const socketOn = (event: string, fn: ListenerType) => {
   if (!listeners[event]) {
     listeners[event] = [];
   }
@@ -87,34 +89,40 @@ export const socketOn = (event: string, fn: (data: Object) => void) => {
  *     // ...
  * });
  *
- * // Removes all added observers.
+ *
+ * //Removes all added observers.
  * listeners.off();
  */
 export const socketCreateListeners = function () {
-  const fns = [];
+  return (function () { // Immediately invoked to create separate scope where listeners are stored.
+    const fns: ListenerType[] = [];
 
-  return {
-    on(event: string, fn: (data: Object) => void) {
-      if (!listeners[event]) {
-        listeners[event] = [];
-      }
-      listeners[event]!.push(fn);
-      fns.push(fn);
-    },
-    off() {
-      // Remove all functions from the global "listeners" object.
-      for (const listener of listeners) {
-        for (let i = 0; i < listener.length; i++) {
-          for (let j = 0; j < fns.length; j++) {
-            if (listener[i] === fns[j]) {
-              listener.splice(i, 1);
-              fns.splice(j, 1);
+    return {
+      on(event: string, fn: ListenerType) {
+        if (!listeners[event]) {
+          listeners[event] = [];
+        }
+        listeners[event]!.push(fn);
+        fns.push(fn);
+      },
+      off() {
+        // Remove all functions from the global "listeners" object.
+        for (const name in listeners) {
+          const listenerArray = listeners[name];
+          if (listenerArray) {
+            for (let i = 0; i < listenerArray.length; i++) {
+              for (let j = 0; j < fns.length; j++) {
+                if (listenerArray[i] === fns[j]) {
+                  listenerArray.splice(i, 1);
+                  fns.splice(j, 1);
+                }
+              }
             }
           }
         }
       }
-    }
-  }
+    };
+  }());
 };
 
 export const MessageType = {

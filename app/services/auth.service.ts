@@ -1,10 +1,7 @@
 import type { RequestsAuthenticationRequest } from './api/v1/StreamSinkClient';
 import { useAuthStore } from '~~/stores/auth';
 import { useNuxtApp } from '#app/nuxt';
-
-export interface AuthHeader {
-  Authorization: string;
-}
+import type { AuthHeader } from '~/types';
 
 export default class AuthService {
   async login(user: RequestsAuthenticationRequest) {

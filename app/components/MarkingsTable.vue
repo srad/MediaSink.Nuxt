@@ -31,9 +31,9 @@
 </template>
 
 <script setup lang="ts">
-import type { Marking } from "./Stripe.vue";
 import { defineProps, defineEmits, computed } from "vue";
 import { useI18n } from '#imports'
+import type { Marking } from '~/types';
 
 // --------------------------------------------------------------------------------------
 // Declarations

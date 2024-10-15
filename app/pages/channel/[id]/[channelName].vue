@@ -87,7 +87,6 @@ import { useJobStore } from '~~/stores/job';
 import { useNuxtApp } from '#app/nuxt';
 import { useHead } from '#app';
 import OptionsMenu from '~/components/controls/OptionsMenu.vue';
-import { da } from 'cronstrue/dist/i18n/locales/da';
 
 // --------------------------------------------------------------------------------------
 // Declarations

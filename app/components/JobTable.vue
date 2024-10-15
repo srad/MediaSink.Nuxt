@@ -97,9 +97,9 @@
 </template>
 
 <script setup lang="ts">
-import type { JobTableItem } from '~/pages/jobs/[tab].vue';
 import { useI18n } from '#imports';
 import { DatabaseJobStatus } from '~/services/api/v1/StreamSinkClient';
+import type { JobTableItem } from '~/types';
 
 const { t } = useI18n();
 

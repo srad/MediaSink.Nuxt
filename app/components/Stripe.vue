@@ -34,6 +34,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from '#imports';
+import type { Marking } from '~/types';
 
 // --------------------------------------------------------------------------------------
 // Props
@@ -61,14 +62,6 @@ const emit = defineEmits<{
 // --------------------------------------------------------------------------------------
 // Declarations
 // --------------------------------------------------------------------------------------
-
-export interface Marking {
-  selected?: boolean;
-  start: number;
-  end: number;
-  timestart: number;
-  timeend: number;
-}
 
 const markings = ref<Marking[]>([]);
 const showBar = ref(true);

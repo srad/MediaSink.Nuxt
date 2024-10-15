@@ -1,8 +1,9 @@
 <template>
-  <video ref="video" loop muted playsinline
+  <img class="w-100 h-auto" alt="preview" :src="props.previewImage" v-if="!props.previewVideo"/>
+  <video v-else ref="video" loop muted playsinline
          class="w-100 h-auto"
          style="user-select: none; z-index: 0;"
-         :poster="previewImage"
+         :poster="props.previewImage"
          @click="emit('selected', props.data)"
          @contextmenu="context($event)"
          @error="errorLoadImage"
