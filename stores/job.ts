@@ -3,6 +3,7 @@ import { DatabaseJobOrder, DatabaseJobStatus } from '~/services/api/v1/StreamSin
 import { defineStore } from 'pinia';
 import { useNuxtApp } from '#app/nuxt';
 import type { JobMessage, JobState, TaskComplete, TaskInfo, TaskProgress } from '~/types';
+import { useAsyncData } from '#app';
 
 export const useJobStore = defineStore('job', {
   persist: false,
@@ -48,11 +49,6 @@ export const useJobStore = defineStore('job', {
         this.jobs[i]!.active = false;
       }
     },
-    async load() {
-      const { $client } = useNuxtApp();
-      const res = await $client.jobs.listCreate({ skip: 0, take: 100, states: [DatabaseJobStatus.StatusJobOpen], sortOrder: DatabaseJobOrder.JobOrderASC });
-      this.update({ jobs: res.jobs || [], totalCount: res.totalCount });
-    },
     progress(message: JobMessage<TaskProgress>) {
       const i = this.jobs.findIndex(j => j.jobId === message.job.jobId);
       const progress = String((message.data.step / message.data.steps) * message.data.current / message.data.total * 100);
@@ -79,9 +75,5 @@ export const useJobStore = defineStore('job', {
       this.jobs[i]!.pid = message.data.pid;
       this.jobs[i]!.command = message.data.command;
     },
-    update(data: { jobs: Job[], totalCount: number }) {
-      this.jobs = data.jobs;
-      this.jobsCount = data.totalCount;
-    }
   }
 });

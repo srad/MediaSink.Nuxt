@@ -74,9 +74,7 @@ export const useChannelStore = defineStore('channel', {
     },
     destroy(channelId: number) {
       this.channels = this.channels.filter(x => x.channelId !== channelId);
-      const channelStore = useChannelStore();
       const jobStore = useJobStore();
-      channelStore.destroy(channelId);
       jobStore.deleteChannel(channelId);
     },
     pause(channelId: number) {

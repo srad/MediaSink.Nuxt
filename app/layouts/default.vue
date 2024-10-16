@@ -22,7 +22,7 @@
 </template>
 
 <script setup lang="ts">
-import type { DatabaseJob, RequestsChannelRequest as ChannelRequest } from '~/services/api/v1/StreamSinkClient';
+import { type DatabaseJob, DatabaseJobOrder, DatabaseJobStatus, type RequestsChannelRequest as ChannelRequest } from '~/services/api/v1/StreamSinkClient';
 import { connectSocket, socketOn, MessageType, closeSocket } from '@/utils/socket';
 import ChannelModal from '~/components/modals/ChannelModal.vue';
 import NavTop from '~/components/navs/NavTop.vue';
@@ -35,6 +35,7 @@ import { computed, onMounted, useI18n, ref, onUnmounted } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
 import type { JobMessage, TaskComplete, TaskInfo, TaskProgress } from '~/types';
 import { reloadNuxtApp } from '#app/composables/chunk';
+import { useAsyncData } from '#app';
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -87,7 +88,18 @@ const logout = () => {
   });
 };
 
+const { $client } = useNuxtApp();
+const { data } = await useAsyncData('jobs', () => $client.jobs.listCreate({ skip: 0, take: 100, states: [DatabaseJobStatus.StatusJobOpen], sortOrder: DatabaseJobOrder.JobOrderASC }));
+if (data.value) {
+  jobStore.jobs = data.value.jobs!;
+  jobStore.jobsCount = data.value.totalCount;
+}
+
 onMounted(async () => {
+  if (!import.meta.browser) {
+    return;
+  }
+
   await connectSocket();
 
   socketOn(MessageType.JobStart, message => {
@@ -132,8 +144,6 @@ onMounted(async () => {
     channelStore.start(id);
     toastStore.add({ title: 'Channel recording', message: `Channel id ${id}` });
   });
-
-  await jobStore.load();
 });
 
 onUnmounted(() => {

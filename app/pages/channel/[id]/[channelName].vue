@@ -87,6 +87,7 @@ import { useJobStore } from '~~/stores/job';
 import { useNuxtApp } from '#app/nuxt';
 import { useHead } from '#app';
 import OptionsMenu from '~/components/controls/OptionsMenu.vue';
+import { ca } from 'cronstrue/dist/i18n/locales/ca';
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -173,23 +174,18 @@ const selectRecording = (data: { checked: boolean, recording: RecordingResponse 
   }
 };
 
-const deleteChannel = () => {
+const deleteChannel = async () => {
   if (window.confirm(`Delete channel "${channelId}"?`)) {
-    busyOverlay.value = true;
-
-    const { $client } = useNuxtApp();
-
-    $client.channels.channelsDelete(channelId)
-        .then(() => channelStore.destroy(channelId))
-        .catch((err: any) => alert(err))
-        .finally(() => {
-          busyOverlay.value = false;
-          toastSTore.add({
-            title: 'Channel deleted',
-            message: `Channel ${channel.value?.displayName}`
-          });
-          router.replace('/');
-        });
+    try {
+      await $client.channels.channelsDelete(channelId);
+      channelStore.destroy(channelId);
+      toastSTore.add({ title: 'Channel deleted', message: `Channel ${channel.value?.displayName}` });
+      await router.replace('/');
+    } catch (e: any) {
+      alert(e);
+    } finally {
+      busyOverlay.value = false;
+    }
   }
 };
 
