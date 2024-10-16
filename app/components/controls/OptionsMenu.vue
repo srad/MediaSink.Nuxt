@@ -1,9 +1,9 @@
 <template>
   <div class="btn-group dropup">
-    <button id="optionsButton" type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+    <button id="optionsButton" type="button" class="btn btn-primary dropdown-toggle" :class="{'show': show}" data-bs-toggle="dropdown" :aria-expanded="String(show)" @click="show=!show">
       Options
     </button>
-    <ul class="dropdown-menu">
+    <ul class="dropdown-menu" :class="{'show': show}" data-bs-popper="static">
       <li>
         <button type="button" class="dropdown-item d-flex justify-content-between" @click="clickFile">
           <input ref="file" name="file" v-show="false" accept="video/mp4" @change="fileChanged" type="file">
@@ -35,12 +35,13 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from '#imports';
-import { Dropdown } from 'bootstrap';
 
 const props = defineProps<{
   channelPaused: boolean;
   multiSelect: boolean;
 }>();
+
+const show = ref(false);
 
 const emit = defineEmits<{
   (e: 'file', value: File): void;
@@ -63,9 +64,6 @@ const fileChanged = () => {
   }
 };
 
-onMounted(() => {
-  new Dropdown('#optionsButton');
-});
 </script>
 
 <style scoped>

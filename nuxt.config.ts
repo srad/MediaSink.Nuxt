@@ -50,7 +50,8 @@ export default defineNuxtConfig({
   //   analyze: {}
   // },
   experimental: {
-    renderJsonPayloads: false
+    renderJsonPayloads: false,
+    inlineSSRStyles: false,
   },
   compatibilityDate: '2024-04-03',
   devtools: { enabled: false },

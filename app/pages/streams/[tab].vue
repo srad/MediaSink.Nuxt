@@ -53,48 +53,43 @@
       <div v-else class="col">
         <ul class="nav nav-tabs border-primary" id="myTab" role="tablist">
           <li class="nav-item" role="presentation">
-            <NuxtLink class="text-decoration-none" to="/streams/live">
-              <button class="nav-link d-flex justify-content-between" :class="{'active': route.params.tab === 'live'}" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">
-                <span class="d-none d-lg-inline">Recording</span>
-                <span class="d-flex justify-content-between">
+            <button class="nav-link d-flex justify-content-between" @click="() => show('live')" :class="{'active': tab === 'live'}" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">
+              <span class="d-none d-lg-inline">Recording</span>
+              <span class="d-flex justify-content-between">
                   <span class="d-lg-none">Rec</span>
                   <span class="recording-number">{{ recordingStreams.length }}</span>
                 </span>
-              </button>
-            </NuxtLink>
+            </button>
           </li>
           <li class="nav-item" role="presentation">
-            <NuxtLink class="text-decoration-none" to="/streams/offline">
-              <button class="nav-link d-flex justify-content-between" :class="{'active': route.params.tab === 'offline'}" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">
-                <span class="d-none d-lg-inline">Offline</span>
-                <span class="d-flex justify-content-between">
+            <button class="nav-link d-flex justify-content-between" @click="() => show('offline')" :class="{'active': tab === 'offline'}" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">
+              <span class="d-none d-lg-inline">Offline</span>
+              <span class="d-flex justify-content-between">
               <span class="d-lg-none">Off</span><span class="recording-number">{{ notRecordingStreams.length }}</span>
             </span>
-              </button>
-            </NuxtLink>
+            </button>
           </li>
           <li class="nav-item" role="presentation">
-            <NuxtLink class="text-decoration-none" to="/streams/disabled">
-              <button class="nav-link d-flex justify-content-between"
-                      :class="{'active': route.params.tab === 'disabled'}"
-                      id="disabled-tab"
-                      data-bs-toggle="tab"
-                      data-bs-target="#disabled"
-                      type="button"
-                      role="tab"
-                      aria-controls="disabled"
-                      aria-selected="false">
-                <span class="d-none d-lg-inline">Disabled</span>
-                <span class="d-flex justify-content-between">
+            <button class="nav-link d-flex justify-content-between"
+                    @click="() => show('disabled')"
+                    :class="{'active': tab === 'disabled'}"
+                    id="disabled-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#disabled"
+                    type="button"
+                    role="tab"
+                    aria-controls="disabled"
+                    aria-selected="false">
+              <span class="d-none d-lg-inline">Disabled</span>
+              <span class="d-flex justify-content-between">
               <span class="d-lg-none">Disabled</span><span class="recording-number">{{ disabledStreams.length }}</span>
             </span>
-              </button>
-            </NuxtLink>
+            </button>
           </li>
         </ul>
 
         <div class="tab-content py-2" id="myTabContent">
-          <div class="tab-pane fade" :class="{'active show': route.params.tab === 'live'}" id="home" role="tabpanel" aria-labelledby="home-tab">
+          <div class="tab-pane fade" :class="{'active show': tab === 'live'}" id="home" role="tabpanel" aria-labelledby="home-tab">
             <div class="row">
               <div v-for="channel in recordingStreams" :key="channel.channelId" :class="channelItemClass">
                 <ChannelItem :channel="channel" @edit="editChannel"/>
@@ -105,7 +100,7 @@
             </div>
           </div>
 
-          <div class="tab-pane fade" :class="{'active show': route.params.tab === 'offline'}" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+          <div class="tab-pane fade" :class="{'active show': tab === 'offline'}" id="profile" role="tabpanel" aria-labelledby="profile-tab">
             <div class="row">
               <div v-for="channel in notRecordingStreams" :key="channel.channelId" :class="channelItemClass">
                 <ChannelItem :channel="channel" @edit="editChannel"/>
@@ -113,7 +108,7 @@
             </div>
           </div>
 
-          <div class="tab-pane fade" :class="{'active show': route.params.tab === 'disabled'}" id="disabled" role="tabpanel" aria-labelledby="disabled-tab">
+          <div class="tab-pane fade" :class="{'active show': tab === 'disabled'}" id="disabled" role="tabpanel" aria-labelledby="disabled-tab">
             <div class="row">
               <div v-for="channel in disabledStreams" :key="channel.channelId" :class="channelItemClass">
                 <ChannelItem :channel="channel" @edit="editChannel"/>
@@ -129,7 +124,7 @@
 </template>
 
 <script setup lang="ts">
-import type { DatabaseChannel, DatabaseChannel as ChannelResponse, ServicesChannelInfo } from '~/services/api/v1/StreamSinkClient';
+import type { DatabaseChannel, DatabaseChannel as ChannelResponse } from '~/services/api/v1/StreamSinkClient';
 import ChannelItem from '~/components/ChannelItem.vue';
 import ChannelModal from '~/components/modals/ChannelModal.vue';
 import { useChannelStore } from '~~/stores/channel';
@@ -145,7 +140,6 @@ useHead({
 definePageMeta({
   name: 'Streams',
   keepalive: true,
-  alias: '/'
 });
 
 // --------------------------------------------------------------------------------------
@@ -173,9 +167,9 @@ const tagFilter = ref<string>((route.params.tag || route.query.tag || '') as str
 
 const router = useRouter();
 
-const { $client } = useNuxtApp();
-const { data } = await useAsyncData<ServicesChannelInfo[]>('channels', () => $client.channels.channelsList());
-data.value?.forEach((channel: ServicesChannelInfo) => channelStore.add(channel));
+await channelStore.load();
+
+const tab = ref(route.params.tab);
 
 // --------------------------------------------------------------------------------------
 // Computes
@@ -245,6 +239,9 @@ const editChannel = (channel: ChannelResponse) => {
   showModal.value = true;
 };
 
+const show = (tabName: string) => {
+  router.push({ params: { tab: tabName } });
+}
 // --------------------------------------------------------------------------------------
 // Watchers
 // --------------------------------------------------------------------------------------
@@ -257,6 +254,10 @@ watch(() => route.query, params => {
   } else {
     searchVal.value = (params.search || '') as string;
   }
+});
+
+watch(() => route.params.tab, tabName => {
+  tab.value = tabName;
 });
 
 watch(tagFilter, val => {
