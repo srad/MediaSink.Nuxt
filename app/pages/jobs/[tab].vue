@@ -133,7 +133,7 @@ import type { DatabaseJob, ResponsesJobsResponse, ServicesProcessInfo as Process
 import { DatabaseJobOrder, DatabaseJobStatus } from '~/services/api/v1/StreamSinkClient';
 import { fromNow } from '~/utils/datetime';
 import { useJobStore } from '~~/stores/job';
-import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.vue';
+import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.client.vue';
 import { computed, definePageMeta, ref, useI18n, useRoute } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
 import { useHead } from '#app';

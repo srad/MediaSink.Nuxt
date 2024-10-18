@@ -143,7 +143,7 @@ import {
   watch,
   onUnmounted, onMounted
 } from '#imports';
-import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.vue';
+import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.client.vue';
 import MarkingsTable from '~/components/MarkingsTable.vue';
 import { useToastStore } from '~~/stores/toast';
 import { useJobStore } from '~~/stores/job';

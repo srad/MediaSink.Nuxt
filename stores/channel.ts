@@ -1,4 +1,4 @@
-import type { DatabaseChannel, RequestsChannelRequest as ChannelRequest, ServicesChannelInfo, ServicesChannelInfo as ChannelInfo } from '@/services/api/v1/StreamSinkClient';
+import type { DatabaseChannel, DatabaseRecording, RequestsChannelRequest as ChannelRequest, ServicesChannelInfo, ServicesChannelInfo as ChannelInfo } from '@/services/api/v1/StreamSinkClient';
 
 import { defineStore } from 'pinia';
 import { useJobStore } from '#imports';
@@ -12,6 +12,9 @@ export const useChannelStore = defineStore('channel', {
     channels: [],
   }),
   actions: {
+    addRecording(r: DatabaseRecording) {
+      this.channels.find(x => x.channelId === r.channelId)?.recordings?.push(r);
+    },
     async load() {
       const { $client } = useNuxtApp();
       const { data } = await useAsyncData<ServicesChannelInfo[]>('streams-channels', () => $client.channels.channelsList());

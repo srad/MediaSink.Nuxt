@@ -1,5 +1,5 @@
 <template>
-  <modal :show="showModal" @close="() => {showModal = false; emit('close'); }">
+  <modal :scroll-top="validations.length > 0" :show="showModal" @close="() => {showModal = false; emit('close'); }">
     <template v-slot:header>
       <div class="d-flex justify-content-between">
         <h5 class="modal-title">{{ myTitle }}</h5>
@@ -83,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import Modal from './Modal.vue';
+import Modal from './Modal.client.vue';
 import { ref, watch } from '#imports';
 import { randomString } from '~/utils/math';
 import Alert from '~/components/Alert.vue';
@@ -132,19 +132,29 @@ const validatorChannelUrl = 'channelUrl';
 const validator = createValidator([
   {
     name: validatorChannelName,
-    pattern: /^[_a-z0-9]+$/i,
+    validator: (val: string) => /^[_a-z0-9]+$/i.test(val),
     validMessage: 'Channel name valid',
     invalidMessage: 'Channel name invalid'
   },
   {
     name: validatorChannelDisplayName,
-    pattern: /^[^\s\\]+(\s[^\s\\]+)*$/i,
+    validator: (val: string) => /^[^\s\\]+(\s[^\s\\]+)*$/i.test(val),
     validMessage: 'Channel display name valid',
     invalidMessage: 'Channel display name invalid'
   },
   {
     name: validatorChannelUrl,
-    pattern: /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi,
+    validator: (val: string) => {
+      let url;
+
+      try {
+        url = new URL(val);
+      } catch (_) {
+        return false;
+      }
+
+      return url.protocol === "http:" || url.protocol === "https:";
+    },
     validMessage: 'URL valid',
     invalidMessage: 'URL invalid'
   }
@@ -228,8 +238,6 @@ const recommendChannelName = () => {
 };
 
 const formValid = (): { validations: ValidationMessage[], isValid: boolean } => {
-  validations.value = [];
-
   const results = validator.validateAll([
     { name: validatorChannelName, value: myChannelName.value },
     { name: validatorChannelDisplayName, value: myDisplayName.value },
@@ -245,15 +253,14 @@ const formValid = (): { validations: ValidationMessage[], isValid: boolean } => 
 };
 
 const save = () => {
+  validations.value = [];
   const validationResult = formValid();
 
   if (!validationResult.isValid) {
-    validations.value = validationResult.validations.map(({ message, isValid }) => ({ message: message, checked: isValid }));
-    // Scroll to the top to show message
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
-    });
+    validations.value = validationResult.validations.map(({ message, isValid }) => ({
+      message: message,
+      checked: isValid
+    }));
     return;
   }
 

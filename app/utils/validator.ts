@@ -1,6 +1,6 @@
-export interface FieldConfig {
-  name: string;
-  pattern: RegExp;
+export interface FieldConfig<T> {
+  name: T;
+  validator: (t: T) => boolean;
   validMessage: string;
   invalidMessage: string;
 }
@@ -21,7 +21,7 @@ class FieldValidator {
     if (!this.fieldConfig[name]) {
       throw new Error(`Invalid field config: ${this.fieldConfig[name]}`);
     }
-    const isValidTest = this.fieldConfig[name]!.pattern.test(value);
+    const isValidTest = this.fieldConfig[name]!.validator(value);
 
     const message = isValidTest ? this.fieldConfig[name]!.validMessage : this.fieldConfig[name]!.invalidMessage;
     return { isValid: isValidTest, message: `${message}: "${value}"` };

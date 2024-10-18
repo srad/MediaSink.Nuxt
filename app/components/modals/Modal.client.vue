@@ -1,6 +1,6 @@
 <template>
   <Transition name="modal">
-    <div v-if="props.show" class="modal-mask d-flex align-items-center">
+    <div v-if="props.show" ref="container" class="modal-mask d-flex align-items-center">
       <div class="modal-container border border-dark">
         <div class="modal-header d-flex justify-content-between px-4 py-2 bg-primary-subtle">
           <slot name="header">default header</slot>
@@ -28,15 +28,37 @@
 // Props
 // --------------------------------------------------------------------------------------
 
-const props = defineProps({
-  show: Boolean
-});
+import { ref, watch } from "#imports";
+
+const props = defineProps<{
+  show: boolean,
+  scrollTop?: boolean
+}>();
 
 // --------------------------------------------------------------------------------------
 // Emits
 // --------------------------------------------------------------------------------------
 
 const emit = defineEmits<{ (e: 'close'): void }>();
+
+// --------------------------------------------------------------------------------------
+// Declarations
+// --------------------------------------------------------------------------------------
+
+const container = ref<HTMLDivElement | null>(null);
+
+// --------------------------------------------------------------------------------------
+// Watchers
+// --------------------------------------------------------------------------------------
+
+watch(() => props.scrollTop, (val) => {
+  if (val === true) {
+    container.value.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
+  }
+})
 
 </script>
 

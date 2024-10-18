@@ -1,22 +1,20 @@
 <template>
   <div>
-    <ClientOnly>
-      <ChannelModal
-          @save="save"
-          @close="showModal=false"
-          title="Edit Stream"
-          :saving="saving"
-          :is-paused="isPaused"
-          :channel-disabled="true"
-          :clear="false"
-          :channel-id="channelId"
-          :show="showModal"
-          :channel-name="channelName"
-          :display-name="displayName"
-          :url="url"
-          :min-duration="minDuration"
-          :skip-start="skipStart"/>
-    </ClientOnly>
+    <ChannelModal
+        @save="save"
+        @close="showModal=false"
+        title="Edit Stream"
+        :saving="saving"
+        :is-paused="isPaused"
+        :channel-disabled="true"
+        :clear="false"
+        :channel-id="channelId"
+        :show="showModal"
+        :channel-name="channelName"
+        :display-name="displayName"
+        :url="url"
+        :min-duration="minDuration"
+        :skip-start="skipStart"/>
 
     <!-- Search bar -->
     <div class="row">
@@ -94,9 +92,9 @@
               <div v-for="channel in recordingStreams" :key="channel.channelId" :class="channelItemClass">
                 <ChannelItem :channel="channel" @edit="editChannel"/>
               </div>
-              <div class="w-100 d-flex justify-content-center align-items-center" style="height: 50vh" v-if="recordingStreams.length === 0">
-                <h3>No Streams</h3>
-              </div>
+              <h1 v-if="recordingStreams.length === 0" class="d-flex align-items-center justify-content-center w-100 m-0 p-0" style="height: 65vh">
+                No disabled streams
+              </h1>
             </div>
           </div>
 
@@ -105,6 +103,9 @@
               <div v-for="channel in notRecordingStreams" :key="channel.channelId" :class="channelItemClass">
                 <ChannelItem :channel="channel" @edit="editChannel"/>
               </div>
+              <h1 v-if="notRecordingStreams.length === 0" class="d-flex align-items-center justify-content-center w-100 m-0 p-0" style="height: 65vh">
+                No disabled streams
+              </h1>
             </div>
           </div>
 
@@ -113,6 +114,9 @@
               <div v-for="channel in disabledStreams" :key="channel.channelId" :class="channelItemClass">
                 <ChannelItem :channel="channel" @edit="editChannel"/>
               </div>
+              <h1 v-if="disabledStreams.length === 0" class="d-flex align-items-center justify-content-center w-100 m-0 p-0" style="height: 65vh">
+                No disabled streams
+              </h1>
             </div>
           </div>
         </div>
@@ -126,12 +130,15 @@
 <script setup lang="ts">
 import type { DatabaseChannel, DatabaseChannel as ChannelResponse } from '~/services/api/v1/StreamSinkClient';
 import ChannelItem from '~/components/ChannelItem.vue';
-import ChannelModal from '~/components/modals/ChannelModal.vue';
+import ChannelModal from '~/components/modals/ChannelModal.client.vue';
 import { useChannelStore } from '~~/stores/channel';
-import { computed, definePageMeta, ref, useAsyncData, useRoute, useRouter, watch } from '#imports';
+import { computed, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useNuxtApp } from '#app/nuxt';
 import { useHead } from '#app';
 import type { ChannelUpdate } from '~/types';
+import { useAsyncData } from "#app";
+import { definePageMeta } from '#imports';
 
 useHead({
   title: 'Streams'
