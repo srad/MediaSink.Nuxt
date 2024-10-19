@@ -130,15 +130,14 @@
 <script setup lang="ts">
 import type { DatabaseJob, ResponsesJobsResponse, ServicesProcessInfo as ProcessInfo } from '~/services/api/v1/StreamSinkClient';
 import type { JobTableItem } from '~/types';
-import { computed, definePageMeta, ref, useAsyncData, useI18n, useRoute } from '#imports';
 import { DatabaseJobOrder, DatabaseJobStatus } from '~/services/api/v1/StreamSinkClient';
 import { fromNow } from '~/utils/datetime';
 import { useJobStore } from '~~/stores/job';
+import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.client.vue';
+import { computed, definePageMeta, ref, useI18n, useRoute } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
-import { useHead } from '#app';
+import { useAsyncData, useHead } from '#app';
 import JobTable from '~/components/JobTable.vue';
-import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.vue';
-import { awaitExpression } from '@babel/types';
 
 useHead({
   title: 'Jobs'

@@ -6,36 +6,40 @@
       <NuxtLoadingIndicator/>
       <NuxtPage/>
 
-      <ClientOnly>
-        <ChannelModal
-            :clear="showModal"
-            :is-paused="false"
-            :saving="saving"
-            :show="showModal"
-            title="Add Stream"
-            @close="showModal=false"
-            @save="save"/>
-      </ClientOnly>
+      <ChannelModal
+          :clear="showModal"
+          :is-paused="false"
+          :saving="saving"
+          :show="showModal"
+          title="Add Stream"
+          @close="showModal=false"
+          @save="save"/>
       <Toaster :toasts="toasts"/>
     </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { type DatabaseJob, DatabaseJobOrder, DatabaseJobStatus, type RequestsChannelRequest as ChannelRequest } from '~/services/api/v1/StreamSinkClient';
+import {
+  type DatabaseJob,
+  DatabaseJobOrder,
+  DatabaseJobStatus,
+  type RequestsChannelRequest as ChannelRequest
+} from '~/services/api/v1/StreamSinkClient';
 import { connectSocket, socketOn, MessageType, closeSocket } from '@/utils/socket';
-import ChannelModal from '~/components/modals/ChannelModal.vue';
+import ChannelModal from '~/components/modals/ChannelModal.client.vue';
 import NavTop from '~/components/navs/NavTop.vue';
 import Toaster from '~/components/Toaster.vue';
 import { useChannelStore } from '~~/stores/channel';
 import { useJobStore } from '~~/stores/job';
 import { useToastStore } from '~~/stores/toast';
 import { useRuntimeConfig, useRouter } from 'nuxt/app';
-import { computed, onMounted, useI18n, ref, onUnmounted } from '#imports';
+import { computed, onMounted, ref, onUnmounted } from 'vue';
 import { useNuxtApp } from '#app/nuxt';
 import type { JobMessage, TaskComplete, TaskInfo, TaskProgress } from '~/types';
 import { reloadNuxtApp } from '#app/composables/chunk';
 import { useAsyncData } from '#app';
+import { useI18n } from 'vue-i18n';
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -89,9 +93,16 @@ const logout = () => {
 };
 
 const { $client } = useNuxtApp();
-const response = await $client.jobs.listCreate({ skip: 0, take: 100, states: [DatabaseJobStatus.StatusJobOpen], sortOrder: DatabaseJobOrder.JobOrderASC });
-jobStore.jobs = response.jobs || [];
-jobStore.jobsCount = response.totalCount;
+const { data } = await useAsyncData('jobs', () => $client.jobs.listCreate({
+  skip: 0,
+  take: 100,
+  states: [DatabaseJobStatus.StatusJobOpen],
+  sortOrder: DatabaseJobOrder.JobOrderASC
+}));
+if (data.value) {
+  jobStore.jobs = data.value.jobs!;
+  jobStore.jobsCount = data.value.totalCount;
+}
 
 onMounted(async () => {
   if (!import.meta.browser) {

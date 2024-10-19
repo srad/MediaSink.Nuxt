@@ -1,6 +1,14 @@
 <template>
   <div>
     <BusyOverlay :visible="busyOverlay"/>
+    <ModalConfirmDialog :show="showConfirm" @cancel="showConfirm=false" @confirm="deleteChannel">
+      <template v-slot:header>
+        Delete channel?
+      </template>
+      <template v-slot:body>
+        Confirm channel delete
+      </template>
+    </ModalConfirmDialog>
     <div ref="upload" style="display: none" class="modal modal-dialog modal-dialog-centered" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -25,14 +33,12 @@
 
     <nav class="navbar fixed-bottom navbar-light bg-light border-info border-top">
       <div class="container-fluid justify-content-between">
-        <ClientOnly placeholder="Loading...">
-          <OptionsMenu v-if="!areItemsSelected"
-                       :channel-paused="channel.isPaused"
-                       :multi-select="selectedRecordings.length === 0"
-                       @file="fileSelected"
-                       @pause="pauseChannel"
-                       @delete="deleteChannel"/>
-        </ClientOnly>
+        <OptionsMenu v-if="!areItemsSelected"
+                     :channel-paused="channel.isPaused"
+                     :multi-select="selectedRecordings.length === 0"
+                     @file="fileSelected"
+                     @pause="pauseChannel"
+                     @delete="showConfirm=true"/>
 
         <div class="btn-group">
           <button type="button" v-if="areItemsSelected" class="btn btn-danger justify-content-between me-2" @click="destroySelection">
@@ -77,17 +83,21 @@
 
 <script setup lang="ts">
 import RecordingItem from '~/components/RecordingItem.vue';
-import type { DatabaseChannel as ChannelResponse, DatabaseRecording as RecordingResponse } from '~/services/api/v1/StreamSinkClient';
-import { onBeforeRouteLeave, useRoute, useRouter, onMounted, computed, ref, useAsyncData } from '#imports';
+import type {
+  DatabaseChannel as ChannelResponse,
+  DatabaseRecording as RecordingResponse
+} from '~/services/api/v1/StreamSinkClient';
+import { onMounted, computed, ref } from 'vue';
+import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router';
 import { MessageType, connectSocket, socketOn, closeSocket } from '~/utils/socket';
 import BusyOverlay from '~/components/BusyOverlay.vue';
 import { useToastStore } from '~~/stores/toast';
 import { useChannelStore } from '~~/stores/channel';
 import { useJobStore } from '~~/stores/job';
 import { useNuxtApp } from '#app/nuxt';
-import { useHead } from '#app';
-import OptionsMenu from '~/components/controls/OptionsMenu.vue';
-import { ca } from 'cronstrue/dist/i18n/locales/ca';
+import { useAsyncData, useHead } from '#app';
+import OptionsMenu from '~/components/controls/OptionsMenu.client.vue';
+import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.client.vue';
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -105,8 +115,10 @@ const upload = ref<HTMLDivElement | null>(null);
 
 const channelId = (+route.params.id!) as unknown as number;
 
-const { $client } = useNuxtApp();
-const { data } = await useAsyncData('channel', () => $client.channels.channelsDetail(channelId));
+const { data } = await useAsyncData('channel', () => {
+  const { $client } = useNuxtApp();
+  return $client.channels.channelsDetail(channelId);
+});
 
 if (!data.value) {
   await router.replace('/streams/live');
@@ -119,6 +131,8 @@ const channel = ref<ChannelResponse>(data.value!);
 
 let uploadAbortController: AbortController | null = null;
 const showModal = ref(false);
+
+const showConfirm = ref(false);
 
 // --------------------------------------------------------------------------------------
 // Computes
@@ -175,18 +189,17 @@ const selectRecording = (data: { checked: boolean, recording: RecordingResponse 
 };
 
 const deleteChannel = async () => {
-  if (window.confirm(`Delete channel "${channelId}"?`)) {
-    try {
-      busyOverlay.value = true;
-      await $client.channels.channelsDelete(channelId);
-      channelStore.destroy(channelId);
-      toastSTore.add({ title: 'Channel deleted', message: `Channel ${channel.value?.displayName}` });
-      await router.replace('/');
-    } catch (e: any) {
-      alert(e);
-    } finally {
-      busyOverlay.value = false;
-    }
+  try {
+    busyOverlay.value = true;
+    const { $client } = useNuxtApp();
+    await $client.channels.channelsDelete(channelId);
+    channelStore.destroy(channelId);
+    toastSTore.add({ title: 'Channel deleted', message: `Channel ${channel.value?.displayName}` });
+    await router.replace('/');
+  } catch (e: any) {
+    alert(e);
+  } finally {
+    busyOverlay.value = false;
   }
 };
 
@@ -254,7 +267,7 @@ onMounted(async () => {
 
     socketOn(MessageType.RecordingAdd, recording => {
       const r = recording as RecordingResponse;
-      console.log(r);
+      channelStore.addRecording(r);
     });
 
     window.scrollTo(0, 0);

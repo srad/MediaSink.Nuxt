@@ -67,7 +67,7 @@ import { computed, onMounted, watch, useRoute, useRouter, ref, onUnmounted, useA
 import DiskStatus from '../DiskStatus.vue';
 import RecordingControls from '../RecordingControls.vue';
 import AppBrand from '../AppBrand.vue';
-import ModalConfirmDialog from '../modals/ModalConfirmDialog.vue';
+import ModalConfirmDialog from '../modals/ModalConfirmDialog.client.vue';
 import { useNuxtApp } from '#app/nuxt';
 import type { HelpersDiskInfo } from '~/services/api/v1/StreamSinkClient';
 

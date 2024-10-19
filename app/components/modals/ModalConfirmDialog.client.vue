@@ -21,8 +21,8 @@
 </template>
 
 <script setup lang="ts">
-import Modal from './Modal.vue';
-import { ref, watch } from '#imports';
+import Modal from './Modal.client.vue';
+import { ref, watch } from 'vue';
 // --------------------------------------------------------------------------------------
 // Props
 // --------------------------------------------------------------------------------------

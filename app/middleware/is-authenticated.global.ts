@@ -1,4 +1,4 @@
-import { defineNuxtRouteMiddleware, navigateTo, useCookie } from '#imports';
+import { defineNuxtRouteMiddleware, navigateTo } from '#imports';
 import { useAuthStore } from '~~/stores/auth';
 
 export default defineNuxtRouteMiddleware((to, from) => {
