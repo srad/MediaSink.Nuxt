@@ -5,9 +5,10 @@
     </div>
 
     <NuxtLink class="text-decoration-none" :to="`/channel/${props.channel.channelId}/${props.channel.channelName}`">
-      <Preview class="card-img-top"
-               @selected="viewFolder(props.channel.channelId!, props.channel.channelName)"
-               :data="props.channel.channelId!" :preview-image="data?.previewImage"/>
+      <Preview :data="props.channel.channelId!"
+               :preview-image="previewImage"
+               class="card-img-top"
+               @selected="viewFolder(props.channel.channelId!, props.channel.channelName)"/>
     </NuxtLink>
     <div class="card-body">
       <div class="card-title p-1 m-0" :class="{'bg-primary' : !props.channel.isRecording && !props.channel.isOnline, 'bg-danger': props.channel.isRecording, 'bg-success': props.channel.isOnline && !props.channel.isRecording}">
@@ -59,9 +60,7 @@ const fileUrl = config.public.fileUrl;
 const destroyed = ref(false);
 const busy = ref(false);
 
-const { data } = await useAsyncData(`preview-image-${props.channel.channelId}`, async () => {
-  return { previewImage: fileUrl + '/' + props.channel.preview + '?' + Date.now() }; // Server and client will share this timestamp
-});
+const previewImage = computed(() => fileUrl + '/' + props.channel.preview);
 
 // --------------------------------------------------------------------------------------
 // Methods

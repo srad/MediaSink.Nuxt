@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import type { Toast, ToastState } from '~/types';
+import type { Toast, ToastKind, ToastState } from '~/types';
 
 export const useToastStore = defineStore('toast', {
   persist: false,
@@ -7,9 +7,21 @@ export const useToastStore = defineStore('toast', {
     toasts: [],
   }),
   actions: {
-    add(info: { title: string, message: string }) {
+    info({ title, message }: { title: string, message: string }) {
+      this.add({ title, message, kind: 'info' });
+    },
+    error({ title, message }: { title: string, message: string }) {
+      this.add({ title, message, kind: 'error' });
+    },
+    warn({ title, message }: { title: string, message: string }) {
+      this.add({ title, message, kind: 'warning' });
+    },
+    success({ title, message }: { title: string, message: string }) {
+      this.add({ title, message, kind: 'success' });
+    },
+    add({ title, message, kind }: { title: string, message: string, kind?: ToastKind }) {
       // The animation can also be implemented with pure CSS, but that free us from this state update logic.
-      const toast: Toast = { ...info, hide: false, created: new Date(), countdown: 100 };
+      const toast: Toast = { title, message, kind: kind || 'info', hide: false, created: new Date(), countdown: 100 };
       const i = this.toasts.push(toast) - 1;
 
       const toastDisplayDurationMs = 3000;

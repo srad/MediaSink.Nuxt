@@ -12,7 +12,7 @@
           :saving="saving"
           :show="showModal"
           title="Add Stream"
-          @close="showModal=false"
+          @close="removeModalParamFromUrl"
           @save="save"/>
       <Toaster :toasts="toasts"/>
     </main>
@@ -33,13 +33,14 @@ import Toaster from '~/components/Toaster.vue';
 import { useChannelStore } from '~~/stores/channel';
 import { useJobStore } from '~~/stores/job';
 import { useToastStore } from '~~/stores/toast';
-import { useRuntimeConfig, useRouter } from 'nuxt/app';
-import { computed, onMounted, ref, onUnmounted } from 'vue';
+import { useRuntimeConfig, useRouter, onBeforeRouteUpdate } from 'nuxt/app';
+import { computed, onMounted, ref, onUnmounted, watch } from 'vue';
 import { useNuxtApp } from '#app/nuxt';
 import type { JobMessage, TaskComplete, TaskInfo, TaskProgress } from '~/types';
 import { reloadNuxtApp } from '#app/composables/chunk';
 import { useAsyncData } from '#app';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -54,10 +55,15 @@ const jobStore = useJobStore();
 const { t } = useI18n();
 
 const router = useRouter();
+const route = useRoute();
 
 const title = config.public.appName;
 const showModal = ref(false);
 const saving = ref(false);
+
+watch(() => route.query, newQuery => {
+  showModal.value = 'channel' in newQuery;
+});
 
 const toasts = computed(() => toastStore.getToast);
 
@@ -77,11 +83,17 @@ const routes = [
 const save = (data: ChannelRequest) => {
   saving.value = true;
   channelStore.save(data)
-      .then(() => showModal.value = false)
+      .then(removeModalParamFromUrl)
       .catch(err => alert(err))
       .finally(() => {
         saving.value = false;
       });
+};
+
+const removeModalParamFromUrl = () => {
+  const query = { ...route.query };
+  delete query.channel;
+  router.push({ path: route.path, query });
 };
 
 const logout = () => {
@@ -119,7 +131,7 @@ onMounted(async () => {
   socketOn(MessageType.JobCreate, data => {
     const job = data as DatabaseJob;
     jobStore.create(job);
-    toastStore.add({ title: 'Job created', message: `File ${job.filename} in ${job.channelName}` });
+    toastStore.success({ title: 'Job created', message: `File ${job.filename} in ${job.channelName}` });
   });
 
   // Dispatch
@@ -135,7 +147,7 @@ onMounted(async () => {
   socketOn(MessageType.JobDelete, jobId => {
     const id = jobId as number;
     jobStore.destroy(id);
-    toastStore.add({
+    toastStore.success({
       title: 'Job destroyed',
       message: `Job id ${id} removed`
     });
@@ -151,8 +163,16 @@ onMounted(async () => {
   socketOn(MessageType.ChannelStart, data => {
     const id = data as number;
     channelStore.start(id);
-    toastStore.add({ title: 'Channel recording', message: `Channel id ${id}` });
+    toastStore.info({ title: 'Channel recording', message: `Channel id ${id}` });
   });
+});
+
+watch(showModal, val => {
+  if (val) {
+    router.push({ query: { channel: 'add' } });
+  } else {
+    removeModalParamFromUrl();
+  }
 });
 
 onUnmounted(() => {

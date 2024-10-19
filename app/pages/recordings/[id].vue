@@ -336,7 +336,7 @@ const destroy = () => {
       .then(() => {
         // Remove from Job list if existent.
         jobStore.deleteRecording(recording.value!.recordingId);
-        toastStore.add({ title: 'Video deleted', message: recording.value!.filename });
+        toastStore.success({ title: 'Video deleted', message: recording.value!.filename });
         router.back();
       })
       .catch((err: any) => {

@@ -10,7 +10,7 @@
           <div>
             {{ toast.message }}
           </div>
-          <div style="height: 3px;" :style="{'width': toast.countdown + '%'}" class="mt-2 bg-warning"></div>
+          <div style="height: 3px;" :style="{'width': toast.countdown + '%'}" class="mt-2" :class="toastClass[toast.kind]"></div>
         </div>
       </div>
     </template>
@@ -23,4 +23,10 @@ import type { Toast } from '~/types';
 
 const store = useToastStore();
 const props = defineProps<{ toasts: Toast[] }>();
+const toastClass = {
+  'info': 'bg-primary',
+  'warning': 'bg-warning',
+  'error': 'bg-danger',
+  'success': 'bg-success',
+};
 </script>

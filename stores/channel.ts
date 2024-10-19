@@ -4,7 +4,7 @@ import { defineStore } from 'pinia';
 import { useJobStore } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
 import type { ChannelState } from '~/types';
-import { useAsyncData } from "#build/imports";
+import { useAsyncData } from '#build/imports';
 
 export const useChannelStore = defineStore('channel', {
   persist: false,
@@ -48,7 +48,7 @@ export const useChannelStore = defineStore('channel', {
       const index = this.channels.findIndex(ch => ch.channelId === channelId);
       if (index !== -1) {
         // Refresh cache with url timestamp update.
-        this.channels[index]!.preview = this.channels[index]!.preview.split('?')[0] + `?time=${new Date().toISOString()}`;
+        this.channels[index]!.preview = this.channels[index]!.preview.split('?')[0] + `?time=${Date.now()}`;
       }
     },
     start(channelId: number) {

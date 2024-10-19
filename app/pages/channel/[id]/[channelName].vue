@@ -153,7 +153,7 @@ const pauseChannel = (element: HTMLInputElement): void => {
     } else {
       channelStore.pause(channel.value!.channelId);
     }
-    toastSTore.add({
+    toastSTore.info({
       title: element.checked ? 'Channel resume' : 'Channel pause',
       message: `Channel ${channel.value?.displayName}`
     });
@@ -194,7 +194,7 @@ const deleteChannel = async () => {
     const { $client } = useNuxtApp();
     await $client.channels.channelsDelete(channelId);
     channelStore.destroy(channelId);
-    toastSTore.add({ title: 'Channel deleted', message: `Channel ${channel.value?.displayName}` });
+    toastSTore.success({ title: 'Channel deleted', message: `Channel ${channel.value?.displayName}` });
     await router.replace('/');
   } catch (e: any) {
     alert(e);

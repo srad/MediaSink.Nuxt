@@ -47,12 +47,15 @@ export interface ToastState {
   toasts: Toast[];
 }
 
+export type ToastKind = 'success' | 'error' | 'warning' | 'info';
+
 export interface Toast {
   title: string;
   message: string;
   hide: boolean;
   created: Date;
   countdown: number;
+  kind: ToastKind;
 }
 
 export interface AuthState {
