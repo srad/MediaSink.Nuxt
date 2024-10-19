@@ -1,14 +1,14 @@
 <template>
   <ul class="list-group list-group-flush">
 
-    <li class="list-group-item d-flex justify-content-between bg-info-light bg-gradient p-2">
+    <li class="list-group-item d-flex justify-content-between bg-info-light bg-gradient">
       <div>
         <span class="badge me-2 user-select-none" :class="{'bg-danger text-white border border-danger blink': channel.isRecording, 'bg-light text-primary border-info border': !channel.isRecording}">Recording</span>
         <span class="badge user-select-none" :class="{'bg-success text-white border border-success': channel.isOnline, 'bg-light text-primary border-info border': !channel.isOnline}">Online</span>
       </div>
     </li>
 
-    <li class="list-group-item d-flex justify-content-between px-2 py-1">
+    <li class="list-group-item d-flex justify-content-between py-1">
       <span v-if="channel.isRecording">
         <i class="bi bi-stopwatch me-1"></i>
         <span>{{ minutes }}:{{ seconds }}min</span>
@@ -22,23 +22,25 @@
     </li>
 
     <!-- tags -->
-    <li class="list-group-item py-1 px-2">
-      <div v-if="!showTagInput && tagArray" v-for="tag in tagArray" class="align-middle rounded-2 border-dark-subtle border badge bg-secondary text-dark me-1 p-1 user-select-none" :key="tag">
-        <span @click="router.push({query: {tag}})">{{ tag }}</span>
-        <i @click="destroyTag(tag)" class="bi bi-x ms-1" style="z-index: 1"></i>
+    <li class="list-group-item py-1">
+      <div class="d-flex">
+        <div v-if="!showTagInput && tagArray" v-for="tag in tagArray" class="d-flex badge bg-secondary text-dark me-1 user-select-none" :key="tag">
+          <span @click="router.push({query: {tag}})">{{ tag }}</span>
+          <i @click="destroyTag(tag)" class="bi bi-x ms-1" style="z-index: 1"></i>
+        </div>
+        <span v-show="!showTagInput" class="badge bg-primary" @click="showTagInput=true;tagInput?.focus()">
+          Tag<span class="bi bi-plus"></span>
+      </span>
       </div>
 
       <div v-show="showTagInput" class="input-group input-group-sm">
         <form @submit.prevent="addTag">
           <div class="input-group">
-            <input :disabled="processingTag" ref="tagInput" class="form-control form-control-sm" v-model.lazy="tagVal" type="text" :name="`${channel.channelId}_tag`" autocapitalize="off" autocomplete="off">
-            <button type="submit" class="btn btn-sm btn-success" :disabled="processingTag">save</button>
+            <input :disabled="processingTag" ref="tagInput" class="form-control form-control-sm border-primary" v-model.lazy="tagVal" type="text" :name="`${channel.channelId}_tag`" autocapitalize="off" autocomplete="off">
+            <button type="submit" class="btn btn-sm btn-primary" :disabled="processingTag">save</button>
           </div>
         </form>
       </div>
-      <span v-show="!showTagInput" class="badge bg-success" @click="showTagInput=true;tagInput?.focus()">
-          <span class="bi bi-plus"></span>
-      </span>
     </li>
     <!-- /tags -->
 
