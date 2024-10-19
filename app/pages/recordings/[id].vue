@@ -75,12 +75,10 @@
             </div>
 
             <div class="modal-footer p-1 d-flex justify-content-between" v-if="stripeUrl">
-              <div>
-                <button type="button" class="btn btn-sm btn-secondary" @click="router.push(`/channel/${recording.channelId}/${recording.channelName}`)">
-                  {{ recording.channelName }}
-                </button>
-              </div>
-              <div class="d-flex justify-content-end">
+              <button style="max-width: 35%; text-overflow: ellipsis; text-wrap: nowrap;" type="button" class="overflow-hidden btn btn-sm btn-secondary" @click="router.push(`/channel/${recording.channelId}/${recording.channelName}`)">
+                {{ recording.channelName }}
+              </button>
+              <div class="d-flex justify-content-end overflow-y-scroll" style="max-width: 50%">
                 <button class="btn btn-danger btn-sm me-2" @click="destroy">
                   <i class="bi bi-trash3-fill"/>
                 </button>
@@ -91,12 +89,12 @@
 
                 <span class="mx-2 text-secondary">|</span>
 
-                <button class="btn btn-info text-white btn-sm me-2" @click="back">
-                  <i class="bi bi-chevron-double-left"/>
+                <button class="btn btn-primary btn-sm me-2" @click="back">
+                  <i class="bi bi-chevron-left"/>
                 </button>
 
-                <button class="btn btn-info text-white btn-sm me-2" @click="forward">
-                  <i class="bi bi-chevron-double-right"/>
+                <button class="btn btn-primary btn-sm me-2" @click="forward">
+                  <i class="bi bi-chevron-right"/>
                 </button>
 
                 <!--

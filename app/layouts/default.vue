@@ -10,10 +10,11 @@
           :clear="showModal"
           :is-paused="false"
           :saving="saving"
-          :show="showModal"
+          :show="route.query?.channel ==='add'"
           title="Add Stream"
-          @close="removeModalParamFromUrl"
+          @close="hideModal"
           @save="save"/>
+
       <Toaster :toasts="toasts"/>
     </main>
   </div>
@@ -80,20 +81,22 @@ const routes = [
 // Methods
 // --------------------------------------------------------------------------------------
 
-const save = (data: ChannelRequest) => {
-  saving.value = true;
-  channelStore.save(data)
-      .then(removeModalParamFromUrl)
-      .catch(err => alert(err))
-      .finally(() => {
-        saving.value = false;
-      });
+const save = async (data: ChannelRequest) => {
+  try {
+    saving.value = true;
+    await channelStore.save(data);
+    hideModal();
+  } catch (e: any) {
+    toastStore.error(e);
+  } finally {
+    saving.value = false;
+  }
 };
 
-const removeModalParamFromUrl = () => {
+const hideModal = () => {
   const query = { ...route.query };
   delete query.channel;
-  router.push({ path: route.path, query });
+  router.replace({ path: route.path, query });
 };
 
 const logout = () => {
@@ -171,7 +174,7 @@ watch(showModal, val => {
   if (val) {
     router.push({ query: { channel: 'add' } });
   } else {
-    removeModalParamFromUrl();
+    hideModal();
   }
 });
 
