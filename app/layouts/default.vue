@@ -89,11 +89,9 @@ const logout = () => {
 };
 
 const { $client } = useNuxtApp();
-const { data } = await useAsyncData('jobs', () => $client.jobs.listCreate({ skip: 0, take: 100, states: [DatabaseJobStatus.StatusJobOpen], sortOrder: DatabaseJobOrder.JobOrderASC }));
-if (data.value) {
-  jobStore.jobs = data.value.jobs!;
-  jobStore.jobsCount = data.value.totalCount;
-}
+const response = await $client.jobs.listCreate({ skip: 0, take: 100, states: [DatabaseJobStatus.StatusJobOpen], sortOrder: DatabaseJobOrder.JobOrderASC });
+jobStore.jobs = response.jobs || [];
+jobStore.jobsCount = response.totalCount;
 
 onMounted(async () => {
   if (!import.meta.browser) {

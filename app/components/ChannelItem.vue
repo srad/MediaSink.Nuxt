@@ -59,7 +59,7 @@ const fileUrl = config.public.fileUrl;
 const destroyed = ref(false);
 const busy = ref(false);
 
-const { data } = await useAsyncData(`preview-imamge-${props.channel.channelId}`, async () => {
+const { data } = await useAsyncData(`preview-image-${props.channel.channelId}`, async () => {
   return { previewImage: fileUrl + '/' + props.channel.preview + '?' + Date.now() }; // Server and client will share this timestamp
 });
 

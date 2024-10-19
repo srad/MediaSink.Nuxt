@@ -177,6 +177,7 @@ const selectRecording = (data: { checked: boolean, recording: RecordingResponse 
 const deleteChannel = async () => {
   if (window.confirm(`Delete channel "${channelId}"?`)) {
     try {
+      busyOverlay.value = true;
       await $client.channels.channelsDelete(channelId);
       channelStore.destroy(channelId);
       toastSTore.add({ title: 'Channel deleted', message: `Channel ${channel.value?.displayName}` });

@@ -158,7 +158,6 @@ const updateInfo = () => {
 
 const fetch = async () => {
   try {
-
     const { $client } = useNuxtApp();
     const { data } = await useAsyncData('infos', () => Promise.all<InfoPromise>([$client.info.infoDetail(1), $client.admin.importList()]));
 

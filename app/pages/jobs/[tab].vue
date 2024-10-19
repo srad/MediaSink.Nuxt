@@ -31,7 +31,7 @@
             <!-- filter row -->
             <div class="row align-items-center">
               <div class="col-auto">
-                <select ref="filterLimitSelect" id="limit" class="form-select" v-model="take" @change="getData">
+                <select ref="filterLimitSelect" id="limit" class="form-select" v-model="take">
                   <option value="" style="font-weight: bold" disabled>{{ t('filter.limit') }}</option>
                   <option v-for="limit in limits" :key="limit" :value="limit">{{ limit }}</option>
                 </select>
@@ -128,16 +128,17 @@
 </template>
 
 <script setup lang="ts">
-import JobTable from '~/components/JobTable.vue';
 import type { DatabaseJob, ResponsesJobsResponse, ServicesProcessInfo as ProcessInfo } from '~/services/api/v1/StreamSinkClient';
+import type { JobTableItem } from '~/types';
+import { computed, definePageMeta, ref, useAsyncData, useI18n, useRoute } from '#imports';
 import { DatabaseJobOrder, DatabaseJobStatus } from '~/services/api/v1/StreamSinkClient';
 import { fromNow } from '~/utils/datetime';
 import { useJobStore } from '~~/stores/job';
-import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.vue';
-import { computed, definePageMeta, ref, useI18n, useRoute } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
 import { useHead } from '#app';
-import type { JobTableItem } from '~/types';
+import JobTable from '~/components/JobTable.vue';
+import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.vue';
+import { awaitExpression } from '@babel/types';
 
 useHead({
   title: 'Jobs'
@@ -172,37 +173,37 @@ const resetFilters = () => {
 const jobsCompleted = ref<ResponsesJobsResponse | null>(null);
 const jobsOther = ref<ResponsesJobsResponse | null>(null);
 
-const getData = async () => {
-  const { $client } = useNuxtApp();
+const { $client } = useNuxtApp();
 
-  const res = await Promise.all([
-    $client.jobs.listCreate({
-      skip: skip.value,
-      take: take.value,
-      states: [DatabaseJobStatus.StatusJobOpen],
-      sortOrder: DatabaseJobOrder.JobOrderASC
-    }),
-    $client.jobs.listCreate({
-      skip: skip.value,
-      take: take.value,
-      states: [DatabaseJobStatus.StatusJobCompleted],
-      sortOrder: DatabaseJobOrder.JobOrderDESC
-    }),
-    $client.jobs.listCreate({
-      skip: skip.value,
-      take: take.value,
-      states: [DatabaseJobStatus.StatusJobCanceled, DatabaseJobStatus.StatusJobCanceled, DatabaseJobStatus.StatusJobError],
-      sortOrder: DatabaseJobOrder.JobOrderDESC
-    }),
-    $client.processes.processesList(),
-    $client.jobs.workerList(),
-  ]);
+const { data } = await useAsyncData('jobsdata', () => Promise.all([
+  $client.jobs.listCreate({
+    skip: skip.value,
+    take: take.value,
+    states: [DatabaseJobStatus.StatusJobOpen],
+    sortOrder: DatabaseJobOrder.JobOrderASC
+  }),
+  $client.jobs.listCreate({
+    skip: skip.value,
+    take: take.value,
+    states: [DatabaseJobStatus.StatusJobCompleted],
+    sortOrder: DatabaseJobOrder.JobOrderDESC
+  }),
+  $client.jobs.listCreate({
+    skip: skip.value,
+    take: take.value,
+    states: [DatabaseJobStatus.StatusJobCanceled, DatabaseJobStatus.StatusJobCanceled, DatabaseJobStatus.StatusJobError],
+    sortOrder: DatabaseJobOrder.JobOrderDESC
+  }),
+  $client.processes.processesList(),
+  $client.jobs.workerList(),
+]));
 
-  const open = res[0];
-  const completed = res[1];
-  const others = res[2];
-  const process = res[3];
-  const jobWorker = res[4];
+if (data.value) {
+  const open = data.value[0];
+  const completed = data.value[1];
+  const others = data.value[2];
+  const process = data.value[3];
+  const jobWorker = data.value[4];
 
   if (open.jobs) {
     jobStore.refresh({ jobs: open.jobs, totalCount: open.totalCount });
@@ -218,7 +219,7 @@ const getData = async () => {
 
   processes.value = process || [];
   processingJobs.value = jobWorker.isProcessing;
-};
+}
 
 const addFromNowToJob = (job: DatabaseJob): JobTableItem => {
   const newJob: JobTableItem = {
@@ -264,6 +265,4 @@ const toggleWorker = () => {
   }).catch((res: any) => alert(res.error))
       .finally(() => showConfirmToggleWorkerDialog.value = false);
 };
-
-await getData();
 </script>

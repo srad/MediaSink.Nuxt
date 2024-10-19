@@ -15,7 +15,7 @@
       </template>
     </ModalConfirmDialog>
 
-    <nav class="navbar navbar-dark navbar-expand-lg fixed-top m-0 d-flex bg-primary">
+    <nav class="navbar navbar-dark navbar-expand-lg fixed-top shadow-sm border-bottom border-primary-subtle m-0 d-flex bg-primary">
       <div class="container-fluid">
         <AppBrand class="mr-auto" :title="title"/>
 
@@ -95,7 +95,9 @@ const emit = defineEmits<{
 // --------------------------------------------------------------------------------------
 
 const { $client } = useNuxtApp();
-const { data } = await useAsyncData('info', () => Promise.all<[Promise<boolean>, Promise<HelpersDiskInfo>]>([$client.isRecording(), $client.info.diskList()]));
+const { data } = await useAsyncData('info', () => Promise.all<[Promise<boolean>, Promise<HelpersDiskInfo>]>([$client.isRecording(), $client.info.diskList()]), {
+  lazy: true
+});
 const [recRes, diskRes] = data.value!;
 
 const channelStore = useChannelStore();
@@ -156,6 +158,9 @@ const record = async () => {
 watch(route, () => collapseNav.value = true);
 
 onMounted(async () => {
+  if (!import.meta.browser) {
+    return;
+  }
   await connectSocket();
 
   socketOn(MessageType.HeartBeat, nextUpdate => {
@@ -168,17 +173,11 @@ onMounted(async () => {
     }, 1000);
   });
 
-  // The catch stops the polling when the query is rejected because of 401 unauthorized.
-  thread = setInterval(async () => {
-    try {
-      await query();
-    } catch (e) {
-      clearInterval(thread);
-    }
-  }, 1000 * 10);
+  thread = setInterval(query, 1000 * 10);
 });
 
 onUnmounted(() => {
   closeSocket();
+  clearInterval(thread);
 });
 </script>
