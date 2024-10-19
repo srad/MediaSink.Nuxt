@@ -30,7 +30,8 @@
 <script setup lang="ts">
 import JobStatus from './JobStatus.vue';
 import type { DatabaseJob } from '~/services/api/v1/StreamSinkClient';
-import { useI18n, useRoute } from '#imports';
+import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 const route = useRoute();

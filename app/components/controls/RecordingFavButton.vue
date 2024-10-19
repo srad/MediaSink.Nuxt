@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
 import FavButton from './FavButton.vue';
-import { ref } from '#imports';
+import { ref } from 'vue';
 import { useNuxtApp } from '#app/nuxt';
 
 const { $client } = useNuxtApp();

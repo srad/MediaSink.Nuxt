@@ -8,7 +8,7 @@
 
 <script setup lang="ts">
 import type { DatabaseJob } from '~/services/api/v1/StreamSinkClient';
-import { useI18n } from '#imports';
+import { useI18n } from 'vue-i18n';
 
 const { t } = useI18n();
 const props = defineProps<{ jobs: DatabaseJob[], totalCount: number }>();

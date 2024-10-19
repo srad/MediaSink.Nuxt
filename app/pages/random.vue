@@ -34,8 +34,9 @@
 <script setup lang="ts">
 import RecordingItem from '@/components/RecordingItem.vue';
 import type { DatabaseRecording, DatabaseRecording as RecordingResponse } from '~/services/api/v1/StreamSinkClient';
-import { useRoute, watch, ref } from '#imports';
+import { watch, ref } from 'vue';
 import { useNuxtApp } from '#app/nuxt';
+import { useRoute } from 'vue-router';
 import { useAsyncData } from '#app';
 
 const route = useRoute();

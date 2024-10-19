@@ -8,7 +8,6 @@
 </template>
 
 <script setup lang="ts">
-
 const props = defineProps<{
   caption: string;
   busy: boolean;

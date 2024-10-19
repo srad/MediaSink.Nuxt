@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, watch, onUnmounted, ref } from '#imports';
+import { computed, onMounted, watch, onUnmounted, ref } from 'vue';
 import type { IChartApi, ISeriesApi } from 'lightweight-charts';
 import { useNuxtApp } from '#app/nuxt';
 

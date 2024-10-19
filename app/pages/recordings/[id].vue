@@ -22,23 +22,25 @@
     </ModalConfirmDialog>
 
     <BusyOverlay :visible="busy"></BusyOverlay>
-    <div class="modal show m-0 p-0m position-absolute" tabindex="-1" ref="modalVideo" style="display: block !important;">
+    <div class="modal show m-0 p-0m position-absolute" tabindex="-1" style="display: block !important;">
       <div class="modal-dialog modal-fullscreen p-0">
         <div class="modal-content">
           <template v-if="recording">
-            <div class="modal-body bg-light p-0" style="overflow: hidden">
+            <div class="modal-body bg-light p-0 m-0" style="overflow: hidden">
 
               <div class="d-flex flex-row" style="height: 90%;">
 
                 <div class="d-flex flex-column m-0" :class="{'w-80': markings.length > 0, 'w-100': markings.length===0}">
-                  <video class="view h-100" controls
-                         ref="video"
-                         @volumechange="event => {muted = (event.target as HTMLVideoElement).muted; volume = (event.target as HTMLVideoElement).volume; }"
-                         @loadeddata="loadData"
-                         @timeupdate="timeupdate" :muted="muted" autoplay>
-                    <source :src="videoUrl" type="video/mp4">
-                    Your browser does not support the video tag.
-                  </video>
+                  <ClientOnly>
+                    <video class="view h-100" controls
+                           ref="video"
+                           @volumechange="event => {muted = (event.target as HTMLVideoElement).muted; volume = (event.target as HTMLVideoElement).volume; }"
+                           @loadeddata="loadData"
+                           @timeupdate="timeupdate" :muted="muted" autoplay>
+                      <source :src="videoUrl" type="video/mp4">
+                      Your browser does not support the video tag.
+                    </video>
+                  </ClientOnly>
                 </div>
 
                 <div v-if="markings.length > 0" class="d-flex flex-column m-0 p-2" :class="{'w-20': markings.length > 0}">
@@ -62,15 +64,17 @@
               </div>
 
               <div ref="stripeContainer" class="d-flex flex-row w-100 position-relative overflow-y-scroll" style="height: 10%;">
-                <Stripe :src="stripeUrl"
-                        :disabled="cutInterval != undefined"
-                        :paused="isPaused"
-                        :timecode="timeCode"
-                        :duration="duration"
-                        :markings="markings"
-                        @selecting="() => pause()"
-                        @marking="(m) => markings=m"
-                        @seek="seek"/>
+                <ClientOnly><!-- calling the file .client.vue didnt make it client only??? -->
+                  <Stripe :src="stripeUrl"
+                          :disabled="cutInterval != undefined"
+                          :paused="isPaused"
+                          :timecode="timeCode"
+                          :duration="duration"
+                          :markings="markings"
+                          @selecting="() => pause()"
+                          @marking="(m) => markings=m"
+                          @seek="seek"/>
+                </ClientOnly>
               </div>
             </div>
 
@@ -131,16 +135,10 @@ import type { DatabaseRecording } from '~/services/api/v1/StreamSinkClient.ts';
 import Stripe from '~/components/Stripe.vue';
 import RecordingFavButton from '~/components/controls/RecordingFavButton.vue';
 import BusyOverlay from '~/components/BusyOverlay.vue';
-import {
-  useI18n,
-  useCookie,
-  ref,
-  useRouter,
-  onBeforeRouteLeave,
-  useRoute,
-  watch,
-  onUnmounted, onMounted
-} from '#imports';
+import { ref, watch, onUnmounted, onMounted } from 'vue';
+import { useRouter, onBeforeRouteLeave, useRoute } from 'vue-router';
+import { useCookie } from '#app/composables/cookie';
+import { useI18n } from 'vue-i18n';
 import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.client.vue';
 import MarkingsTable from '~/components/MarkingsTable.vue';
 import { useToastStore } from '~~/stores/toast';
@@ -149,6 +147,7 @@ import { useAsyncData, useRuntimeConfig } from 'nuxt/app';
 import { useNuxtApp } from '#app/nuxt';
 import { useHead } from '#app';
 import type { Marking } from '~/types';
+import { useTemplateRef } from 'vue';
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -163,9 +162,8 @@ const toastStore = useToastStore();
 const volume = useCookie<number>('volume');
 const muted = useCookie<boolean>('muted');
 
-const stripeContainer = ref(null);
-
-const video = ref<HTMLVideoElement | null>(null);
+const stripeContainer = useTemplateRef<HTMLElement>('stripeContainer');
+const video = useTemplateRef<HTMLVideoElement>('video');
 
 const config = useRuntimeConfig();
 const fileUrl = config.public.fileUrl;
@@ -354,6 +352,10 @@ const cutVideo = () => {
 };
 
 const seek = ({ clientX, width }: { clientX: number, width: number }) => {
+  if (!video.value?.duration) {
+    return;
+  }
+
   const offset = video.value!.duration * (clientX / width);
 
   if (isNaN(offset)) {

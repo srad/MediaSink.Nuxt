@@ -51,8 +51,10 @@
 import RecordInfo from './RecordInfo.vue';
 import Preview from './Preview.vue';
 import type { DatabaseRecording as RecordingResponse } from '~/services/api/v1/StreamSinkClient';
-import { useI18n, watch, useRouter, ref } from '#imports';
-import { useRuntimeConfig } from "nuxt/app";
+import { watch, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+import { useRuntimeConfig } from 'nuxt/app';
 import { useNuxtApp } from '#app/nuxt';
 
 // --------------------------------------------------------------------------------------
@@ -162,7 +164,7 @@ const convert = async ({ recording, mediaType }: { recording: RecordingResponse,
 };
 
 const destroyRecording = async (recording: RecordingResponse) => {
-  if (!window.confirm(t('crud.destroy', [ recording.filename ]))) {
+  if (!window.confirm(t('crud.destroy', [recording.filename]))) {
     return;
   }
 

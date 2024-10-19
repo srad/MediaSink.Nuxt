@@ -31,9 +31,9 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits, computed } from "vue";
-import { useI18n } from '#imports'
+import { defineProps, defineEmits, computed } from 'vue';
 import type { Marking } from '~/types';
+import { useI18n } from 'vue-i18n';
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -58,11 +58,11 @@ const secondsToTimeCode = (seconds: number) => {
 
   const s = date.toISOString().substring(11, 19);
 
-  if (s.startsWith("00:0")) {
+  if (s.startsWith('00:0')) {
     return s.substring(4);
   }
 
-  if (s.startsWith("00:")) {
+  if (s.startsWith('00:')) {
     return s.substring(3);
   }
 

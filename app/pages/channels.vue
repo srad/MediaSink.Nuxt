@@ -60,11 +60,13 @@
 </template>
 
 <script setup lang="ts">
-import { useRuntimeConfig, computed, ref, downloadObjectAsJson } from '#imports';
+import { computed, ref, } from 'vue';
 import ChannelFavButton from '~/components/controls/ChannelFavButton.vue';
 import type { DatabaseChannel, ServicesChannelInfo } from '~/services/api/v1/StreamSinkClient';
 import { useNuxtApp } from '#app/nuxt';
-import { useAsyncData, useHead } from '#app';
+import { useAsyncData, useHead, useRuntimeConfig } from '#app';
+import { useTemplateRef } from 'vue';
+import { downloadObjectAsJson } from '#imports';
 
 useHead({
   title: 'Channels'
@@ -73,7 +75,7 @@ useHead({
 const config = useRuntimeConfig();
 const isImporting = ref(false);
 const fileUrl = config.public.fileUrl;
-const channelsFile = ref<HTMLInputElement | null>(null);
+const channelsFile = useTemplateRef<HTMLInputElement>('channelsFile');
 
 const { $client } = useNuxtApp();
 const { data } = await useAsyncData<ServicesChannelInfo[]>('channels', () => $client.channels.channelsList());

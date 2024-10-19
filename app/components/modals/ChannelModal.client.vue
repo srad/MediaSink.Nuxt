@@ -84,7 +84,7 @@
 
 <script setup lang="ts">
 import Modal from './Modal.client.vue';
-import { ref, watch } from '#imports';
+import { ref, watch } from 'vue';
 import { randomString } from '~/utils/math';
 import Alert from '~/components/Alert.vue';
 import { AlertType, type ChannelUpdate } from '~~/app/types';

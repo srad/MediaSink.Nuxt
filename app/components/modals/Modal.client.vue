@@ -28,7 +28,7 @@
 // Props
 // --------------------------------------------------------------------------------------
 
-import { ref, watch } from "#imports";
+import { ref, watch } from 'vue';
 
 const props = defineProps<{
   show: boolean,
@@ -58,7 +58,7 @@ watch(() => props.scrollTop, (val) => {
       behavior: 'smooth'
     });
   }
-})
+});
 
 </script>
 

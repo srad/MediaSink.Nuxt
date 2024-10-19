@@ -6,7 +6,7 @@
 //import socket from "@/socket";
 //import event from "@/services/event";
 
-import { ref } from '#imports';
+import { ref } from 'vue';
 
 const log = ref('');
 

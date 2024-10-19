@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch, computed, ref } from '#imports';
+import { watch, computed, ref } from 'vue';
 
 // --------------------------------------------------------------------------------------
 // Emits

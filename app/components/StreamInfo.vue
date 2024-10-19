@@ -66,7 +66,8 @@
 </template>
 
 <script setup lang="ts">
-import { watch, computed, onMounted, onUnmounted, ref, useRouter } from '#imports';
+import { watch, computed, onMounted, onUnmounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import type { ServicesChannelInfo as ChannelResponse } from '~/services/api/v1/StreamSinkClient';
 import { validTag } from '~/utils/parser';
 import FavButton from './controls/FavButton.vue';

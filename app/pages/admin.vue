@@ -101,7 +101,8 @@ import type {
 } from '~/services/api/v1/StreamSinkClient';
 import TrafficChart from '~/components/charts/TrafficChart.vue';
 import CPUChart from '~/components/charts/CPUChart.vue';
-import { ref, onBeforeRouteLeave, onMounted } from '#imports';
+import { ref, onMounted } from 'vue';
+import { onBeforeRouteLeave } from 'vue-router';
 import { useNuxtApp } from '#app/nuxt';
 import { useAsyncData, useHead } from '#app';
 

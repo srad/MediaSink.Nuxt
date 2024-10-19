@@ -6,7 +6,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from '#imports';
+import { ref, watch } from 'vue';
 import FavButton from './FavButton.vue';
 import { useNuxtApp } from '#app/nuxt';
 

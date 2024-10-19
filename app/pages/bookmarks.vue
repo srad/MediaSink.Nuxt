@@ -14,7 +14,8 @@
 <script setup lang="ts">
 import type { DatabaseRecording } from '~/services/api/v1/StreamSinkClient';
 import RecordingItem from '../components/RecordingItem.vue';
-import { useI18n, ref } from '#imports';
+import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useNuxtApp } from '#app/nuxt';
 import { useAsyncData, useHead } from '#app';
 

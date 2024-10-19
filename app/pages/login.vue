@@ -29,12 +29,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, definePageMeta } from '#imports';
+import { ref } from 'vue';
 import { createLog } from '~/utils/log';
 import { useNuxtApp } from '#app/nuxt';
 import { reloadNuxtApp } from '#app/composables/chunk';
 import { useHead } from '#app';
 import BusyButton from "~/components/controls/BusyButton.vue";
+import { definePageMeta } from '#imports';
 
 useHead({
   title: 'Login'

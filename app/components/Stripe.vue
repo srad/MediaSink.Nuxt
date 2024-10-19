@@ -1,8 +1,7 @@
 <template>
-  <div class="position-relative user-select-none" ref="stripe" style="height: 100%;" @click="seek($event)" draggable="false">
+  <div class="position-relative user-select-none h-100" ref="stripe" @click="seek($event)" draggable="false">
     <img draggable="false"
          alt="stripe"
-         @load="load"
          class="stripe position-absolute"
          ref="stripeImage"
          :src="src"
@@ -28,12 +27,12 @@
       <i @click="destroyMarking(i)" v-if="currentMarkerIndex === -1 || (currentMarkerIndex-1 === i && !mouseDown)" class="text-white bg-danger p-1 bi bi-trash marking-destroy position-absolute" style="opacity: 1"></i>
     </div>
 
-    <div v-if="showBar" class="timecode position-absolute" :style="{left: `${offset}px`}"></div>
+    <div v-if="showBar" class="timecode position-absolute" :style="{left: `${clientX}px`}"></div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from '#imports';
+import { onMounted, onUnmounted, ref, useTemplateRef } from 'vue';
 import type { Marking } from '~/types';
 
 // --------------------------------------------------------------------------------------
@@ -53,7 +52,6 @@ const props = defineProps<{
 // --------------------------------------------------------------------------------------
 
 const emit = defineEmits<{
-  (e: 'offset', offset: number, clientX: number): void
   (e: 'seek', value: { clientX: number, width: number }): void
   (e: 'selecting'): void
   (e: 'marking', value: Marking[]): void
@@ -65,7 +63,7 @@ const emit = defineEmits<{
 
 const markings = ref<Marking[]>([]);
 const showBar = ref(true);
-const stripeImage = ref<HTMLImageElement | null>(null);
+const stripeImage = useTemplateRef<HTMLImageElement>('stripeImage');
 const stripe = ref<HTMLElement | null>(null);
 
 let markerPos = '';
@@ -74,8 +72,8 @@ let mouseOffsetX = 0;
 let mouseDown = false;
 let mouseMoved = false;
 let currentMarkerIndex = -1;
-let width = 0;
-let clientX = 0;
+const width = ref(0);
+const clientX = ref(0);
 
 // --------------------------------------------------------------------------------------
 // Hooks
@@ -85,25 +83,22 @@ onUnmounted(() => stripe.value?.removeEventListener('wheel', resizePreview, true
 
 onMounted(() => {
   stripe.value?.addEventListener('wheel', resizePreview, true);
+  if (stripeImage.value) {
+    stripeImage.value.onload = load;
+  }
 });
 
 // --------------------------------------------------------------------------------------
 // Methods
 // --------------------------------------------------------------------------------------
 
-const offset = computed(() => {
-  const offset = (props.timecode / props.duration) * width;
-  emit('offset', offset, clientX);
-  return offset;
-});
-
 const seek = (event: MouseEvent) => {
   if (props.disabled) {
     return;
   }
-  clientX = getX(event);
+  clientX.value = getX(event);
   showBar.value = true;
-  emit('seek', { clientX: getMouseX(event), width: width });
+  emit('seek', { clientX: getMouseX(event), width: width.value });
 };
 
 const moveMarker = (event: MouseEvent) => {
@@ -115,13 +110,13 @@ const moveMarker = (event: MouseEvent) => {
       return;
     }
     markings.value[i]!.start = x;
-    markings.value[i]!.timestart = markings.value[i]!.start / width * props.duration;
+    markings.value[i]!.timestart = markings.value[i]!.start / width.value * props.duration;
   } else {
     if (x < markings.value[i]!.start + 50) {
       return;
     }
     markings.value[i]!.end = x;
-    markings.value[i]!.timeend = markings.value[i]!.end / width * props.duration;
+    markings.value[i]!.timeend = markings.value[i]!.end / width.value * props.duration;
   }
 };
 
@@ -156,9 +151,7 @@ const markerDown = (event: MouseEvent, marker: Object, i: number, pos: string) =
   window.addEventListener('mouseup', markerUp);
 };
 
-const load = () => {
-  width = stripeImage.value!.clientWidth;
-};
+const load = () => width.value = stripeImage.value!.clientWidth;
 
 const destroyMarking = (index: number) => {
   if (props.disabled) {
@@ -190,14 +183,14 @@ const down = (event: MouseEvent) => {
   showBar.value = false;
   mouseDown = true;
 
-  const endX = getMouseX(event);
+  const posX = getMouseX(event);
 
   currentMarkerIndex = markings.value.push({
     selected: false,
-    start: endX,
-    end: endX,
-    timestart: endX / width * props.duration,
-    timeend: endX / width * props.duration
+    start: posX,
+    end: posX,
+    timestart: posX / width.value * props.duration,
+    timeend: posX / width.value * props.duration
   });
 
   window.addEventListener('mousemove', mouseMove);
@@ -213,7 +206,7 @@ const mouseMove = (event: MouseEvent) => {
     emit('selecting');
     mouseOffsetX = getMouseX(event);
     markings.value[currentMarkerIndex - 1]!.end = mouseOffsetX;
-    markings.value[currentMarkerIndex - 1]!.timeend = mouseOffsetX / width * props.duration;
+    markings.value[currentMarkerIndex - 1]!.timeend = mouseOffsetX / width.value * props.duration;
   }
 };
 
@@ -327,7 +320,7 @@ const resizePreview = (event: WheelEvent) => {
   }
 
   const factor = el.width / oldWidth;
-  width = el.width;
+  width.value = el.width;
 
   // Linear transformation on all x coordinates
   markings.value.forEach(m => {

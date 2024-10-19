@@ -48,9 +48,11 @@
 <script setup lang="ts">
 import type { DatabaseRecording, DatabaseRecording as RecordingResponse } from '~/services/api/v1/StreamSinkClient';
 import RecordingItem from '../components/RecordingItem.vue';
-import { useI18n, ref, useRoute, useRouter, watch } from '#imports';
+import { ref, watch, useTemplateRef } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useNuxtApp } from '#app/nuxt';
 import { useAsyncData, useHead } from '#app';
+import { useI18n } from 'vue-i18n';
 
 useHead({
   title: 'Latest Recordings'
@@ -63,13 +65,13 @@ const router = useRouter();
 
 watch(() => route.query, () => fetch());
 
-const sortOrderSelect = ref<HTMLSelectElement | null>(null);
-const filterColumnSelect = ref<HTMLSelectElement | null>(null);
-const filterLimitSelect = ref<HTMLSelectElement | null>(null);
+const sortOrderSelect = useTemplateRef<HTMLSelectElement>('sortOrderSelect');
+const filterColumnSelect = useTemplateRef<HTMLSelectElement>('filterColumnSelect');
+const filterLimitSelect = useTemplateRef<HTMLSelectElement>('filterLimitSelect');
 
 let filterOrder: string = route.query.order as string || 'desc';
 let filterColumn: string = route.query.column as string || 'created_at';
-let filterLimit:string = route.query.limit as string || '25';
+let filterLimit: string = route.query.limit as string || '25';
 
 const limits = [
   25,

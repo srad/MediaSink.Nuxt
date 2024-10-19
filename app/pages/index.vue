@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts" setup>
-import { useRouter } from 'nuxt/app';
+import { useRouter } from 'vue-router';
 
 const router = useRouter();
 router.replace('/streams/live');

@@ -63,7 +63,8 @@
 </template>
 
 <script setup lang="ts">
-import { useI18n, computed, ref } from '#imports';
+import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import type { DatabaseRecording as RecordingResponse } from '~/services/api/v1/StreamSinkClient.ts';
 import { fromNow } from '~/utils/datetime';
 import FavButton from './controls/FavButton.vue';

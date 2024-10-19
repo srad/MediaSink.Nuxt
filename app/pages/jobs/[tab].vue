@@ -31,7 +31,7 @@
             <!-- filter row -->
             <div class="row align-items-center">
               <div class="col-auto">
-                <select ref="filterLimitSelect" id="limit" class="form-select" v-model="take">
+                <select id="limit" class="form-select" v-model="take">
                   <option value="" style="font-weight: bold" disabled>{{ t('filter.limit') }}</option>
                   <option v-for="limit in limits" :key="limit" :value="limit">{{ limit }}</option>
                 </select>
@@ -134,10 +134,13 @@ import { DatabaseJobOrder, DatabaseJobStatus } from '~/services/api/v1/StreamSin
 import { fromNow } from '~/utils/datetime';
 import { useJobStore } from '~~/stores/job';
 import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.client.vue';
-import { computed, definePageMeta, ref, useI18n, useRoute } from '#imports';
+import { computed, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useNuxtApp } from '#app/nuxt';
 import { useAsyncData, useHead } from '#app';
 import JobTable from '~/components/JobTable.vue';
+import { useRoute } from 'vue-router';
+import { definePageMeta } from '#imports';
 
 useHead({
   title: 'Jobs'

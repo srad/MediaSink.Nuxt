@@ -34,7 +34,7 @@ import Toaster from '~/components/Toaster.vue';
 import { useChannelStore } from '~~/stores/channel';
 import { useJobStore } from '~~/stores/job';
 import { useToastStore } from '~~/stores/toast';
-import { useRuntimeConfig, useRouter, onBeforeRouteUpdate } from 'nuxt/app';
+import { useRuntimeConfig, useRouter } from 'nuxt/app';
 import { computed, onMounted, ref, onUnmounted, watch } from 'vue';
 import { useNuxtApp } from '#app/nuxt';
 import type { JobMessage, TaskComplete, TaskInfo, TaskProgress } from '~/types';

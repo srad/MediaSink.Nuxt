@@ -34,7 +34,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from '#imports';
+import { ref, useTemplateRef } from 'vue';
 
 const props = defineProps<{
   channelPaused: boolean;
@@ -49,7 +49,7 @@ const emit = defineEmits<{
   (e: 'delete', value: void): void;
 }>();
 
-const file = ref<HTMLInputElement | null>(null);
+const file = useTemplateRef<HTMLInputElement>('file');
 
 const clickFile = () => file.value?.click();
 
@@ -58,9 +58,11 @@ const fileChanged = () => {
 
   if (el.files && el.files.length > 0) {
     const firstFile = el.files[0];
-    emit('file', firstFile);
-    // clear old file
-    el.value = '';
+    if (firstFile) {
+      emit('file', firstFile!);
+      // clear old file
+      el.value = '';
+    }
   }
 };
 

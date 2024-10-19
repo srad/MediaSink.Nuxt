@@ -28,10 +28,12 @@
 import StreamInfo from './StreamInfo.vue';
 import Preview from './Preview.vue';
 import type { ServicesChannelInfo as ChannelInfo } from '~/services/api/v1/StreamSinkClient';
-import { useI18n, computed, useRouter, ref, useAsyncData } from '#imports';
+import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { useChannelStore } from '~~/stores/channel';
 import { useNuxtApp } from '#app/nuxt';
 import { useRuntimeConfig } from 'nuxt/app';
+import { useI18n } from 'vue-i18n';
 
 // --------------------------------------------------------------------------------------
 // Emits

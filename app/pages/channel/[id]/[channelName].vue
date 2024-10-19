@@ -87,7 +87,7 @@ import type {
   DatabaseChannel as ChannelResponse,
   DatabaseRecording as RecordingResponse
 } from '~/services/api/v1/StreamSinkClient';
-import { onMounted, computed, ref } from 'vue';
+import { onMounted, computed, ref, useTemplateRef } from 'vue';
 import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router';
 import { MessageType, connectSocket, socketOn, closeSocket } from '~/utils/socket';
 import BusyOverlay from '~/components/BusyOverlay.vue';
@@ -111,7 +111,7 @@ const toastSTore = useToastStore();
 const channelStore = useChannelStore();
 
 // Elements
-const upload = ref<HTMLDivElement | null>(null);
+const upload = useTemplateRef<HTMLDivElement>('upload');
 
 const channelId = (+route.params.id!) as unknown as number;
 

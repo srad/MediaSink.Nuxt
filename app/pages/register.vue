@@ -33,9 +33,11 @@
 </template>
 
 <script setup lang="ts">
-import { createLog, definePageMeta, ref, useRouter } from '#imports';
+import { ref } from 'vue';
 import { useNuxtApp } from '#app/nuxt';
 import { useHead } from '#app';
+import { createLog, definePageMeta } from '#imports';
+import { useRouter } from 'vue-router';
 
 useHead({
   title: 'Register'

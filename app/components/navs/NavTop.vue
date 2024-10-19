@@ -62,14 +62,15 @@
 import { MessageType, socketOn, connectSocket, closeSocket } from '~/utils/socket';
 import { useChannelStore } from '~~/stores/channel';
 import { useJobStore } from '~~/stores/job';
-import { computed, onMounted, watch, useRoute, useRouter, ref, onUnmounted, useAsyncData } from '#imports';
-
+import { computed, onMounted, watch, ref, onUnmounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import DiskStatus from '../DiskStatus.vue';
 import RecordingControls from '../RecordingControls.vue';
 import AppBrand from '../AppBrand.vue';
 import ModalConfirmDialog from '../modals/ModalConfirmDialog.client.vue';
 import { useNuxtApp } from '#app/nuxt';
 import type { HelpersDiskInfo } from '~/services/api/v1/StreamSinkClient';
+import { useAsyncData } from '#app';
 
 // --------------------------------------------------------------------------------------
 // Props

@@ -6,7 +6,7 @@
 
 <script setup lang="ts">
 import { AlertType } from '~~/app/types';
-import { computed } from '#imports';
+import { computed } from 'vue';
 
 const props = defineProps<{ alertType: AlertType, className?: string }>();
 

@@ -16,11 +16,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from '#imports';
+import { useTemplateRef, ref } from 'vue';
 
 const emit = defineEmits<{ (e: 'selected', value: string | number): void }>();
 
-const video = ref<HTMLVideoElement | null>(null);
+const video = useTemplateRef<HTMLVideoElement>('video');
 
 const errorLoad = ref(false);
 

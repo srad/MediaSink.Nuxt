@@ -3,16 +3,15 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, watch } from '#imports';
+import { useTemplateRef, computed, onMounted, onUnmounted, watch } from 'vue';
 import type { IChartApi, ISeriesApi } from 'lightweight-charts';
-import { ref } from '#imports';
 import { useNuxtApp } from '#app/nuxt';
 
 const props = defineProps<{
   series: { load: number, time: number }[]
 }>();
 
-const container = ref<HTMLDivElement | null>(null);
+const container = useTemplateRef<HTMLDivElement>('container');
 let chart: IChartApi | null = null;
 let cpuSeries: ISeriesApi<any> | null = null;
 
