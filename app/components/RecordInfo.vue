@@ -6,7 +6,7 @@
       </span>
       <span class="text-secondary px-2">/</span>
       <span>
-        {{ (size / 1000 / 1000 / 1000).toFixed(1) }}GB
+        {{ (size / 1024 / 1024 / 1024).toFixed(1) }}GB
       </span>
       <span class="text-secondary px-2">/</span>
       <span class="text-cut">{{ ago }}</span>

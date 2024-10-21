@@ -1,6 +1,7 @@
 <template>
   <div>
     <BusyOverlay :visible="busyOverlay"/>
+
     <ModalConfirmDialog :show="showConfirm" @cancel="showConfirm=false" @confirm="deleteChannel">
       <template v-slot:header>
         Delete channel?
@@ -9,6 +10,26 @@
         Confirm channel delete
       </template>
     </ModalConfirmDialog>
+
+    <ModalConfirmDialog :show="showDeleteSelectedRecordings" @cancel="showDeleteSelectedRecordings=false" @confirm="destroySelection">
+      <template v-slot:header>
+        Confirm selection
+      </template>
+      <template v-slot:body>
+        <ul class="list-unstyled">
+          <li v-for="recording in selectedRecordings" class="list-group-item d-flex justify-content-between mb-2">
+            <img class="img-thumbnail w-20 me-2" :src="`${fileUrl}/${recording.previewCover || (recording.channelName + '/.previews/live.jpg')}`"/>
+            <div class="w-80">
+              <div>{{ recording.filename }}</div>
+              <div>{{ (recording.duration / 60).toFixed(1) }}min -
+                {{ (Math.fround(recording.size / 1024 / 1024 / 1024)).toFixed(1) }}GB
+              </div>
+            </div>
+          </li>
+        </ul>
+      </template>
+    </ModalConfirmDialog>
+
     <div ref="upload" style="display: none" class="modal modal-dialog modal-dialog-centered" tabindex="-1">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -41,7 +62,7 @@
                      @delete="showConfirm=true"/>
 
         <div class="btn-group">
-          <button type="button" v-if="areItemsSelected" class="btn btn-danger justify-content-between me-2" @click="destroySelection">
+          <button type="button" v-if="areItemsSelected" class="btn btn-danger justify-content-between me-2" @click="showDeleteSelectedRecordings=true">
             <span class="me-2">Delete selection</span>
             <i class="bi bi-trash3-fill"/>
           </button>
@@ -72,7 +93,6 @@
         <RecordingItem
             @destroyed="destroyRecording"
             @checked="selectRecording"
-            :select="selectedRecordings.some(x => x.recordingId === recording.recordingId)"
             :show-selection="true"
             :recording="recording"
             :show-title="false"/>
@@ -84,10 +104,11 @@
 <script setup lang="ts">
 import RecordingItem from '~/components/RecordingItem.vue';
 import type {
-  DatabaseChannel as ChannelResponse,
-  DatabaseRecording as RecordingResponse
+  DatabaseRecording,
+  DatabaseRecording as RecordingResponse,
+  ServicesChannelInfo
 } from '~/services/api/v1/StreamSinkClient';
-import { onMounted, computed, ref, useTemplateRef } from 'vue';
+import { onMounted, computed, ref, useTemplateRef, reactive } from 'vue';
 import { useRouter, useRoute, onBeforeRouteLeave } from 'vue-router';
 import { MessageType, connectSocket, socketOn, closeSocket } from '~/utils/socket';
 import BusyOverlay from '~/components/BusyOverlay.vue';
@@ -98,6 +119,7 @@ import { useNuxtApp } from '#app/nuxt';
 import { useAsyncData, useHead } from '#app';
 import OptionsMenu from '~/components/controls/OptionsMenu.client.vue';
 import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.client.vue';
+import { useRuntimeConfig } from "nuxt/app";
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -107,7 +129,7 @@ const route = useRoute();
 const router = useRouter();
 
 const jobStore = useJobStore();
-const toastSTore = useToastStore();
+const toastStore = useToastStore();
 const channelStore = useChannelStore();
 
 // Elements
@@ -115,6 +137,7 @@ const upload = useTemplateRef<HTMLDivElement>('upload');
 
 const channelId = (+route.params.id!) as unknown as number;
 
+// Get Data
 const { data } = await useAsyncData('channel', () => {
   const { $client } = useNuxtApp();
   return $client.channels.channelsDetail(channelId);
@@ -124,15 +147,20 @@ if (!data.value) {
   await router.replace('/streams/live');
 }
 
+const channel = ref<ServicesChannelInfo>(data.value);
+
 const selectedRecordings = ref<RecordingResponse[]>([]);
 const uploadProgress = ref(0);
 const busyOverlay = ref(false);
-const channel = ref<ChannelResponse>(data.value!);
 
 let uploadAbortController: AbortController | null = null;
-const showModal = ref(false);
 
+const showModal = ref(false);
 const showConfirm = ref(false);
+const showDeleteSelectedRecordings = ref(false);
+
+const config = useRuntimeConfig();
+const fileUrl = config.public.fileUrl;
 
 // --------------------------------------------------------------------------------------
 // Computes
@@ -153,7 +181,7 @@ const pauseChannel = (element: HTMLInputElement): void => {
     } else {
       channelStore.pause(channel.value!.channelId);
     }
-    toastSTore.info({
+    toastStore.info({
       title: element.checked ? 'Channel resume' : 'Channel pause',
       message: `Channel ${channel.value?.displayName}`
     });
@@ -163,28 +191,32 @@ const pauseChannel = (element: HTMLInputElement): void => {
 const cancelSelection = () => selectedRecordings.value = [];
 
 const destroySelection = async () => {
-  if (!window.confirm('Delete selection?')) {
-    return;
-  }
+  try {
+    const { $client } = useNuxtApp();
 
-  const { $client } = useNuxtApp();
-
-  for (let i = 0; i < selectedRecordings.value.length; i++) {
-    const rec = selectedRecordings.value[i] as RecordingResponse;
-    await $client.recordings.recordingsDelete(rec.recordingId);
-    const j = channel.value?.recordings?.findIndex(r => r.filename === rec.filename);
-    if (j && j !== -1) {
-      channel.value?.recordings?.splice(j, 1);
+    for (let i = 0; i < selectedRecordings.value.length; i++) {
+      const rec = selectedRecordings.value[i] as RecordingResponse;
+      await $client.recordings.recordingsDelete(rec.recordingId);
+      const index = channel.value.recordings.findIndex((x: DatabaseRecording) => x.recordingId === rec.recordingId);
+      if (index !== -1) {
+        channel.value.recordings.splice(index, 1);
+      }
     }
+    // Clear selection.
+    toastStore.success({ title: 'Deleted recordings', message: `Deleted ${selectedRecordings.value.length} files.` })
+    selectedRecordings.value = [];
+  } catch (e) {
+    toastStore.error({ title: 'Deletion failed', message: e });
+  } finally {
+    showDeleteSelectedRecordings.value = false;
   }
-  selectedRecordings.value = [];
 };
 
-const selectRecording = (data: { checked: boolean, recording: RecordingResponse }) => {
-  if (data.checked) {
-    selectedRecordings.value.push(data.recording);
+const selectRecording = ({ checked, recording }: { checked: boolean, recording: RecordingResponse }) => {
+  if (checked && !selectedRecordings.value.some(x => x.recordingId === recording.recordingId)) {
+    selectedRecordings.value.push(recording);
   } else {
-    selectedRecordings.value = selectedRecordings.value.filter(x => x.recordingId !== data.recording.recordingId);
+    selectedRecordings.value = selectedRecordings.value.filter(x => x.recordingId !== recording.recordingId);
   }
 };
 
@@ -194,7 +226,7 @@ const deleteChannel = async () => {
     const { $client } = useNuxtApp();
     await $client.channels.channelsDelete(channelId);
     channelStore.destroy(channelId);
-    toastSTore.success({ title: 'Channel deleted', message: `Channel ${channel.value?.displayName}` });
+    toastStore.success({ title: 'Channel deleted', message: `Channel ${channel.value?.displayName}` });
     await router.replace('/');
   } catch (e: any) {
     alert(e);
@@ -215,7 +247,7 @@ const fileSelected = async (file: File) => {
     uploadProgress.value = 0;
     showModal.value = true;
     const { $client } = useNuxtApp();
-    const [req, abortController] = $client.channelUpload(channelId, file, (pcent: number) => uploadProgress.value = pcent);
+    const [ req, abortController ] = $client.channelUpload(channelId, file, (pcent: number) => uploadProgress.value = pcent);
     uploadAbortController = abortController;
     const recording = await req;
     uploadProgress.value = 0;

@@ -16,7 +16,7 @@
       <span v-else>&nbsp;</span>
       <div>
         <span><i class="bi bi-device-hdd"></i> {{
-            (channel.recordingsSize / 1000 / 1000 / 1000).toFixed(1)
+            (channel.recordingsSize / 1024 / 1024 / 1024).toFixed(1)
           }}GB ({{ channel.recordingsCount }})</span>
       </div>
     </li>

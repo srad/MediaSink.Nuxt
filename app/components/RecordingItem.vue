@@ -6,8 +6,8 @@
       <div class="loader"></div>
     </div>
     <div class="position-relative">
-      <div @click="checked=!checked" class="position-absolute" style="padding: 10px; right: 0; top: 0; z-index: 10;">
-        <input v-if="props.showSelection" type="checkbox" :checked="checked" style="width: 20px; height: 20px">
+      <div class="position-absolute" style="padding: 10px; right: 0; top: 0; z-index: 10;">
+        <input v-if="props.showSelection" v-model="checked" type="checkbox" :checked="checked" style="width: 20px; height: 20px">
       </div>
       <span class="badge bg-success position-absolute" style="user-select: none; z-index: 10; top: 10px; left: 10px">
         <span v-if="props.recording.width===1920">1080p</span>
@@ -109,11 +109,6 @@ watch(checked, val => {
   emit('checked', { checked: val, recording: props.recording });
 });
 
-watch(() => props.select, val => {
-  checked.value = val;
-  emit('checked', { checked: val, recording: props.recording });
-});
-
 // --------------------------------------------------------------------------------------
 // Methods
 // --------------------------------------------------------------------------------------
@@ -164,7 +159,7 @@ const convert = async ({ recording, mediaType }: { recording: RecordingResponse,
 };
 
 const destroyRecording = async (recording: RecordingResponse) => {
-  if (!window.confirm(t('crud.destroy', [recording.filename]))) {
+  if (!window.confirm(t('crud.destroy', [ recording.filename ]))) {
     return;
   }
 
