@@ -31,5 +31,8 @@
     "sass": "^1.79.5",
     "sass-loader": "^16.0.2",
     "swagger-typescript-api": "^13.0.22"
+  },
+  "optionalDependencies": {
+    "@esbuild/linux-x64":"0.24.0"
   }
 }
