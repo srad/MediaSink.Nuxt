@@ -1,4 +1,3 @@
-
 FROM node:22-bookworm AS build
 
 WORKDIR /app
