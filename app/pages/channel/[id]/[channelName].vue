@@ -2,14 +2,7 @@
   <div>
     <BusyOverlay :visible="busyOverlay"/>
 
-    <ModalConfirmDialog :show="showConfirm" @cancel="showConfirm=false" @confirm="deleteChannel">
-      <template v-slot:header>
-        Delete channel?
-      </template>
-      <template v-slot:body>
-        Confirm channel delete
-      </template>
-    </ModalConfirmDialog>
+    <NativeConfirmDialog :show="showConfirm" @cancel="showConfirm=false" @confirm="deleteChannel" text="Are you sure you want to delete this channel?"/>
 
     <ModalConfirmDialog :show="showDeleteSelectedRecordings" @cancel="showDeleteSelectedRecordings=false" @confirm="destroySelection">
       <template v-slot:header>
@@ -119,7 +112,8 @@ import { useNuxtApp } from '#app/nuxt';
 import { useAsyncData, useHead } from '#app';
 import OptionsMenu from '~/components/controls/OptionsMenu.client.vue';
 import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.client.vue';
-import { useRuntimeConfig } from "nuxt/app";
+import NativeConfirmDialog from '~/components/modals/NativeConfirmDialog.client.vue';
+import { useRuntimeConfig } from 'nuxt/app';
 
 // --------------------------------------------------------------------------------------
 // Declarations
@@ -203,7 +197,7 @@ const destroySelection = async () => {
       }
     }
     // Clear selection.
-    toastStore.success({ title: 'Deleted recordings', message: `Deleted ${selectedRecordings.value.length} files.` })
+    toastStore.success({ title: 'Deleted recordings', message: `Deleted ${selectedRecordings.value.length} files.` });
     selectedRecordings.value = [];
   } catch (e) {
     toastStore.error({ title: 'Deletion failed', message: e });
@@ -247,7 +241,7 @@ const fileSelected = async (file: File) => {
     uploadProgress.value = 0;
     showModal.value = true;
     const { $client } = useNuxtApp();
-    const [ req, abortController ] = $client.channelUpload(channelId, file, (pcent: number) => uploadProgress.value = pcent);
+    const [req, abortController] = $client.channelUpload(channelId, file, (pcent: number) => uploadProgress.value = pcent);
     uploadAbortController = abortController;
     const recording = await req;
     uploadProgress.value = 0;

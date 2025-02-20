@@ -20,7 +20,7 @@ export default class AuthService {
     authStore.logout();
   }
 
-  getToken(): string | null {
+  getToken(): string | undefined {
     const authStore = useAuthStore();
     return authStore.getToken;
   }

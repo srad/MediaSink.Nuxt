@@ -159,8 +159,8 @@ const { t } = useI18n();
 const jobStore = useJobStore();
 const toastStore = useToastStore();
 
-const volume = useCookie<number>('volume');
-const muted = useCookie<boolean>('muted');
+const volume = useCookie<number>('volume', { readonly: false, default: () => 1, maxAge: 60 * 60 * 24 * 14 });
+const muted = useCookie<boolean>('muted', { readonly: false, default: () => true, maxAge: 60 * 60 * 24 * 14 });
 
 const stripeContainer = useTemplateRef<HTMLElement>('stripeContainer');
 const video = useTemplateRef<HTMLVideoElement>('video');

@@ -60,7 +60,7 @@ export interface Toast {
 
 export interface AuthState {
   loggedIn: boolean;
-  token: string | null;
+  token: string | null | undefined;
 }
 
 export interface ChannelState {

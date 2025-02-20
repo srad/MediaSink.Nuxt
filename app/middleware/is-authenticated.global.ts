@@ -12,13 +12,19 @@ export default defineNuxtRouteMiddleware((to, from) => {
     return;
   }
 
+  console.log(1);
+
   if (authStore.isLoggedIn && !authRequired) {
     return;
   }
+
+  console.log(2);
 
   // trying to access a restricted page + not logged in
   // redirect to login page
   if (authRequired && !authStore.isLoggedIn) {
     return navigateTo('/login');
   }
+
+  console.log(3);
 });

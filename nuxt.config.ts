@@ -82,7 +82,7 @@ export default defineNuxtConfig({
     storesDirs: ['./stores/**'],
   },
   i18n: {
-    vueI18n: './i18n/i18n'
+    vueI18n: './i18n/i18n.ts'
   },
   imports: {
     autoImport: false,
