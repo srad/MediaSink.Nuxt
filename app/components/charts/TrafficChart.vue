@@ -16,8 +16,8 @@ let chart: IChartApi | null = null;
 let inSeries: ISeriesApi<any> | null = null;
 let outSeries: ISeriesApi<any> | null = null;
 
-const getIn = computed(() => (props.series || []).map(((x) => ({ time: x.time, value: x.in }))));
-const getOut = computed(() => (props.series || []).map(((x) => ({ time: x.time, value: x.out }))));
+const getIn = computed(() => (props.series || []).map(((x) => ({ time: x.time, value: x.in }))).slice(-30));
+const getOut = computed(() => (props.series || []).map(((x) => ({ time: x.time, value: x.out }))).slice(-30));
 
 watch(() => props.series, () => {
   inSeries?.setData(getIn.value.sort((a, b) => a.time - b.time));
@@ -26,7 +26,7 @@ watch(() => props.series, () => {
 });
 
 onMounted(() => {
-  const { $createChart } = useNuxtApp();
+  const { $createChart, $LineSeries } = useNuxtApp();
   chart = $createChart(container.value!, {
     autoSize: true,
     layout: { attributionLogo: false, fontSize: 11 },
@@ -36,13 +36,15 @@ onMounted(() => {
       },
     },
   });
-  inSeries = chart.addLineSeries({
+
+  inSeries = chart?.addSeries($LineSeries, {
     pointMarkersVisible: true,
     lineWidth: 2,
     color: '#19785f',
     title: 'incoming'
   });
-  outSeries = chart.addLineSeries({
+
+  outSeries = chart?.addSeries($LineSeries, {
     pointMarkersVisible: true,
     lineWidth: 2,
     color: '#990d37',

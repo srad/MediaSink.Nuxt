@@ -145,9 +145,9 @@ import { useToastStore } from '~~/stores/toast';
 import { useJobStore } from '~~/stores/job';
 import { useAsyncData, useRuntimeConfig } from 'nuxt/app';
 import { useNuxtApp } from '#app/nuxt';
-import { useHead } from '#app';
 import type { Marking } from '~/types';
 import { useTemplateRef } from 'vue';
+import { useHead } from '#imports';
 
 // --------------------------------------------------------------------------------------
 // Declarations

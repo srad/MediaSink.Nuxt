@@ -64,7 +64,8 @@ import { computed, ref, } from 'vue';
 import ChannelFavButton from '~/components/controls/ChannelFavButton.vue';
 import type { DatabaseChannel, ServicesChannelInfo } from '~/services/api/v1/StreamSinkClient';
 import { useNuxtApp } from '#app/nuxt';
-import { useAsyncData, useHead, useRuntimeConfig } from '#app';
+import { useAsyncData, useRuntimeConfig } from '#app';
+import { useHead } from '#imports';
 import { useTemplateRef } from 'vue';
 import { downloadObjectAsJson } from '#imports';
 

@@ -17,7 +17,8 @@ import RecordingItem from '../components/RecordingItem.vue';
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useNuxtApp } from '#app/nuxt';
-import { useAsyncData, useHead } from '#app';
+import { useAsyncData } from '#app';
+import { useHead } from '#imports';
 
 useHead({
   title: 'Bookmarks'

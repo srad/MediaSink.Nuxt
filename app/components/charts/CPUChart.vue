@@ -15,7 +15,7 @@ const container = useTemplateRef<HTMLDivElement>('container');
 let chart: IChartApi | null = null;
 let cpuSeries: ISeriesApi<any> | null = null;
 
-const getIn = computed(() => (props.series || []).map(((x, i) => ({ time: i, value: x.load }))));
+const getIn = computed(() => (props.series || []).map(((x, i) => ({ time: i, value: x.load }))).slice(-30));
 
 watch(() => props.series, () => {
   cpuSeries?.setData(getIn.value.sort((a, b) => a.time - b.time));
@@ -23,7 +23,8 @@ watch(() => props.series, () => {
 });
 
 onMounted(() => {
-  const { $createChart } = useNuxtApp();
+  const { $createChart, $LineSeries } = useNuxtApp();
+
   chart = $createChart(container.value!, {
     autoSize: true,
     layout: { attributionLogo: false, fontSize: 11 },
@@ -33,10 +34,9 @@ onMounted(() => {
       },
     },
   });
-  cpuSeries = chart.addLineSeries({
+  cpuSeries = chart?.addSeries($LineSeries, {
     pointMarkersVisible: true,
     lineWidth: 2,
-    color: '#990d37',
     title: 'Load  ',
   });
 });

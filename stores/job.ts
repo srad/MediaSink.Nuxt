@@ -1,9 +1,7 @@
 import type { DatabaseJob as Job } from '~/services/api/v1/StreamSinkClient';
-import { DatabaseJobOrder, DatabaseJobStatus } from '~/services/api/v1/StreamSinkClient';
+import { DatabaseJobStatus } from '~/services/api/v1/StreamSinkClient';
 import { defineStore } from 'pinia';
-import { useNuxtApp } from '#app/nuxt';
 import type { JobMessage, JobState, TaskComplete, TaskInfo, TaskProgress } from '~/types';
-import { useAsyncData } from '#app';
 
 export const useJobStore = defineStore('job', {
   persist: false,

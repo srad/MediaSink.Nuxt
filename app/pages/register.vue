@@ -35,8 +35,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useNuxtApp } from '#app/nuxt';
-import { useHead } from '#app';
-import { createLog, definePageMeta } from '#imports';
+import { createLog, definePageMeta, useHead } from '#imports';
 import { useRouter } from 'vue-router';
 
 useHead({

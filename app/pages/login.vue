@@ -33,9 +33,8 @@ import { ref } from 'vue';
 import { createLog } from '~/utils/log';
 import { useNuxtApp } from '#app/nuxt';
 import { reloadNuxtApp } from '#app/composables/chunk';
-import { useHead } from '#app';
 import BusyButton from "~/components/controls/BusyButton.vue";
-import { definePageMeta } from '#imports';
+import { definePageMeta, useHead } from '#imports';
 
 useHead({
   title: 'Login'

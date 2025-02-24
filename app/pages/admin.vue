@@ -104,7 +104,8 @@ import CPUChart from '~/components/charts/CPUChart.vue';
 import { ref, onMounted } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import { useNuxtApp } from '#app/nuxt';
-import { useAsyncData, useHead } from '#app';
+import { useAsyncData } from '#app';
+import { useHead } from '#imports';
 
 useHead({
   title: 'Administration'

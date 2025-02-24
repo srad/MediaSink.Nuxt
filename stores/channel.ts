@@ -17,7 +17,7 @@ export const useChannelStore = defineStore('channel', {
     },
     async load() {
       const { $client } = useNuxtApp();
-      const { data } = await useAsyncData<ServicesChannelInfo[]>('streams-channels', () => $client.channels.channelsList());
+      const { data } = await useAsyncData<ServicesChannelInfo[]>('streams-channels', () => $client.channels.channelsList(), { lazy: true });
       this.channels = data.value || [];
     },
     save(channel: ChannelRequest) {

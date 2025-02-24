@@ -82,7 +82,7 @@
     </div>
 
     <div class="row mb-5">
-      <div v-for="recording in channel.recordings" :key="recording.filename" class="mb-3 col-lg-5 col-xl-4 col-xxl-4 col-md-10">
+      <div v-for="recording in channel.recordings" :key="recording.filename" class="mb-3 col-lg-6 col-xl-4 col-xxl-4 col-md-6">
         <RecordingItem
             @destroyed="destroyRecording"
             @checked="selectRecording"
@@ -109,7 +109,8 @@ import { useToastStore } from '~~/stores/toast';
 import { useChannelStore } from '~~/stores/channel';
 import { useJobStore } from '~~/stores/job';
 import { useNuxtApp } from '#app/nuxt';
-import { useAsyncData, useHead } from '#app';
+import { useAsyncData } from '#app';
+import { useHead, watch } from '#imports';
 import OptionsMenu from '~/components/controls/OptionsMenu.client.vue';
 import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.client.vue';
 import NativeConfirmDialog from '~/components/modals/NativeConfirmDialog.client.vue';
@@ -141,8 +142,9 @@ if (!data.value) {
   await router.replace('/streams/live');
 }
 
+data.value?.recordings?.sort((a, b) => Date.parse(b.createdAt) - Date.parse(a.createdAt));
+data.value?.recordings?.sort((a, b) => b.videoType.localeCompare(a.videoType));
 const channel = ref<ServicesChannelInfo>(data.value);
-
 const selectedRecordings = ref<RecordingResponse[]>([]);
 const uploadProgress = ref(0);
 const busyOverlay = ref(false);
@@ -200,7 +202,7 @@ const destroySelection = async () => {
     toastStore.success({ title: 'Deleted recordings', message: `Deleted ${selectedRecordings.value.length} files.` });
     selectedRecordings.value = [];
   } catch (e) {
-    toastStore.error({ title: 'Deletion failed', message: e });
+    toastStore.error({ title: 'Deletion failed', message: e.message });
   } finally {
     showDeleteSelectedRecordings.value = false;
   }

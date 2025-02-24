@@ -135,10 +135,9 @@ import { useChannelStore } from '~~/stores/channel';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useNuxtApp } from '#app/nuxt';
-import { useHead } from '#app';
 import type { ChannelUpdate } from '~/types';
-import { useAsyncData } from "#app";
-import { definePageMeta } from '#imports';
+import { useAsyncData } from '#app';
+import { definePageMeta, useHead } from '#imports';
 
 useHead({
   title: 'Streams'
@@ -165,7 +164,7 @@ const isPaused = ref(false);
 const url = ref('');
 const minDuration = ref(20);
 const skipStart = ref(0);
-const favs = ref(false);
+const favs = ref(route.query.fav === '1');
 
 const saving = ref(false);
 
@@ -248,10 +247,12 @@ const editChannel = (channel: ChannelResponse) => {
 
 const show = (tabName: string) => {
   router.push({ params: { tab: tabName } });
-}
+};
 // --------------------------------------------------------------------------------------
 // Watchers
 // --------------------------------------------------------------------------------------
+
+watch(favs, (val) => router.push({ query: { fav: val ? '1' : '0' } }));
 
 watch(searchVal, (search) => router.replace({ query: { search } }));
 
@@ -261,6 +262,7 @@ watch(() => route.query, params => {
   } else {
     searchVal.value = (params.search || '') as string;
   }
+  favs.value = params.fav === '1';
 });
 
 watch(() => route.params.tab, tabName => {

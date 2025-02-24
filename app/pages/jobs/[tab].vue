@@ -137,10 +137,10 @@ import ModalConfirmDialog from '~/components/modals/ModalConfirmDialog.client.vu
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useNuxtApp } from '#app/nuxt';
-import { useAsyncData, useHead } from '#app';
+import { useAsyncData } from '#app';
 import JobTable from '~/components/JobTable.vue';
 import { useRoute } from 'vue-router';
-import { definePageMeta } from '#imports';
+import { definePageMeta, useHead } from '#imports';
 
 useHead({
   title: 'Jobs'

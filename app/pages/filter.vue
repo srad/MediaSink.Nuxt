@@ -51,7 +51,8 @@ import RecordingItem from '../components/RecordingItem.vue';
 import { ref, watch, useTemplateRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useNuxtApp } from '#app/nuxt';
-import { useAsyncData, useHead } from '#app';
+import { useAsyncData } from '#app';
+import { useHead } from '#imports';
 import { useI18n } from 'vue-i18n';
 
 useHead({
