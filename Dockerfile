@@ -7,7 +7,7 @@ COPY ./package.json /app/
 
 RUN npm i -g npm@latest
 #RUN npm i -D esbuild # https://github.com/evanw/esbuild/issues/1646#issuecomment-1069353130
-RUN npm ci
+RUN npm i
 
 ADD . /app
 
