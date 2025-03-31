@@ -1,6 +1,9 @@
-# Nuxt 3 Minimal Starter
+# MediaSink.Nuxt
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+![License](https://img.shields.io/badge/license-AGPL--v3-blue)
+![Go Version](https://img.shields.io/badge/Go-1.x-blue)
+[![Build Status](https://teamcity.sedrad.com/app/rest/builds/buildType:(id:MediaSinkNuxt_Build)/statusIcon)](https://teamcity.sedrad.com/viewType.html?buildTypeId=MediaSinkNuxt_Build&guest=1)
+![Build](https://img.shields.io/github/actions/workflow/status/srad/MediaSink.Go/build.yml)
 
 ## Setup
 
